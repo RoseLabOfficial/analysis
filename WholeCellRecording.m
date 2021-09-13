@@ -1,23 +1,5 @@
 classdef WholeCellRecording
    properties
-       time
-       Vm
-       Im
-       Iinj
-       Ileak
-       alpha
-       beta
-       Iactive
-       ge
-       gi
-       depolarizations
-       hyperpolarizations
-       excitation
-       inhibition
-       condition
-       filename
-   end
-   properties(Access=private)
        %% Sampling/Acquistion properties.
        Fs % Sampling Frequency of acquisition (Hz).
        response_samples % How long the response lasts in a sampling domain (samples).
@@ -42,13 +24,38 @@ classdef WholeCellRecording
        PassbandRipple % The amplitude of ripples in frequencies of the passband (dB).
        StopbandAttenuation % The attentuation of noise (dB).
        
+       %% analysis properties
+       time % Pseudo time array created as per Fs, to analyze the temporal dynamics of excitation and inhibition.
+       Vm % Transmembrane Potential (V) recorded at Fs.
+       Im % Transmembrane current (A) computed as Cm*(dVm/dt).
+       Iinj % Injected Current (A).
+       Ileak % Leakage current (A) of the cell, computed as (1/Rin)*(Vm - Er).
+       alpha % Active conductance constant (S/V); Estimated using algorithm from Alluri, 2021. 
+       beta % Active conductance constant (S); Estimated using algorithm from Alluri, 2021.
+       Iactive % Active current (A) computed using active conductance terms. Alluri, 2021.
+       ge % Excitatory conductance (S) estimated using alogrithm from Alluri, 2016.
+       gi % Inhibitory conductance (S) estimated using alogrith from Alluri, 2016.
+       Ie % Excitatory currents (A) at various current clamps computed as ge*(Vm - Ee).
+       Ii % Inhibitory currents (A) at various current clamps computed as gi*(Vm - Ei).
+       depolarizations % Vm > Er at every time point (V).
+       hyperpolarizations % Vm < Er at every time point (V).
+       excitation % ge > 0. Biological data is noisy, excitation variable is free of aberrent negative values of ge.
+       inhibition % gi > 0. Biological data is noisy, inhibition variable is free of aberrent negative values of gi after non-linear filtering using alpha and beta.
+       condition % condition (string) is different types of stimuli, for pulse rate 5pps, 10pps, 60pps, etc., or for duration 20ms, 40ms, 160ms, etc.
+       filename % filename (string) is the name of the file containing the current clamp data along with various parameters for cell and membrane potential constants.
+       
+   end
+   properties(Access=private)
        %% fig properties
        fig
    end
+   %% Methods
    methods
+       %% Constructor
        function DATA = WholeCellRecording(filename, conditions, response_durations)
             if nargin > 0
                 tStart = tic;
+                %% Input format check
                 if ~isa(filename, 'string')
                     error('filename must be a string'); 
                 end
@@ -62,6 +69,7 @@ classdef WholeCellRecording
                     error('Dimensions of conditions and responseDurations must match.');
                 end
                 DATA(1).filename = filename;
+                %% Reading worksheets from excel files.
                 for k = numel(conditions):-1:1
                     data = xlsread(filename, conditions(k));
                     [samples, ~] = size(data);
@@ -76,6 +84,8 @@ classdef WholeCellRecording
                     DATA(k).Iactive = zeros(size(DATA(k).Vm));
                     DATA(k).ge = zeros(size(DATA(k).Vm, 1), 1);
                     DATA(k).gi = zeros(size(DATA(k).Vm, 1), 1);
+                    DATA(k).Ie = zeros(size(DATA(k).Vm));
+                    DATA(k).Ii = zeros(size(DATA(k).Vm));
                     parameters = xlsread(filename, "parameters_"+conditions(k));
                     DATA(k).Iinj = parameters(1:end, 1);
                     DATA(k).Cm = parameters(1:end, 2);
@@ -208,15 +218,17 @@ classdef WholeCellRecording
                    DATA(k).ge(n, 1) = G(1, 1);
                    DATA(k).gi(n, 1) = G(2, 1);
                end
+               DATA(k).Ie = DATA(k).ge.*(DATA(k).Vm - DATA(k).Ee');
+               DATA(k).Ii = DATA(k).gi.*(DATA(k).Vm - DATA(k).Ei');
            end
            fprintf('[%d secs] Computed passive conductances\n', toc(tStart));
        end
        function DATA = plots(DATA)
             tStart = tic;
             DATA(1).fig = figure('Name', strcat(DATA(1).filename, ' Reconstructions'));
-            tiledlayout(5, length(DATA));
-            ax = cell(5, length(DATA));
-            for m = 1: 1: 5
+            tiledlayout(6, length(DATA));
+            ax = cell(6, length(DATA));
+            for m = 1: 1: 6
                for k = 1: 1: length(DATA)
                    ax{m, k} = nexttile;
                    if m == 1
@@ -244,6 +256,12 @@ classdef WholeCellRecording
                        plot(DATA(k).time, DATA(k).ge, 'r', DATA(k).time, DATA(k).gi, 'b');
                        if k == 1
                          ylabel('G (S)');
+                       end
+                       xlabel('Time (sec)');
+                   elseif m == 6
+                       plot(DATA(k).time, DATA(k).Ie(:, 1), 'r', DATA(k).time, DATA(k).Ii(:, 1), 'b');
+                       if k == 1
+                           ylabel('I (A)');
                        end
                        xlabel('Time (sec)');
                    end
@@ -338,13 +356,21 @@ classdef WholeCellRecording
            end
            y1max = max(mean_conductances, [], 'all');
            y1max = y1max+0.1*y1max;
-           ylim([-y1max, y1max]);
+           if y1max == 0
+               ylim([0, 1]);
+           else
+               ylim([-y1max, y1max]);
+           end
            y2max = max(spikes_per_rep, [], 'all');
            y2max = y2max+0.1*y2max;
            yyaxis right;
            plot(data_count, spikes_per_rep, '-ok');
            ylabel('Spikes per stim. rep. (SPS)');
-           ylim([-y2max, y2max]);
+           if y2max == 0
+               ylim([0, 1]);
+           else
+               ylim([-y2max, y2max]);
+           end
            set(ax{1, 1},'xticklabel',pulse_rates);
            ax{2, 1} = nexttile;
            yyaxis left;
@@ -357,13 +383,21 @@ classdef WholeCellRecording
            end
            y1max = max(mean_polarizations, [], 'all');
            y1max = y1max+0.1*y1max;
-           ylim([-y1max, y1max]);
+           if y1max == 0
+               ylim([0, 1]);
+           else
+               ylim([-y1max, y1max]);
+           end
            y2max = max(spikes_per_rep, [], 'all');
            y2max = y2max+0.1*y2max;
            yyaxis right;
            plot(data_count, spikes_per_rep, '-ok');
            ylabel('Spikes per stim. rep. (SPS)');
-           ylim([-y2max, y2max]);
+           if y2max == 0
+               ylim([0, 1]);
+           else
+               ylim([-y2max, y2max]);
+           end
            set(ax{2, 1},'xticklabel',pulse_rates);
            fprintf('[%d secs] Plotting stats\n', toc(tStart));
            stats = table(pulse_rates, spikes_per_rep, mean_polarizations, mean_conductances, net_conductances, mean_active_current);

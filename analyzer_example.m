@@ -1,4 +1,4 @@
-filename = "C:\Users\rishi\Box\Roselab\analysis\ICN\Rana_pipiens\cases\RA\2015-05-28_2\2015-05-28_2_-42dB_10ms_baseline.xlsx"; % The path+name of the file goes here.
+filename = "example_data.xlsx"; % The path+name of the file goes here.
 rates = ["5pps", "10pps", "20pps", "40pps", "60pps"]; % Different rates in the file go here; these should be the same as the worksheets in the file.
 active_duration = [1.2, 0.6, 0.4, 0.4, 0.4]; % How long does the response to simulus last at each pulse rate? (secs).
 filter_parameters.CutOffFrequency = 150; % The lower this value, the smoother the traces get, but stay above 80 (Hz) for now.
