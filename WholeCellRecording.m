@@ -218,8 +218,8 @@ classdef WholeCellRecording
                    DATA(k).ge(n, 1) = G(1, 1);
                    DATA(k).gi(n, 1) = G(2, 1);
                end
-               DATA(k).Ie = DATA(k).ge.*(DATA(k).Vm - DATA(k).Ee');
-               DATA(k).Ii = DATA(k).gi.*(DATA(k).Vm - DATA(k).Ei');
+               DATA(k).Ie = -1.*DATA(k).ge.*(DATA(k).Vm - DATA(k).Ee');
+               DATA(k).Ii = -1.*DATA(k).gi.*(DATA(k).Vm - DATA(k).Ei');
            end
            fprintf('[%d secs] Computed passive conductances\n', toc(tStart));
        end
