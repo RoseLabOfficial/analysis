@@ -1,11 +1,9 @@
 import tensorflow as tf
 import numpy as np
+import matplotlib.pyplot as plt
 
 class clamp_scm_quadratic:
-    def __init__(self, Fs:float, T:float, Iinj:float, Cm:float, Rin:float, Er:float, Ee:float, Ei:float, Ess:float, Eact:float, Et:float, xalpha:float, xbeta:float, sps:float):
-        self.Fs = Fs
-        self.T = T
-        self.N = int (self.Fs*self.T)
+    def __init__(self, Iinj:float, Cm:float, Rin:float, Er:float, Ee:float, Ei:float, Ess:float, Eact:float, Et:float, xalpha:float, xbeta:float, sps:float):
         self.time = None
         self.Iinj = Iinj
         self.Cm = Cm
@@ -22,14 +20,12 @@ class clamp_scm_quadratic:
         pass
 
     def insert_time(self, time:float):
-        if time is None:
-            self.time = tf.reshape(tf.linspace(0, self.T, self.N, dtype=tf.float32), [1, self.N])
-        else:
-            self.time = tf.constant(time, dtype=tf.float32)
+        self.time = tf.constant(time, dtype=tf.float32)
+        self.time = tf.reshape(self.time, [1, self.time.shape[0]])
         pass
 
     def insert_Vm(self, Vm:float):
-        self.Vm = tf.reshape(Vm, self.Vm.shape)
+        self.Vm = tf.reshape(Vm, self.time.shape)
         pass
 
     def build(self):
@@ -38,9 +34,10 @@ class clamp_scm_quadratic:
         self.Im = tf.zeros(self.time.shape, dtype=tf.float32)
         self.Iactive = tf.zeros(self.time.shape, dtype=tf.float32)
         self.Ileak = tf.zeros(self.time.shape, dtype=tf.float32)
-        if self.time == None:
-            self.time = tf.reshape(tf.linspace(0, self.T, self.N, dtype=tf.float32), [1, self.N])
         pass
+
+    def plot(self):
+        self.figure = plt.figure()
 
     def compute_dVm_by_dt(self):
         Vm_leading = tf.concat([tf.constant(self.Ess, dtype=tf.float32), self.Vm[:, :-2]], axis=-1)
