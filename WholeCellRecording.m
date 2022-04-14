@@ -259,7 +259,7 @@ classdef WholeCellRecording
                        end
                        xlabel('Time (sec)');
                    elseif m == 6
-                       plot(DATA(k).time, -1.*DATA(k).Ie(:, 1), 'r', DATA(k).time, DATA(k).Ii(:, 1), 'b');
+                       plot(DATA(k).time, DATA(k).Ie(:, 1), 'r', DATA(k).time, -1.*DATA(k).Ii(:, 1), 'b');
                        if k == 1
                            ylabel('I (A)');
                        end
