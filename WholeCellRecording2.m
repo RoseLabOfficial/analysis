@@ -53,12 +53,8 @@ classdef WholeCellRecording2
        %% stats
         ge_net
         gi_net
-        ge_max
-        gi_max
         ge_mean
         gi_mean
-        depolarizations_max
-        hyperpolarizations_max
         depolarizations_mean
         hyperpolarizations_mean
    end
@@ -146,12 +142,8 @@ classdef WholeCellRecording2
                     app(i, j).hyperpolarizations = zeros(samples, 1);
                     app(i, j).excitation = zeros(samples, 1);
                     app(i, j).inhibition = zeros(samples, 1);
-                    app(i, j).ge_max = 0;
-                    app(i, j).gi_max = 0;
                     app(i, j).ge_mean = 0;
                     app(i, j).gi_mean = 0;
-                    app(i, j).depolarizations_max = 0;
-                    app(i, j).hyperpolarizations_max = 0;
                     app(i, j).depolarizations_mean = 0;
                     app(i, j).hyperpolarizations_mean = 0;
                end
@@ -314,6 +306,17 @@ classdef WholeCellRecording2
            for i = 1: 1: m
                for j = 1: 1: n
                    del_Vm = app(i, j).Vm - app(i, j).Eref;
+                   app(i, j).depolarizations = del_Vm.*(del_Vm(:, 1) > 0);
+                   app(i, j).hyperpolarizations = del_Vm.*(del_Vm(:, 1) < 0);
+                   app(i, j).excitation = app(i, j).ge.*(app(i, j).ge>0);
+                   app(i, j).inhibition = app(i, j).gi.*(app(i, j).gi>0);
+                   resultant_conductance = app(i, j).excitation(1:app(i, j).response_samples) - app(i, j).inhibition(1:app(i, j).response_samples);
+                   app(i, j).ge_net = mean(resultant_conductance.*(resultant_conductance>0), 1);
+                   app(i, j).gi_net = mean(resultant_conductance.*(resultant_conductance<0), 1);
+                   app(i, j).ge_mean = mean(app(i, j).excitation(1:app(i, j).response_samples), 1);
+                   app(i, j).gi_mean = mean(app(i, j).inhibition(1:app(i, j).response_samples), 1);
+                   app(i, j).depolarizations_mean = mean(app(i, j).depolarizations, 1);
+                   app(i, j).hyperpolarizations_mean = mean(app(i, j).hyperpolarizations, 1);
                end
            end
            fprintf('[%d secs] Computed Stats\n', toc(tStart));

@@ -53,12 +53,8 @@ classdef WholeCellRecording2
        %% stats
         ge_net
         gi_net
-        ge_max
-        gi_max
         ge_mean
         gi_mean
-        depolarizations_max
-        hyperpolarizations_max
         depolarizations_mean
         hyperpolarizations_mean
    end
@@ -92,7 +88,6 @@ classdef WholeCellRecording2
                     if app(i, j).response_samples > samples-1
                        app(i, j).response_samples = samples-1;
                     end
-
                end
            end
        end
@@ -101,7 +96,8 @@ classdef WholeCellRecording2
            [m, n] = size(app);
            for i = 1: 1: m
                for j = 1: 1: n
-
+                   app(i, j).Iinj = (1./app(i, j).Rin).*(app(i, j).Ess - app(i, j).Er);
+                   app(i, j).Vm = app(i, j).Vm - app(i, j).Vm(1, :) + app(i, j).Ess;
                end
            end
        end
@@ -146,8 +142,7 @@ classdef WholeCellRecording2
                     app(i, j).hyperpolarizations = zeros(samples, 1);
                     app(i, j).excitation = zeros(samples, 1);
                     app(i, j).inhibition = zeros(samples, 1);
-                    app(i, j).ge_max = 0;
-                    app(i, j).gi_max = 0;
+
                     app(i, j).ge_mean = 0;
                     app(i, j).gi_mean = 0;
                     app(i, j).depolarizations_max = 0;
@@ -189,6 +184,7 @@ classdef WholeCellRecording2
                 app = app.readXLSXdata();
                 app = app.build_arrays();
                 app = app.readXLSXparameters();
+                app = app.adjust_membrane_potential_with_steady_state();
                 fprintf('[%d secs] Read %s\n', toc(tStart), filename);
             end
        end
@@ -289,53 +285,19 @@ classdef WholeCellRecording2
            [m, n] = size(app);
            for i = 1: 1: m
                for j = 1: 1: n
-%                    samples = size(app(i, j).Vm, 1);
-%                    A = zeros(2, 2, samples);
-%                    B = zeros(2, 1, samples);
-%                    A(1, 1, :) = sum((app(i, j).Vm - app(i, j).Ee).^2, 2);
-%                    A(1, 2, :) = sum((app(i, j).Vm - app(i, j).Ee).*(app(i, j).Vm - app(i, j).Ei), 2);
-%                    A(2, 1, :) = A(1, 2, :);
-%                    A(2, 2, :) = sum((app(i, j).Vm - app(i, j).Ei).^2, 2);
-%                    C = app(i, j).Im - app(i, j).Iinj - app(i, j).Iactive + app(i, j).Ileak;
-%                    B(1, 1, :) = -sum(C.*(app(i, j).Vm - app(i, j).Ee), 2);
-%                    B(2, 1, :) = -sum(C.*(app(i, j).Vm - app(i, j).Ei), 2);
-%                    G = pagemtimes(pageinv(A), B);
-%                    app(i, j).ge = reshape(G(1, 1, :), [samples, 1]);
-%                    app(i, j).gi = reshape(G(2, 1, :), [samples, 1]);
-                   for s = 1: 1: size(app(i, j).time, 1)
-                       A = zeros(2, 2);
-                       B = zeros(2, 1);
-                       A(1, 1) = sum((app(i, j).Vm(s, :) - app(i, j).Ee(s, :)).^2, 2);
-                       A(1, 2) = sum((app(i, j).Vm(s, :) - app(i, j).Ee(s, :)).*(app(i, j).Vm(s, :) - app(i, j).Ei(s, :)), 2);
-                       A(2, 1) = A(1, 2);
-                       A(2, 2) = sum((app(i, j).Vm(s, :) - app(i, j).Ei(s, :)).^2, 2);
-                       C = app(i, j).Im(s, :) - app(i, j).Iinj(s, :) - app(i, j).Iactive(s, :) + app(i, j).Ileak(s, :);
-                       B(1, 1) = -sum(C.*(app(i, j).Vm(s, :) - app(i, j).Ee(s, :)), 2);
-                       B(2, 1) = -sum(C.*(app(i, j).Vm(s, :) - app(i, j).Ei(s, :)), 2);
-                       G = pinv(A)*B;
-                       app(i, j).ge(s, 1) = G(1, 1);
-                       app(i, j).gi(s, 1) = G(2, 1);
-                   end
-                   app(i, j).Ie = -1.*app(i, j).ge.*(app(i, j).Vm - app(i, j).Ee);
-                   app(i, j).Ii = -1.*app(i, j).gi.*(app(i, j).Vm - app(i, j).Ei);
-
-
-%                    for s = 1: 1: size(app(i, j).time, 1)
-%                        A = zeros(2, 2);
-%                        B = zeros(2, 1);
-%                        A(1, 1) = sum((app(i, j).Vm(s, :) - app(i, j).Ee').^2);
-%                        A(1, 2) = sum((app(i, j).Vm(s, :) - app(i, j).Ee').*(app(i, j).Vm(s, :) - app(i, j).Ei'));
-%                        A(2, 1) = A(1, 2);
-%                        A(2, 2) = sum((app(i, j).Vm(s, :) - app(i, j).Ei').^2);
-%                        C = app(i, j).Im(s, :) - app(i, j).Iinj' - app(i, j).Iactive(s, :) + app(i, j).Ileak(s, :);
-%                        B(1, 1) = -sum(C.*(app(i, j).Vm(s, :) - app(i, j).Ee'));
-%                        B(2, 1) = -sum(C.*(app(i, j).Vm(s, :) - app(i, j).Ei'));
-%                        G = pinv(A)*B;
-%                        app(i, j).ge(s, 1) = G(1, 1);
-%                        app(i, j).gi(s, 1) = G(2, 1);
-%                    end
-%                    app(i, j).Ie = -1.*app(i, j).ge.*(app(i, j).Vm - app(i, j).Ee');
-%                    app(i, j).Ii = -1.*app(i, j).gi.*(app(i, j).Vm - app(i, j).Ei');
+                   samples = size(app(i, j).Vm, 1);
+                   A = zeros(2, 2, samples);
+                   B = zeros(2, 1, samples);
+                   A(1, 1, :) = sum((app(i, j).Vm - app(i, j).Ee).^2, 2);
+                   A(1, 2, :) = sum((app(i, j).Vm - app(i, j).Ee).*(app(i, j).Vm - app(i, j).Ei), 2);
+                   A(2, 1, :) = A(1, 2, :);
+                   A(2, 2, :) = sum((app(i, j).Vm - app(i, j).Ei).^2, 2);
+                   C = app(i, j).Im - app(i, j).Iinj - app(i, j).Iactive + app(i, j).Ileak;
+                   B(1, 1, :) = -sum(C.*(app(i, j).Vm - app(i, j).Ee), 2);
+                   B(2, 1, :) = -sum(C.*(app(i, j).Vm - app(i, j).Ei), 2);
+                   G = pagemtimes(pageinv(A), B);
+                   app(i, j).ge = reshape(G(1, 1, :), [samples, 1]);
+                   app(i, j).gi = reshape(G(2, 1, :), [samples, 1]);
                end
            end
            fprintf('[%d secs] Computed passive conductances\n', toc(tStart));
@@ -347,6 +309,21 @@ classdef WholeCellRecording2
            for i = 1: 1: m
                for j = 1: 1: n
                    del_Vm = app(i, j).Vm - app(i, j).Eref;
+                   app(i, j).depolarizations = del_Vm.*(del_Vm(:, 1) > 0);
+                   app(i, j).hyperpolarizations = del_Vm.*(del_Vm(:, 1) < 0);
+                   app(i, j).excitation = app(i, j).ge.*(app(i, j).ge>0);
+                   app(i, j).inhibition = app(i, j).gi.*(app(i, j).gi>0);
+                   resultant_conductance = app(i, j).excitation(1:app(i, j).response_samples) - app(i, j).inhibition(1:app(i, j).response_samples);
+                   app(i, j).ge_net = mean(resultant_conductance.*(resultant_conductance>0), 1);
+                   app(i, j).gi_net = mean(resultant_conductance.*(resultant_conductance<0), 1);
+                   app(i, j).ge_mean = mean(app(i, j).excitation(1:app(i, j).response_samples), 1);
+                   app(i, j).gi_mean = mean(app(i, j).inhibition(1:app(i, j).response_samples), 1);
+                   app(i, j).ge_max = max(app(i, j).ge(1:app(i, j).response_samples), [], 1);
+                   app(i, j).gi_max = max(app(i, j).gi(1:app(i, j).response_samples), [], 1);
+                   app(i, j).depolarizations_mean = mean(app(i, j).depolarizations, 1);
+                   app(i, j).hyperpolarizations_mean = mean(app(i, j).hyperpolarizations, 1);
+                   app(i, j).depolarizations_max = max(app(i, j).depolarizations, [], 1);
+                   app(i, j).hyperpolarizations_max = max(app(i, j).hyperpolarizations, [] , 1);
                end
            end
            fprintf('[%d secs] Computed Stats\n', toc(tStart));
