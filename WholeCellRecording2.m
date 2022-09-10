@@ -312,10 +312,10 @@ classdef WholeCellRecording2
                    app(i, j).inhibition = app(i, j).gi.*(app(i, j).gi>0);
                    resultant_conductance = app(i, j).excitation(1:app(i, j).response_samples) - app(i, j).inhibition(1:app(i, j).response_samples);
                    app(i, j).ge_net = mean(resultant_conductance.*(resultant_conductance>0), 1);
-                   app(i, j).gi_net = mean(resultant_conductance.*(resultant_conductance<0), 1);
+                   app(i, j).gi_net = -1*mean(resultant_conductance.*(resultant_conductance<0), 1);
                    app(i, j).ge_mean = mean(app(i, j).excitation(1:app(i, j).response_samples), 1);
                    app(i, j).gi_mean = mean(app(i, j).inhibition(1:app(i, j).response_samples), 1);
-                   app(i, j).depolarizations_mean = mean(app(i, j).depolarizations(:, 1), 1);
+                   app(i, j).depolarizastions_mean = mean(app(i, j).depolarizations(:, 1), 1);
                    app(i, j).hyperpolarizations_mean = mean(app(i, j).hyperpolarizations(:, 1), 1);
                end
            end
@@ -342,12 +342,13 @@ classdef WholeCellRecording2
            [max_value, max_index] = max(values, [], 2);
            drop_3dB_value = max_value*0.707;
            drop_3dB_rate = app.get_estimated_cuton_rate(rates, values, drop_3dB_value);
-           points = [max_value; rates(max_index); drop_3dB_value; drop_3dB_rate];
+           Q = rates(max_index)/(2*abs(rates(max_index) - drop_3dB_rate));
+           points = [max_value; rates(max_index); drop_3dB_value; drop_3dB_rate; Q];
        end
 
        function meta_stats = compute_meta_stats(app)
            tStart = tic;
-           names = ["max value"; "max rate"; "-3dB value"; "-3dB rate"];
+           names = ["max value"; "max rate"; "-3dB value"; "-3dB rate"; "Q"];
            rates = [app.rate];
            ge_nets = [app.ge_net];
            gi_nets = [app.gi_net];
