@@ -142,11 +142,8 @@ classdef WholeCellRecording2
                     app(i, j).hyperpolarizations = zeros(samples, 1);
                     app(i, j).excitation = zeros(samples, 1);
                     app(i, j).inhibition = zeros(samples, 1);
-
                     app(i, j).ge_mean = 0;
                     app(i, j).gi_mean = 0;
-                    app(i, j).depolarizations_max = 0;
-                    app(i, j).hyperpolarizations_max = 0;
                     app(i, j).depolarizations_mean = 0;
                     app(i, j).hyperpolarizations_mean = 0;
                end
@@ -318,15 +315,52 @@ classdef WholeCellRecording2
                    app(i, j).gi_net = mean(resultant_conductance.*(resultant_conductance<0), 1);
                    app(i, j).ge_mean = mean(app(i, j).excitation(1:app(i, j).response_samples), 1);
                    app(i, j).gi_mean = mean(app(i, j).inhibition(1:app(i, j).response_samples), 1);
-                   app(i, j).ge_max = max(app(i, j).ge(1:app(i, j).response_samples), [], 1);
-                   app(i, j).gi_max = max(app(i, j).gi(1:app(i, j).response_samples), [], 1);
                    app(i, j).depolarizations_mean = mean(app(i, j).depolarizations, 1);
                    app(i, j).hyperpolarizations_mean = mean(app(i, j).hyperpolarizations, 1);
-                   app(i, j).depolarizations_max = max(app(i, j).depolarizations, [], 1);
-                   app(i, j).hyperpolarizations_max = max(app(i, j).hyperpolarizations, [] , 1);
                end
            end
            fprintf('[%d secs] Computed Stats\n', toc(tStart));
+       end
+
+       function cuton_rate = get_estimated_cuton_rate(~, rates, values, query_value)
+           high_index = find(values >= query_value, 1, 'first');
+           if isempty(high_index)
+               high_index = size(rates, 2);
+           end
+           low_index = find(values <= query_value, 1, 'last');
+           if isempty(low_index)
+               low_index = 1;
+           end
+           cuton_rate = rates(low_index) + (query_value - values(low_index))*(rates(high_index) - rates(low_index))/(values(high_index) - values(low_index));
+       end
+
+       function [max_value, max_index, drop_3dB_value, drop_3dB_index] = compute_3dB_points(app, rates, values)
+           [max_value, max_index] = max(values, [], 2);
+           drop_3dB_value = max_value*0.707;
+           drop_3dB_index = app.get_estimated_cuton_rate(rates, values, drop_3dB_value);
+       end
+
+       function meta_stats = compute_meta_stats(app)
+           tStart = tic;
+           stats_net_ge = zeros(4, 1);
+           stats_net_gi = zeros(4, 1);
+           
+           names = ['net ge', 'net gi', 'mean ge', 'mean gi', 'mean depolarization', 'mean hyperpolarization'];
+           meta_rates = [app.rate];
+           meta_ge_net = [app.ge_net];
+           meta_gi_net = [app.gi_net];
+           meta_ge_mean = [app.ge_mean];
+           meta_gi_mean = [app.gi_mean];
+           meta_depolarizations_mean = [app.depolarizations_mean];
+           meta_hyperpolarizations_mean = [app.hyperpolarizations_mean];
+           [ge_net_max_value, ge_net_max_rate, ge_net_3dB_drop_value, ge_net_3dB_drop_rate] = app.compute_3dB_points(meta_ge_net, meta_rates);
+           [gi_net_max_value, gi_net_max_rate, gi_net_3dB_drop_value, gi_net_3dB_drop_rate] = app.compute_3dB_points(meta_gi_net, meta_rates);
+           [ge_mean_max_value, ge_mean_max_rate, ge_mean_3dB_drop_value, ge_mean_3dB_drop_rate] = app.compute_3dB_points(meta_ge_mean, meta_rates);
+           [gi_mean_max_value, gi_mean_max_rate, gi_mean_3dB_drop_value, gi_mean_3dB_drop_rate] = app.compute_3dB_points(meta_gi_mean, meta_rates);
+           [depolarizations_mean_max_value, depolarizations_mean_max_index, depolarizations_mean_3dB_drop_rate, depolarizations_mean_3dB_drop_index] = app.compute_3dB_points(meta_depolarizations_mean, meta_rates);
+           [hyperpolarizations_mean_max_value, hyperpolarizations_mean_max_index, hyperpolarizations_mean_3dB_drop_rate, hyperpolarizations_mean_3dB_drop_index] = app.compute_3dB_points(meta_hyperpolarizations_mean, meta_rates);
+           meta_stats
+           fprintf('[%d secs] Computed Meta Stats\n', toc(tStart));
        end
 
        function app = plots(app)
