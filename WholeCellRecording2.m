@@ -57,12 +57,16 @@ classdef WholeCellRecording2
         gi_mean
         depolarizations_mean
         hyperpolarizations_mean
+
+        %% meta stats
+        maxima
+        drop_3dB
    end
    properties(Access=private)
        %% fig properties
        fig
    end
-   %% Methods
+   %% Methods to access data.
    methods(Access=private)
        function app = readXLSXdata(app)
            [m, n] = size(app);
@@ -146,45 +150,24 @@ classdef WholeCellRecording2
                     app(i, j).gi_net = 0;
                     app(i, j).depolarizations_mean = 0;
                     app(i, j).hyperpolarizations_mean = 0;
+                    app(i, j).maxima.ge_mean = zeros(1, 2);
+                    app(i, j).maxima.gi_mean = zeros(1, 2);
+                    app(i, j).maxima.ge_net = zeros(1, 2);
+                    app(i, j).maxima.gi_net = zeros(1, 2);
+                    app(i, j).maxima.depolarizations_mean = zeros(1, 2);
+                    app(i, j).maxima.hyperpolarizations_mean = zeros(1, 2);
+                    app(i, j).drop_3dB.ge_mean = zeros(1, 2);
+                    app(i, j).drop_3dB.gi_mean = zeros(1, 2);
+                    app(i, j).drop_3dB.ge_net = zeros(1, 2);
+                    app(i, j).drop_3dB.gi_net = zeros(1, 2);
+                    app(i, j).drop_3dB.depolarizations_mean = zeros(1, 2);
+                    app(i, j).drop_3dB.hyperpolarizations_mean = zeros(1, 2);
                end
            end
        end
    end
-   methods
-       %% Constructor
-       function app = WholeCellRecording2(filename, paradigms, response_durations)
-            if nargin > 0
-                tStart = tic;
-                %% Input format check
-                if ~isa(filename, 'string')
-                    error('filename must be a string'); 
-                end
-                if ~isa(paradigms, 'string')
-                    error('conditions (rates/durations) must be strings'); 
-                end
-                if ~isa(response_durations, 'double')
-                    error('responseDurations must be doubles');
-                end
-                if ~isequal(size(paradigms), size(response_durations))
-                    error('Dimensions of conditions and responseDurations must match.');
-                end
-                [m, n] = size(response_durations);
-                app(m, n) = app;
-                for i = 1: 1: m
-                    for j = 1: 1: n
-                        app(i, j).filename = filename;
-                        app(i, j).paradigm = paradigms(i, j);
-                        app(i, j).response_durations = response_durations(i, j);
-                    end
-                end
-                %% Reading worksheets from excel files.
-                app = app.readXLSXdata();
-                app = app.build_arrays();
-                app = app.readXLSXparameters();
-                app = app.adjust_membrane_potential_with_steady_state();
-                fprintf('[%d secs] Read %s\n', toc(tStart), filename);
-            end
-       end
+   %% Methods to filter data
+   methods(Access=public)
        function app = zero_phase_filter_Vm(app, filter_parameters)
            tStart = tic;
            [m, n] = size(app);
@@ -205,7 +188,29 @@ classdef WholeCellRecording2
            end
            fprintf('[%d secs] Zero phase filtering Vm \n', toc(tStart));
        end
-
+       function app = zero_phase_filter_Im(app, filter_parameters)
+            tStart = tic;
+            [m, n] = size(app);
+            for i = 1: 1: m
+                for j = 1: 1: n
+                    Fnorm = filter_parameters.CutOffFrequency/(app(i, j).Fs/2);
+                    lpFilt = designfilt('lowpassiir', ...
+                                'PassbandFrequency', Fnorm, ...
+                                'FilterOrder', filter_parameters.FilterOrder, ...
+                                'PassbandRipple', filter_parameters.PassbandRipple, ...
+                                'StopbandAttenuation', filter_parameters.StopbandAttenuation);
+                    I = cat(1, ones(size(app(i, j).Im)).*(app(i, j).Im(1, :)), app(i, j).Im);
+                    I = cat(1, I, ones(size(app(i, j).Im)).*(app(i, j).Im(end, :)));
+                    in = I - I(1, :);
+                    Imf = filtfilt(lpFilt, in);
+                    app(i, j).Im = Imf(size(app(i, j).Im, 1)+1:end-size(app(i, j).Im, 1), :) + app(i, j).Im(1, :);
+                end
+            end
+            fprintf('[%d secs] Zero phase filtering Im \n', toc(tStart));
+       end
+   end
+   %% Methods for conductance reconstruction.
+   methods(Access=public)
        function app = compute_active_conductances(app)
            tStart = tic;
            [m, n] = size(app);
@@ -255,28 +260,6 @@ classdef WholeCellRecording2
            end
            fprintf('[%d secs] Computed membrane currents\n', toc(tStart));
        end
-
-       function app = zero_phase_filter_Im(app, filter_parameters)
-            tStart = tic;
-            [m, n] = size(app);
-            for i = 1: 1: m
-                for j = 1: 1: n
-                    Fnorm = filter_parameters.CutOffFrequency/(app(i, j).Fs/2);
-                    lpFilt = designfilt('lowpassiir', ...
-                                'PassbandFrequency', Fnorm, ...
-                                'FilterOrder', filter_parameters.FilterOrder, ...
-                                'PassbandRipple', filter_parameters.PassbandRipple, ...
-                                'StopbandAttenuation', filter_parameters.StopbandAttenuation);
-                    I = cat(1, ones(size(app(i, j).Im)).*(app(i, j).Im(1, :)), app(i, j).Im);
-                    I = cat(1, I, ones(size(app(i, j).Im)).*(app(i, j).Im(end, :)));
-                    in = I - I(1, :);
-                    Imf = filtfilt(lpFilt, in);
-                    app(i, j).Im = Imf(size(app(i, j).Im, 1)+1:end-size(app(i, j).Im, 1), :) + app(i, j).Im(1, :);
-                end
-            end
-            fprintf('[%d secs] Zero phase filtering Im \n', toc(tStart));
-       end
-
        function app = compute_passive_conductances(app)
            tStart = tic;
            [m, n] = size(app);
@@ -299,7 +282,9 @@ classdef WholeCellRecording2
            end
            fprintf('[%d secs] Computed passive conductances\n', toc(tStart));
        end
-
+   end
+   %% Methods for stats
+   methods(Access=public)
        function app = compute_stats(app)
            tStart = tic;
            [m, n] = size(app);
@@ -315,38 +300,16 @@ classdef WholeCellRecording2
                    app(i, j).gi_net = -1*mean(resultant_conductance.*(resultant_conductance<0), 1);
                    app(i, j).ge_mean = mean(app(i, j).excitation(1:app(i, j).response_samples), 1);
                    app(i, j).gi_mean = mean(app(i, j).inhibition(1:app(i, j).response_samples), 1);
-                   app(i, j).depolarizastions_mean = mean(app(i, j).depolarizations(:, 1), 1);
+                   app(i, j).depolarizations_mean = mean(app(i, j).depolarizations(:, 1), 1);
                    app(i, j).hyperpolarizations_mean = mean(app(i, j).hyperpolarizations(:, 1), 1);
                end
            end
            fprintf('[%d secs] Computed Stats\n', toc(tStart));
        end
-
-       function cuton_rate = get_estimated_cuton_rate(~, rates, values, query_value)
-           high_index = find(values >= query_value, 1, 'first');
-           if isempty(high_index)
-               high_index = size(rates, 2);
-           end
-           low_index = find(values <= query_value, 1, 'last');
-           if isempty(low_index)
-               low_index = 1;
-           end
-           if high_index == low_index
-               cuton_rate = rates(high_index);
-           else
-               cuton_rate = rates(low_index) + (query_value - values(low_index))*(rates(high_index) - rates(low_index))/(values(high_index) - values(low_index));
-           end
-       end
-
-       function  points = compute_3dB_points(app, values, rates)
-           [max_value, max_index] = max(values, [], 2);
-           drop_3dB_value = max_value*0.707;
-           drop_3dB_rate = app.get_estimated_cuton_rate(rates, values, drop_3dB_value);
-           Q = rates(max_index)/(2*abs(rates(max_index) - drop_3dB_rate));
-           points = [max_value; rates(max_index); drop_3dB_value; drop_3dB_rate; Q];
-       end
-
-       function meta_stats = compute_meta_stats(app)
+   end
+   %% Methods for meta stats.
+   methods(Access=public)
+        function meta_stats = compute_meta_stats(app)
            tStart = tic;
            names = ["max value"; "max rate"; "-3dB value"; "-3dB rate"; "Q"];
            rates = [app.rate];
@@ -364,55 +327,116 @@ classdef WholeCellRecording2
            mean_hyperpolarizations_stats = app.compute_3dB_points(hyperpolarizations_means, rates);
            meta_stats = table(names, net_ge_stats, net_gi_stats, mean_ge_stats, mean_gi_stats, mean_depolarizations_stats, mean_hyperpolarizations_stats);
            fprintf('[%d secs] Computed Meta Stats\n', toc(tStart));
-       end
-
-       function app = plots(app)
-            tStart = tic;
-            app(1).fig = figure('Name', strcat(app(1).filename, ' Reconstructions'));
-            tiledlayout(6, length(app));
-            ax = cell(6, length(app));
-            for m = 1: 1: 6
-               for k = 1: 1: length(app)
-                   ax{m, k} = nexttile;
-                   if m == 1
-                      plot(app(k).time, app(k).Vm);
-                      if k == 1
-                        ylabel('Vm (V)');
-                      end
-                      title(strcat(app(k).condition));
-                   elseif m == 2
-                      plot(app(k).time, app(k).Iactive);
-                      if k == 1
-                        ylabel('Iactive (A)');
-                      end
-                   elseif m == 3
-                      plot(app(k).time, app(k).Ileak);
-                      if k == 1
-                        ylabel('Ileak (A)');
-                      end
-                   elseif m == 4
-                      plot(app(k).time, app(k).Im);
-                      if k == 1
-                        ylabel('Im (A)');
-                      end
-                   elseif m == 5
-                       plot(app(k).time, app(k).ge, 'r', app(k).time, app(k).gi, 'b');
-                       if k == 1
-                         ylabel('G (S)');
-                       end
-                       xlabel('Time (sec)');
-                   elseif m == 6
-                       plot(app(k).time, app(k).Ie(:, 1), 'r', app(k).time, -1.*app(k).Ii(:, 1), 'b');
-                       if k == 1
-                           ylabel('I (A)');
-                       end
-                       xlabel('Time (sec)');
-                   end
+        end
+       
+        function cuton_rate = get_estimated_cuton_rate(~, rates, values, query_value)
+               high_index = find(values >= query_value, 1, 'first');
+               if isempty(high_index)
+                   high_index = size(rates, 2);
                end
-               linkaxes([ax{m, :}], 'xy');
+               low_index = find(values <= query_value, 1, 'last');
+               if isempty(low_index)
+                   low_index = 1;
+               end
+               if high_index == low_index
+                   cuton_rate = rates(high_index);
+               else
+                   cuton_rate = rates(low_index) + (query_value - values(low_index))*(rates(high_index) - rates(low_index))/(values(high_index) - values(low_index));
+               end
+           end
+        
+           function  points = compute_3dB_points(app, values, rates)
+               [max_value, max_index] = max(values, [], 2);
+               drop_3dB_value = max_value*0.707;
+               drop_3dB_rate = app.get_estimated_cuton_rate(rates, values, drop_3dB_value);
+               Q = rates(max_index)/(2*abs(rates(max_index) - drop_3dB_rate));
+               points = [max_value; rates(max_index); drop_3dB_value; drop_3dB_rate; Q];
+           end
+   end
+   %% Methods for plotting.
+   methods(Access=public)
+        function app = plots(app)
+            tStart = tic;
+            nplots = 6;
+            [m, n] = size(app);
+            app(1, 1).fig = figure('Name', strcat(app(1, 1).filename, ' Reconstructions'));
+            for i = 1: 1: m
+                tiledlayout(n, nplots);
+                ax = cell(n, nplots);
+                for k = 1: 1: nplots
+                    for j = 1: 1: n
+                        ax{j, k} = nexttile;
+                        switch k
+                            case 1
+                                plot(app(i, j).time, app(i, j).Vm);
+                                ax{j, k}.Title = strcat(num2str(app(i, j).rate), 'pps');
+                                ax{j, k}.YLabel = 'Vm (V)';
+                            case 2
+                                plot(app(i, j).time, app(i, j).Iactive);
+                                ax{j, k}.YLabel = 'Iactive (A)';
+                            case 3
+                                plot(app(i, j).time, app(i, j).Ileak);
+                                ax{j, k}.YLabel = 'Ileak (A)';
+                            case 4
+                                plot(app(i, j).time, app(i, j).Im);
+                                ax{j, k}.YLabel = 'Im (A)';
+                            case 5
+                                plot(app(i, j).time, app(i, j).ge, 'r', app(i, j).time, app(i, j).gi, 'b');
+                                ax{j, k}.YLabel = 'G (S)';
+                            case 6
+                                plot(app(i, j).time, app(i, j).Ie, 'r', app(i, j).time, app(i, j).Ii, 'b');
+                                ax{j, k}.YLabel = 'Isyn (A)';
+                                ax{j, k}.XLabel = 'time (sec)';
+                        end
+                        linkaxes([ax{j, :}], 'xy');
+                    end
+                end
             end
             fprintf('[%d secs] Plotting data\n', toc(tStart));
+        end
+   end
+   %% Methods for constructor and run.
+   methods(Access=public)
+       %% Constructor
+       function app = WholeCellRecording2(filename, paradigms, response_durations)
+            if nargin > 0
+                tStart = tic;
+                %% Input format check
+                if ~isa(filename, 'string')
+                    error('filename must be a string'); 
+                end
+                if ~isa(paradigms, 'string')
+                    error('conditions (rates/durations) must be strings'); 
+                end
+                if ~isa(response_durations, 'double')
+                    error('responseDurations must be doubles');
+                end
+                if ~isequal(size(paradigms), size(response_durations))
+                    error('Dimensions of conditions and responseDurations must match.');
+                end
+                [m, n] = size(response_durations);
+                app(m, n) = app;
+                for i = 1: 1: m
+                    for j = 1: 1: n
+                        app(i, j).filename = filename;
+                        app(i, j).paradigm = paradigms(i, j);
+                        app(i, j).response_durations = response_durations(i, j);
+                    end
+                end
+                %% Reading worksheets from excel files.
+                app = app.readXLSXdata();
+                app = app.build_arrays();
+                app = app.readXLSXparameters();
+                app = app.adjust_membrane_potential_with_steady_state();
+                fprintf('[%d secs] Read %s\n', toc(tStart), filename);
+            end
        end
+
+       
+
+       
+
+       
        function app = dynamics_plots(app)
             tStart = tic;
             app(1).fig = figure('Name', strcat(app(1).filename, ' Dynamics plots'));

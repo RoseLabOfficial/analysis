@@ -57,12 +57,16 @@ classdef WholeCellRecording2
         gi_mean
         depolarizations_mean
         hyperpolarizations_mean
+
+        %% meta stats
+        maxima
+        drop_3dB
    end
    properties(Access=private)
        %% fig properties
        fig
    end
-   %% Methods
+   %% Methods to access data.
    methods(Access=private)
        function app = readXLSXdata(app)
            [m, n] = size(app);
@@ -120,8 +124,8 @@ classdef WholeCellRecording2
                     app(i, j).xbeta = parameters.xbeta' + zeros(size(app(i, j).Vm));
                     app(i, j).sps = parameters.sps' + zeros(size(app(i, j).Vm));
                     app(i, j).Eref = parameters.Eref' + zeros(size(app(i, j).Vm));
-                    app(i, j).rate = parameters.rate;
-                    app(i, j).npulses = parameters.npulses;
+                    app(i, j).rate = parameters.rate(1);
+                    app(i, j).npulses = parameters.npulses(1);
                end
            end
        end
@@ -136,55 +140,34 @@ classdef WholeCellRecording2
                     app(i, j).gi = zeros(samples, 1);
                     app(i, j).Ie = zeros(size(app(i, j).Vm));
                     app(i, j).Ii = zeros(size(app(i, j).Vm));
-                    app(i, j).ge_net = zeros(samples, 1);
-                    app(i, j).gi_net = zeros(samples, 1);
                     app(i, j).depolarizations = zeros(samples, 1);
                     app(i, j).hyperpolarizations = zeros(samples, 1);
                     app(i, j).excitation = zeros(samples, 1);
                     app(i, j).inhibition = zeros(samples, 1);
                     app(i, j).ge_mean = 0;
                     app(i, j).gi_mean = 0;
+                    app(i, j).ge_net = 0;
+                    app(i, j).gi_net = 0;
                     app(i, j).depolarizations_mean = 0;
                     app(i, j).hyperpolarizations_mean = 0;
+                    app(i, j).maxima.ge_mean = zeros(1, 2);
+                    app(i, j).maxima.gi_mean = zeros(1, 2);
+                    app(i, j).maxima.ge_net = zeros(1, 2);
+                    app(i, j).maxima.gi_net = zeros(1, 2);
+                    app(i, j).maxima.depolarizations_mean = zeros(1, 2);
+                    app(i, j).maxima.hyperpolarizations_mean = zeros(1, 2);
+                    app(i, j).drop_3dB.ge_mean = zeros(1, 2);
+                    app(i, j).drop_3dB.gi_mean = zeros(1, 2);
+                    app(i, j).drop_3dB.ge_net = zeros(1, 2);
+                    app(i, j).drop_3dB.gi_net = zeros(1, 2);
+                    app(i, j).drop_3dB.depolarizations_mean = zeros(1, 2);
+                    app(i, j).drop_3dB.hyperpolarizations_mean = zeros(1, 2);
                end
            end
        end
    end
-   methods
-       %% Constructor
-       function app = WholeCellRecording2(filename, paradigms, response_durations)
-            if nargin > 0
-                tStart = tic;
-                %% Input format check
-                if ~isa(filename, 'string')
-                    error('filename must be a string'); 
-                end
-                if ~isa(paradigms, 'string')
-                    error('conditions (rates/durations) must be strings'); 
-                end
-                if ~isa(response_durations, 'double')
-                    error('responseDurations must be doubles');
-                end
-                if ~isequal(size(paradigms), size(response_durations))
-                    error('Dimensions of conditions and responseDurations must match.');
-                end
-                [m, n] = size(response_durations);
-                app(m, n) = app;
-                for i = 1: 1: m
-                    for j = 1: 1: n
-                        app(i, j).filename = filename;
-                        app(i, j).paradigm = paradigms(i, j);
-                        app(i, j).response_durations = response_durations(i, j);
-                    end
-                end
-                %% Reading worksheets from excel files.
-                app = app.readXLSXdata();
-                app = app.build_arrays();
-                app = app.readXLSXparameters();
-                app = app.adjust_membrane_potential_with_steady_state();
-                fprintf('[%d secs] Read %s\n', toc(tStart), filename);
-            end
-       end
+   %% Methods to filter data
+   methods(Access=private)
        function app = zero_phase_filter_Vm(app, filter_parameters)
            tStart = tic;
            [m, n] = size(app);
@@ -205,7 +188,29 @@ classdef WholeCellRecording2
            end
            fprintf('[%d secs] Zero phase filtering Vm \n', toc(tStart));
        end
-
+       function app = zero_phase_filter_Im(app, filter_parameters)
+            tStart = tic;
+            [m, n] = size(app);
+            for i = 1: 1: m
+                for j = 1: 1: n
+                    Fnorm = filter_parameters.CutOffFrequency/(app(i, j).Fs/2);
+                    lpFilt = designfilt('lowpassiir', ...
+                                'PassbandFrequency', Fnorm, ...
+                                'FilterOrder', filter_parameters.FilterOrder, ...
+                                'PassbandRipple', filter_parameters.PassbandRipple, ...
+                                'StopbandAttenuation', filter_parameters.StopbandAttenuation);
+                    I = cat(1, ones(size(app(i, j).Im)).*(app(i, j).Im(1, :)), app(i, j).Im);
+                    I = cat(1, I, ones(size(app(i, j).Im)).*(app(i, j).Im(end, :)));
+                    in = I - I(1, :);
+                    Imf = filtfilt(lpFilt, in);
+                    app(i, j).Im = Imf(size(app(i, j).Im, 1)+1:end-size(app(i, j).Im, 1), :) + app(i, j).Im(1, :);
+                end
+            end
+            fprintf('[%d secs] Zero phase filtering Im \n', toc(tStart));
+       end
+   end
+   %% Methods for conductance reconstruction.
+   methods(Access=private)
        function app = compute_active_conductances(app)
            tStart = tic;
            [m, n] = size(app);
@@ -255,28 +260,6 @@ classdef WholeCellRecording2
            end
            fprintf('[%d secs] Computed membrane currents\n', toc(tStart));
        end
-
-       function app = zero_phase_filter_Im(app, filter_parameters)
-            tStart = tic;
-            [m, n] = size(app);
-            for i = 1: 1: m
-                for j = 1: 1: n
-                    Fnorm = filter_parameters.CutOffFrequency/(app(i, j).Fs/2);
-                    lpFilt = designfilt('lowpassiir', ...
-                                'PassbandFrequency', Fnorm, ...
-                                'FilterOrder', filter_parameters.FilterOrder, ...
-                                'PassbandRipple', filter_parameters.PassbandRipple, ...
-                                'StopbandAttenuation', filter_parameters.StopbandAttenuation);
-                    I = cat(1, ones(size(app(i, j).Im)).*(app(i, j).Im(1, :)), app(i, j).Im);
-                    I = cat(1, I, ones(size(app(i, j).Im)).*(app(i, j).Im(end, :)));
-                    in = I - I(1, :);
-                    Imf = filtfilt(lpFilt, in);
-                    app(i, j).Im = Imf(size(app(i, j).Im, 1)+1:end-size(app(i, j).Im, 1), :) + app(i, j).Im(1, :);
-                end
-            end
-            fprintf('[%d secs] Zero phase filtering Im \n', toc(tStart));
-       end
-
        function app = compute_passive_conductances(app)
            tStart = tic;
            [m, n] = size(app);
@@ -299,7 +282,9 @@ classdef WholeCellRecording2
            end
            fprintf('[%d secs] Computed passive conductances\n', toc(tStart));
        end
-
+   end
+   %% Methods for stats
+   methods(Access=private)
        function app = compute_stats(app)
            tStart = tic;
            [m, n] = size(app);
@@ -312,62 +297,93 @@ classdef WholeCellRecording2
                    app(i, j).inhibition = app(i, j).gi.*(app(i, j).gi>0);
                    resultant_conductance = app(i, j).excitation(1:app(i, j).response_samples) - app(i, j).inhibition(1:app(i, j).response_samples);
                    app(i, j).ge_net = mean(resultant_conductance.*(resultant_conductance>0), 1);
-                   app(i, j).gi_net = mean(resultant_conductance.*(resultant_conductance<0), 1);
+                   app(i, j).gi_net = -1*mean(resultant_conductance.*(resultant_conductance<0), 1);
                    app(i, j).ge_mean = mean(app(i, j).excitation(1:app(i, j).response_samples), 1);
                    app(i, j).gi_mean = mean(app(i, j).inhibition(1:app(i, j).response_samples), 1);
-                   app(i, j).depolarizations_mean = mean(app(i, j).depolarizations, 1);
-                   app(i, j).hyperpolarizations_mean = mean(app(i, j).hyperpolarizations, 1);
+                   app(i, j).depolarizations_mean = mean(app(i, j).depolarizations(:, 1), 1);
+                   app(i, j).hyperpolarizations_mean = mean(app(i, j).hyperpolarizations(:, 1), 1);
                end
            end
            fprintf('[%d secs] Computed Stats\n', toc(tStart));
        end
-
-       function cuton_rate = get_estimated_cuton_rate(~, rates, values, query_value)
-           high_index = find(values >= query_value, 1, 'first');
-           if isempty(high_index)
-               high_index = size(rates, 2);
-           end
-           low_index = find(values <= query_value, 1, 'last');
-           if isempty(low_index)
-               low_index = 1;
-           end
-           cuton_rate = rates(low_index) + (query_value - values(low_index))*(rates(high_index) - rates(low_index))/(values(high_index) - values(low_index));
-       end
-
-       function [max_value, max_index, drop_3dB_value, drop_3dB_index] = compute_3dB_points(app, rates, values)
-           [max_value, max_index] = max(values, [], 2);
-           drop_3dB_value = max_value*0.707;
-           drop_3dB_index = app.get_estimated_cuton_rate(rates, values, drop_3dB_value);
-       end
-
-       function meta_stats = compute_meta_stats(app)
+   end
+   %% Methods for meta stats.
+   methods(Access=private)
+        function meta_stats = compute_meta_stats(app)
            tStart = tic;
-           stats_net_ge = zeros(4, 1);
-           stats_net_gi = zeros(4, 1);
-           
-           names = ['net ge', 'net gi', 'mean ge', 'mean gi', 'mean depolarization', 'mean hyperpolarization'];
-           meta_rates = [app.rate];
-           meta_ge_net = [app.ge_net];
-           meta_gi_net = [app.gi_net];
-           meta_ge_mean = [app.ge_mean];
-           meta_gi_mean = [app.gi_mean];
-           meta_depolarizations_mean = [app.depolarizations_mean];
-           meta_hyperpolarizations_mean = [app.hyperpolarizations_mean];
-           [ge_net_max_value, ge_net_max_rate, ge_net_3dB_drop_value, ge_net_3dB_drop_rate] = app.compute_3dB_points(meta_ge_net, meta_rates);
-           [gi_net_max_value, gi_net_max_rate, gi_net_3dB_drop_value, gi_net_3dB_drop_rate] = app.compute_3dB_points(meta_gi_net, meta_rates);
-           [ge_mean_max_value, ge_mean_max_rate, ge_mean_3dB_drop_value, ge_mean_3dB_drop_rate] = app.compute_3dB_points(meta_ge_mean, meta_rates);
-           [gi_mean_max_value, gi_mean_max_rate, gi_mean_3dB_drop_value, gi_mean_3dB_drop_rate] = app.compute_3dB_points(meta_gi_mean, meta_rates);
-           [depolarizations_mean_max_value, depolarizations_mean_max_index, depolarizations_mean_3dB_drop_rate, depolarizations_mean_3dB_drop_index] = app.compute_3dB_points(meta_depolarizations_mean, meta_rates);
-           [hyperpolarizations_mean_max_value, hyperpolarizations_mean_max_index, hyperpolarizations_mean_3dB_drop_rate, hyperpolarizations_mean_3dB_drop_index] = app.compute_3dB_points(meta_hyperpolarizations_mean, meta_rates);
-           meta_stats
+           names = ["max value"; "max rate"; "-3dB value"; "-3dB rate"; "Q"];
+           rates = [app.rate];
+           ge_nets = [app.ge_net];
+           gi_nets = [app.gi_net];
+           ge_means = [app.ge_mean];
+           gi_means = [app.gi_mean];
+           depolarizations_means = [app.depolarizations_mean];
+           hyperpolarizations_means = [app.hyperpolarizations_mean];
+           net_ge_stats = app.compute_3dB_points(ge_nets, rates);
+           net_gi_stats = app.compute_3dB_points(gi_nets, rates);
+           mean_ge_stats = app.compute_3dB_points(ge_means, rates);
+           mean_gi_stats = app.compute_3dB_points(gi_means, rates);
+           mean_depolarizations_stats = app.compute_3dB_points(depolarizations_means, rates);
+           mean_hyperpolarizations_stats = app.compute_3dB_points(hyperpolarizations_means, rates);
+           meta_stats = table(names, net_ge_stats, net_gi_stats, mean_ge_stats, mean_gi_stats, mean_depolarizations_stats, mean_hyperpolarizations_stats);
            fprintf('[%d secs] Computed Meta Stats\n', toc(tStart));
-       end
-
-       function app = plots(app)
+        end
+       
+        function cuton_rate = get_estimated_cuton_rate(~, rates, values, query_value)
+               high_index = find(values >= query_value, 1, 'first');
+               if isempty(high_index)
+                   high_index = size(rates, 2);
+               end
+               low_index = find(values <= query_value, 1, 'last');
+               if isempty(low_index)
+                   low_index = 1;
+               end
+               if high_index == low_index
+                   cuton_rate = rates(high_index);
+               else
+                   cuton_rate = rates(low_index) + (query_value - values(low_index))*(rates(high_index) - rates(low_index))/(values(high_index) - values(low_index));
+               end
+           end
+        
+           function  points = compute_3dB_points(app, values, rates)
+               [max_value, max_index] = max(values, [], 2);
+               drop_3dB_value = max_value*0.707;
+               drop_3dB_rate = app.get_estimated_cuton_rate(rates, values, drop_3dB_value);
+               Q = rates(max_index)/(2*abs(rates(max_index) - drop_3dB_rate));
+               points = [max_value; rates(max_index); drop_3dB_value; drop_3dB_rate; Q];
+           end
+   end
+   %% Methods for plotting.
+   methods(Access=private)
+        function app = plots(app)
             tStart = tic;
-            app(1).fig = figure('Name', strcat(app(1).filename, ' Reconstructions'));
-            tiledlayout(6, length(app));
-            ax = cell(6, length(app));
+            nplots = 6;
+            [m, n] = size(app);
+            for i = 1: 1: m
+                app(i, j).fig = figure('Name', strcat(app(i, j).filename, ' Reconstructions'));
+                tiledlayout(n, nplots);
+                ax = cell(n, nplots);
+                for k = 1: 1: nplots
+                    for j = 1: 1: n
+                        ax{j, k} = nexttile;
+                        switch k
+                            case 1
+                                plot(app(i, j).time, app(i, j).Vm);
+                                ax{j, k}.Title = strcat(num2str(app(i, j).rate), 'pps');
+                                ax{j, k}.YLabel = 'Vm (V)';
+                            case 2
+                                plot(app(i, j).time, app(i, j).Iactive);
+                                ax{j, k}.YLabel = 'Iactive (A)';
+                            case 3
+                                plot(app(i, j).time, app(i, j).Ileak);
+                                ax{j, k}.YLabel = 'Ileak (A)';
+                            case 4
+                                plot(app(i, j).time, app(i, j).Im);
+                                ax{j, k}.YLabel = 'Iactive (A)';
+                        end
+                    end
+                end
+            end
             for m = 1: 1: 6
                for k = 1: 1: length(app)
                    ax{m, k} = nexttile;
@@ -409,7 +425,50 @@ classdef WholeCellRecording2
                linkaxes([ax{m, :}], 'xy');
             end
             fprintf('[%d secs] Plotting data\n', toc(tStart));
+        end
+   end
+   %% Methods for constructor and run.
+   methods(Access=public)
+       %% Constructor
+       function app = WholeCellRecording2(filename, paradigms, response_durations)
+            if nargin > 0
+                tStart = tic;
+                %% Input format check
+                if ~isa(filename, 'string')
+                    error('filename must be a string'); 
+                end
+                if ~isa(paradigms, 'string')
+                    error('conditions (rates/durations) must be strings'); 
+                end
+                if ~isa(response_durations, 'double')
+                    error('responseDurations must be doubles');
+                end
+                if ~isequal(size(paradigms), size(response_durations))
+                    error('Dimensions of conditions and responseDurations must match.');
+                end
+                [m, n] = size(response_durations);
+                app(m, n) = app;
+                for i = 1: 1: m
+                    for j = 1: 1: n
+                        app(i, j).filename = filename;
+                        app(i, j).paradigm = paradigms(i, j);
+                        app(i, j).response_durations = response_durations(i, j);
+                    end
+                end
+                %% Reading worksheets from excel files.
+                app = app.readXLSXdata();
+                app = app.build_arrays();
+                app = app.readXLSXparameters();
+                app = app.adjust_membrane_potential_with_steady_state();
+                fprintf('[%d secs] Read %s\n', toc(tStart), filename);
+            end
        end
+
+       
+
+       
+
+       
        function app = dynamics_plots(app)
             tStart = tic;
             app(1).fig = figure('Name', strcat(app(1).filename, ' Dynamics plots'));

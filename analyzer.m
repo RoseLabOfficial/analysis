@@ -17,7 +17,7 @@ rec = rec.compute_passive_conductances();
 rec = rec.compute_stats();
 meta_stats = rec.compute_meta_stats();
 disp(meta_stats);
-% rec = rec.plots();
+rec = rec.plots();
 % [rec, stats] = rec.generate_stats();
 % fprintf("Stats for: %s \n", filename); 
 % disp(stats);
