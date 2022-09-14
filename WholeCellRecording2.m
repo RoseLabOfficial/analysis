@@ -332,7 +332,7 @@ classdef WholeCellRecording2
    methods(Access=public)
         function meta_stats = compute_meta_stats(app)
            tStart = tic;
-           names = ["max value"; "max rate"; "-3dB value"; "-3dB rate"; "Q"];
+           names = ["max value"; "max rate"; "-3dB value low"; "-3dB rate low"; "Q"];
            rates = [app.rate];
            ge_nets = [app.ge_net];
            gi_nets = [app.gi_net];
@@ -352,7 +352,7 @@ classdef WholeCellRecording2
            mean_hyperpolarizations_stats(1, :) = -1*mean_hyperpolarizations_stats(1, :);
            mean_hyperpolarizations_stats(3, :) = -1*mean_hyperpolarizations_stats(3, :);
            mean_sps_stats = app.compute_3dB_points(sps_means, rates);
-           meta_stats = table(names, net_ge_stats, net_gi_stats, mean_ge_stats, mean_gi_stats, mean_depolarizations_stats, mean_hyperpolarizations_stats, mean_Iactive_stats, mean_sps_stats);
+           meta_stats = table(names, mean_depolarizations_stats, mean_hyperpolarizations_stats, mean_ge_stats, mean_gi_stats, net_ge_stats, net_gi_stats, mean_sps_stats, mean_Iactive_stats);
            fprintf('[%d secs] Computed Meta Stats\n', toc(tStart));
         end
        
