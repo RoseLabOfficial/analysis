@@ -57,6 +57,8 @@ classdef WholeCellRecording2
         gi_mean
         depolarizations_mean
         hyperpolarizations_mean
+        Iactive_mean
+        sps_mean
 
         %% meta stats
         maxima
@@ -148,26 +150,32 @@ classdef WholeCellRecording2
                     app(i, j).gi_mean = 0;
                     app(i, j).ge_net = 0;
                     app(i, j).gi_net = 0;
+                    app(i, j).Iactive_mean = 0;
                     app(i, j).depolarizations_mean = 0;
                     app(i, j).hyperpolarizations_mean = 0;
+                    app(i, j).sps_mean = 0;
                     app(i, j).maxima.ge_mean = zeros(1, 2);
                     app(i, j).maxima.gi_mean = zeros(1, 2);
                     app(i, j).maxima.ge_net = zeros(1, 2);
                     app(i, j).maxima.gi_net = zeros(1, 2);
+                    app(i, j).maxima.Iactive_mean = zeros(1, 2);
                     app(i, j).maxima.depolarizations_mean = zeros(1, 2);
                     app(i, j).maxima.hyperpolarizations_mean = zeros(1, 2);
+                    app(i, j).maxima.sps_mean = zeros(1, 2);
                     app(i, j).drop_3dB.ge_mean = zeros(1, 2);
                     app(i, j).drop_3dB.gi_mean = zeros(1, 2);
                     app(i, j).drop_3dB.ge_net = zeros(1, 2);
                     app(i, j).drop_3dB.gi_net = zeros(1, 2);
+                    app(i, j).drop_3dB.Iactive_mean = zeros(1, 2);
                     app(i, j).drop_3dB.depolarizations_mean = zeros(1, 2);
                     app(i, j).drop_3dB.hyperpolarizations_mean = zeros(1, 2);
+                    app(i, j).drop_3dB.sps_mean = zeros(1, 2);
                end
            end
        end
    end
    %% Methods to filter data
-   methods(Access=private)
+   methods(Access=public)
        function app = zero_phase_filter_Vm(app, filter_parameters)
            tStart = tic;
            [m, n] = size(app);
@@ -210,7 +218,7 @@ classdef WholeCellRecording2
        end
    end
    %% Methods for conductance reconstruction.
-   methods(Access=private)
+   methods(Access=public)
        function app = compute_active_conductances(app)
            tStart = tic;
            [m, n] = size(app);
@@ -282,9 +290,20 @@ classdef WholeCellRecording2
            end
            fprintf('[%d secs] Computed passive conductances\n', toc(tStart));
        end
+       function app = compute_passive_currents(app)
+           tStart = tic;
+               [m, n] = size(app);
+               for i = 1: 1: m
+                   for j = 1: 1: n
+                       app(i, j).Ie = app(i, j).ge.*(app(i, j).Vm - app(i, j).Ee);
+                       app(i, j).Ii = app(i, j).gi.*(app(i, j).Vm - app(i, j).Ei);
+                   end
+               end
+           fprintf('[%d secs] Computed passive currents\n', toc(tStart));
+       end
    end
    %% Methods for stats
-   methods(Access=private)
+   methods(Access=public)
        function app = compute_stats(app)
            tStart = tic;
            [m, n] = size(app);
@@ -300,15 +319,17 @@ classdef WholeCellRecording2
                    app(i, j).gi_net = -1*mean(resultant_conductance.*(resultant_conductance<0), 1);
                    app(i, j).ge_mean = mean(app(i, j).excitation(1:app(i, j).response_samples), 1);
                    app(i, j).gi_mean = mean(app(i, j).inhibition(1:app(i, j).response_samples), 1);
-                   app(i, j).depolarizations_mean = mean(app(i, j).depolarizations(:, 1), 1);
-                   app(i, j).hyperpolarizations_mean = mean(app(i, j).hyperpolarizations(:, 1), 1);
+                   app(i, j).Iactive_mean = mean(app(i, j).Iactive(1:app(i, j).response_samples, 1), 1);
+                   app(i, j).depolarizations_mean = mean(app(i, j).depolarizations(1:app(i, j).response_samples, 1), 1);
+                   app(i, j).hyperpolarizations_mean = mean(app(i, j).hyperpolarizations(1:app(i, j).response_samples, 1), 1);
+                   app(i, j).sps_mean = mean(app(i, j).sps(1:app(i, j).response_samples, 1), 1);
                end
            end
            fprintf('[%d secs] Computed Stats\n', toc(tStart));
        end
    end
    %% Methods for meta stats.
-   methods(Access=private)
+   methods(Access=public)
         function meta_stats = compute_meta_stats(app)
            tStart = tic;
            names = ["max value"; "max rate"; "-3dB value"; "-3dB rate"; "Q"];
@@ -317,15 +338,19 @@ classdef WholeCellRecording2
            gi_nets = [app.gi_net];
            ge_means = [app.ge_mean];
            gi_means = [app.gi_mean];
+           Iactive_means = [app.Iactive_mean];
            depolarizations_means = [app.depolarizations_mean];
            hyperpolarizations_means = [app.hyperpolarizations_mean];
+           sps_means = [app.sps_mean];
            net_ge_stats = app.compute_3dB_points(ge_nets, rates);
            net_gi_stats = app.compute_3dB_points(gi_nets, rates);
            mean_ge_stats = app.compute_3dB_points(ge_means, rates);
            mean_gi_stats = app.compute_3dB_points(gi_means, rates);
+           mean_Iactive_stats = app.compute_3dB_points(Iactive_means, rates);
            mean_depolarizations_stats = app.compute_3dB_points(depolarizations_means, rates);
            mean_hyperpolarizations_stats = app.compute_3dB_points(hyperpolarizations_means, rates);
-           meta_stats = table(names, net_ge_stats, net_gi_stats, mean_ge_stats, mean_gi_stats, mean_depolarizations_stats, mean_hyperpolarizations_stats);
+           mean_sps_stats = app.compute_3dB_points(sps_means, rates);
+           meta_stats = table(names, net_ge_stats, net_gi_stats, mean_ge_stats, mean_gi_stats, mean_depolarizations_stats, mean_hyperpolarizations_stats, mean_Iactive_stats, mean_sps_stats);
            fprintf('[%d secs] Computed Meta Stats\n', toc(tStart));
         end
        
@@ -354,75 +379,55 @@ classdef WholeCellRecording2
            end
    end
    %% Methods for plotting.
-   methods(Access=private)
+   methods(Access=public)
         function app = plots(app)
             tStart = tic;
             nplots = 6;
             [m, n] = size(app);
+            app(1, 1).fig = figure('Name', strcat(app(1, 1).filename, ' Reconstructions'));
             for i = 1: 1: m
-                app(i, j).fig = figure('Name', strcat(app(i, j).filename, ' Reconstructions'));
-                tiledlayout(n, nplots);
-                ax = cell(n, nplots);
+                tiledlayout(nplots, n);
+                ax = cell(nplots, n);
                 for k = 1: 1: nplots
                     for j = 1: 1: n
                         ax{j, k} = nexttile;
                         switch k
                             case 1
                                 plot(app(i, j).time, app(i, j).Vm);
-                                ax{j, k}.Title = strcat(num2str(app(i, j).rate), 'pps');
-                                ax{j, k}.YLabel = 'Vm (V)';
+                                ax{j, k}.Title.String = strcat(num2str(app(i, j).rate), 'pps');
+                                if j == 1
+                                    ax{j, k}.YLabel.String = 'Vm (V)';
+                                end
                             case 2
                                 plot(app(i, j).time, app(i, j).Iactive);
-                                ax{j, k}.YLabel = 'Iactive (A)';
+                                if j == 1
+                                    ax{j, k}.YLabel.String = 'Iactive (A)';
+                                end
                             case 3
                                 plot(app(i, j).time, app(i, j).Ileak);
-                                ax{j, k}.YLabel = 'Ileak (A)';
+                                if j == 1
+                                    ax{j, k}.YLabel.String = 'Ileak (A)';
+                                end
                             case 4
                                 plot(app(i, j).time, app(i, j).Im);
-                                ax{j, k}.YLabel = 'Iactive (A)';
+                                if j == 1
+                                    ax{j, k}.YLabel.String = 'Im (A)';
+                                end
+                            case 5
+                                plot(app(i, j).time, app(i, j).ge, 'r', app(i, j).time, app(i, j).gi, 'b');
+                                if j == 1
+                                    ax{j, k}.YLabel.String = 'G (S)';
+                                end
+                            case 6
+                                plot(app(i, j).time, app(i, j).Ie(:, 1), 'r', app(i, j).time, app(i, j).Ii(:, 1), 'b');
+                                if j == 1
+                                    ax{j, k}.YLabel.String = 'Isyn (A)';
+                                end
+                                ax{j, k}.XLabel.String = 'time (sec)';
                         end
+                        linkaxes([ax{j, :}], 'x');
                     end
                 end
-            end
-            for m = 1: 1: 6
-               for k = 1: 1: length(app)
-                   ax{m, k} = nexttile;
-                   if m == 1
-                      plot(app(k).time, app(k).Vm);
-                      if k == 1
-                        ylabel('Vm (V)');
-                      end
-                      title(strcat(app(k).condition));
-                   elseif m == 2
-                      plot(app(k).time, app(k).Iactive);
-                      if k == 1
-                        ylabel('Iactive (A)');
-                      end
-                   elseif m == 3
-                      plot(app(k).time, app(k).Ileak);
-                      if k == 1
-                        ylabel('Ileak (A)');
-                      end
-                   elseif m == 4
-                      plot(app(k).time, app(k).Im);
-                      if k == 1
-                        ylabel('Im (A)');
-                      end
-                   elseif m == 5
-                       plot(app(k).time, app(k).ge, 'r', app(k).time, app(k).gi, 'b');
-                       if k == 1
-                         ylabel('G (S)');
-                       end
-                       xlabel('Time (sec)');
-                   elseif m == 6
-                       plot(app(k).time, app(k).Ie(:, 1), 'r', app(k).time, -1.*app(k).Ii(:, 1), 'b');
-                       if k == 1
-                           ylabel('I (A)');
-                       end
-                       xlabel('Time (sec)');
-                   end
-               end
-               linkaxes([ax{m, :}], 'xy');
             end
             fprintf('[%d secs] Plotting data\n', toc(tStart));
         end
@@ -464,11 +469,6 @@ classdef WholeCellRecording2
             end
        end
 
-       
-
-       
-
-       
        function app = dynamics_plots(app)
             tStart = tic;
             app(1).fig = figure('Name', strcat(app(1).filename, ' Dynamics plots'));

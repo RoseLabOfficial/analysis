@@ -57,6 +57,8 @@ classdef WholeCellRecording2
         gi_mean
         depolarizations_mean
         hyperpolarizations_mean
+        Iactive_mean
+        sps_mean
 
         %% meta stats
         maxima
@@ -148,20 +150,26 @@ classdef WholeCellRecording2
                     app(i, j).gi_mean = 0;
                     app(i, j).ge_net = 0;
                     app(i, j).gi_net = 0;
+                    app(i, j).Iactive_mean = 0;
                     app(i, j).depolarizations_mean = 0;
                     app(i, j).hyperpolarizations_mean = 0;
+                    app(i, j).sps_mean = 0;
                     app(i, j).maxima.ge_mean = zeros(1, 2);
                     app(i, j).maxima.gi_mean = zeros(1, 2);
                     app(i, j).maxima.ge_net = zeros(1, 2);
                     app(i, j).maxima.gi_net = zeros(1, 2);
+                    app(i, j).maxima.Iactive_mean = zeros(1, 2);
                     app(i, j).maxima.depolarizations_mean = zeros(1, 2);
                     app(i, j).maxima.hyperpolarizations_mean = zeros(1, 2);
+                    app(i, j).maxima.sps_mean = zeros(1, 2);
                     app(i, j).drop_3dB.ge_mean = zeros(1, 2);
                     app(i, j).drop_3dB.gi_mean = zeros(1, 2);
                     app(i, j).drop_3dB.ge_net = zeros(1, 2);
                     app(i, j).drop_3dB.gi_net = zeros(1, 2);
+                    app(i, j).drop_3dB.Iactive_mean = zeros(1, 2);
                     app(i, j).drop_3dB.depolarizations_mean = zeros(1, 2);
                     app(i, j).drop_3dB.hyperpolarizations_mean = zeros(1, 2);
+                    app(i, j).drop_3dB.sps_mean = zeros(1, 2);
                end
            end
        end
@@ -193,7 +201,7 @@ classdef WholeCellRecording2
             [m, n] = size(app);
             for i = 1: 1: m
                 for j = 1: 1: n
-                    Fnorm = filter_parameters.CutOffFrequency/(app(i, j).Fs/2);
+                    Fnorm = filter_parameters.CutOffFrequency2/(app(i, j).Fs/2);
                     lpFilt = designfilt('lowpassiir', ...
                                 'PassbandFrequency', Fnorm, ...
                                 'FilterOrder', filter_parameters.FilterOrder, ...
@@ -282,6 +290,17 @@ classdef WholeCellRecording2
            end
            fprintf('[%d secs] Computed passive conductances\n', toc(tStart));
        end
+       function app = compute_passive_currents(app)
+           tStart = tic;
+               [m, n] = size(app);
+               for i = 1: 1: m
+                   for j = 1: 1: n
+                       app(i, j).Ie = app(i, j).ge.*(app(i, j).Vm - app(i, j).Ee);
+                       app(i, j).Ii = app(i, j).gi.*(app(i, j).Vm - app(i, j).Ei);
+                   end
+               end
+           fprintf('[%d secs] Computed passive currents\n', toc(tStart));
+       end
    end
    %% Methods for stats
    methods(Access=public)
@@ -300,8 +319,10 @@ classdef WholeCellRecording2
                    app(i, j).gi_net = -1*mean(resultant_conductance.*(resultant_conductance<0), 1);
                    app(i, j).ge_mean = mean(app(i, j).excitation(1:app(i, j).response_samples), 1);
                    app(i, j).gi_mean = mean(app(i, j).inhibition(1:app(i, j).response_samples), 1);
-                   app(i, j).depolarizations_mean = mean(app(i, j).depolarizations(:, 1), 1);
-                   app(i, j).hyperpolarizations_mean = mean(app(i, j).hyperpolarizations(:, 1), 1);
+                   app(i, j).Iactive_mean = mean(app(i, j).Iactive(1:app(i, j).response_samples, 1), 1);
+                   app(i, j).depolarizations_mean = mean(app(i, j).depolarizations(1:app(i, j).response_samples, 1), 1);
+                   app(i, j).hyperpolarizations_mean = mean(app(i, j).hyperpolarizations(1:app(i, j).response_samples, 1), 1);
+                   app(i, j).sps_mean = mean(app(i, j).sps(1:app(i, j).response_samples, 1), 1);
                end
            end
            fprintf('[%d secs] Computed Stats\n', toc(tStart));
@@ -317,15 +338,21 @@ classdef WholeCellRecording2
            gi_nets = [app.gi_net];
            ge_means = [app.ge_mean];
            gi_means = [app.gi_mean];
+           Iactive_means = [app.Iactive_mean];
            depolarizations_means = [app.depolarizations_mean];
            hyperpolarizations_means = [app.hyperpolarizations_mean];
+           sps_means = [app.sps_mean];
            net_ge_stats = app.compute_3dB_points(ge_nets, rates);
            net_gi_stats = app.compute_3dB_points(gi_nets, rates);
            mean_ge_stats = app.compute_3dB_points(ge_means, rates);
            mean_gi_stats = app.compute_3dB_points(gi_means, rates);
+           mean_Iactive_stats = app.compute_3dB_points(Iactive_means, rates);
            mean_depolarizations_stats = app.compute_3dB_points(depolarizations_means, rates);
-           mean_hyperpolarizations_stats = app.compute_3dB_points(hyperpolarizations_means, rates);
-           meta_stats = table(names, net_ge_stats, net_gi_stats, mean_ge_stats, mean_gi_stats, mean_depolarizations_stats, mean_hyperpolarizations_stats);
+           mean_hyperpolarizations_stats = app.compute_3dB_points(-1.*hyperpolarizations_means, rates);
+           mean_hyperpolarizations_stats(1, :) = -1*mean_hyperpolarizations_stats(1, :);
+           mean_hyperpolarizations_stats(3, :) = -1*mean_hyperpolarizations_stats(3, :);
+           mean_sps_stats = app.compute_3dB_points(sps_means, rates);
+           meta_stats = table(names, net_ge_stats, net_gi_stats, mean_ge_stats, mean_gi_stats, mean_depolarizations_stats, mean_hyperpolarizations_stats, mean_Iactive_stats, mean_sps_stats);
            fprintf('[%d secs] Computed Meta Stats\n', toc(tStart));
         end
        
@@ -361,34 +388,46 @@ classdef WholeCellRecording2
             [m, n] = size(app);
             app(1, 1).fig = figure('Name', strcat(app(1, 1).filename, ' Reconstructions'));
             for i = 1: 1: m
-                tiledlayout(n, nplots);
-                ax = cell(n, nplots);
+                tiledlayout(nplots, n);
+                ax = cell(nplots, n);
                 for k = 1: 1: nplots
                     for j = 1: 1: n
                         ax{j, k} = nexttile;
                         switch k
                             case 1
                                 plot(app(i, j).time, app(i, j).Vm);
-                                ax{j, k}.Title = strcat(num2str(app(i, j).rate), 'pps');
-                                ax{j, k}.YLabel = 'Vm (V)';
+                                ax{j, k}.Title.String = strcat(num2str(app(i, j).rate), 'pps');
+                                if j == 1
+                                    ax{j, k}.YLabel.String = 'Vm (V)';
+                                end
                             case 2
                                 plot(app(i, j).time, app(i, j).Iactive);
-                                ax{j, k}.YLabel = 'Iactive (A)';
+                                if j == 1
+                                    ax{j, k}.YLabel.String = 'Iactive (A)';
+                                end
                             case 3
                                 plot(app(i, j).time, app(i, j).Ileak);
-                                ax{j, k}.YLabel = 'Ileak (A)';
+                                if j == 1
+                                    ax{j, k}.YLabel.String = 'Ileak (A)';
+                                end
                             case 4
                                 plot(app(i, j).time, app(i, j).Im);
-                                ax{j, k}.YLabel = 'Im (A)';
+                                if j == 1
+                                    ax{j, k}.YLabel.String = 'Im (A)';
+                                end
                             case 5
                                 plot(app(i, j).time, app(i, j).ge, 'r', app(i, j).time, app(i, j).gi, 'b');
-                                ax{j, k}.YLabel = 'G (S)';
+                                if j == 1
+                                    ax{j, k}.YLabel.String = 'G (S)';
+                                end
                             case 6
-                                plot(app(i, j).time, app(i, j).Ie, 'r', app(i, j).time, app(i, j).Ii, 'b');
-                                ax{j, k}.YLabel = 'Isyn (A)';
-                                ax{j, k}.XLabel = 'time (sec)';
+                                plot(app(i, j).time, app(i, j).Ie(:, 1), 'r', app(i, j).time, app(i, j).Ii(:, 1), 'b');
+                                if j == 1
+                                    ax{j, k}.YLabel.String = 'Isyn (A)';
+                                end
+                                ax{j, k}.XLabel.String = 'time (sec)';
                         end
-                        linkaxes([ax{j, :}], 'xy');
+                        linkaxes([ax{j, :}], 'x');
                     end
                 end
             end
@@ -432,11 +471,17 @@ classdef WholeCellRecording2
             end
        end
 
-       
+       function app = call(app, filter_parameters)
+            app = app.zero_phase_filter_Vm(filter_parameters);
+            app = app.compute_active_conductances();
+            app = app.compute_active_currents();
+            app = app.compute_leakage_currents();
+            app = app.compute_membrane_currents();
+            app = app.zero_phase_filter_Im(filter_parameters);
+            app = app.compute_passive_conductances();
+            app = app.compute_passive_currents();
+       end
 
-       
-
-       
        function app = dynamics_plots(app)
             tStart = tic;
             app(1).fig = figure('Name', strcat(app(1).filename, ' Dynamics plots'));
@@ -474,100 +519,6 @@ classdef WholeCellRecording2
                 end
             end
             fprintf('[%d secs] Dynamics Plotting data\n', toc(tStart));
-       end
-       function [app, stats] = generate_stats(app)
-           tStart = tic;
-           net_conductances = zeros(length(app), 2);
-           mean_conductances = zeros(length(app), 2);
-           mean_polarizations = zeros(length(app), 2);
-           mean_active_current = zeros(length(app), 1);
-           spikes_per_rep = zeros(length(app), 1);
-           pulse_rates = strings([length(app), 1]);
-           data_count = zeros(length(app), 1);
-           app(1).fig = figure('Name', strcat(app(1).filename, ' Stats'));
-           set(app(1).fig,'defaultAxesColorOrder',[[0.5 0.5 0]; [0 0 0]]);
-           tiledlayout(2, 1);
-           ax = cell(2, 1);
-           for k = 1: 1: length(app)
-               del_Vm = (app(k).Vm(:, 1) - app(k).Eref(1));
-               app(k).depolarizations = del_Vm(:, 1).*(del_Vm(:, 1)>0);
-               app(k).hyperpolarizations = del_Vm(:, 1).*(del_Vm(:, 1)<0);
-               app(k).excitation = app(k).ge.*(app(k).ge>0);
-               app(k).inhibition = app(k).gi.*(app(k).gi>0);
-               resultant_conductance = app(k).excitation(1:app(k).response_samples) - app(k).inhibition(1:app(k).response_samples);
-               net_conductances(k, 1) = mean(resultant_conductance.*(resultant_conductance>0));
-               net_conductances(k, 2) = mean(resultant_conductance.*(resultant_conductance<0));
-               mean_conductances(k, 1) = mean(app(k).excitation(1:app(k).response_samples));
-               mean_conductances(k, 2) = -1.*mean(app(k).inhibition(1:app(k).response_samples));
-               mean_polarizations(k, 1) = mean(app(k).depolarizations(1:app(k).response_samples));
-               mean_polarizations(k, 2) = mean(app(k).hyperpolarizations(1:app(k).response_samples));
-               mean_active_current(k, 1) = mean(app(k).Iactive(1:app(k).response_samples, 1));
-               spikes_per_rep(k, 1) = app(k).sps(1);
-               pulse_rates(k, 1) = app(k).condition;
-               data_count(k, 1) = k;
-%                fprintf('mean depolarization %d, mean hyperpolarization %d, mean excitation %d, mean inhibition %d\n', mean(app(k).depolarizations), mean(app(k).hyperpolarizations), mean(app(k).excitation), mean(app(k).inhibition));
-           end
-           ax{1, 1} = nexttile;
-           yyaxis left;
-           mean_plt = bar(data_count, mean_conductances, 0.3, 'stacked', 'FaceColor', 'flat');
-           hold on;
-           net_plt = bar(data_count, net_conductances, 0.5, 'stacked', 'FaceColor', 'flat');
-           hold off;
-           ylabel('Mean Conductance (S)');
-           xlabel('Pulse Rate');
-           for k = 1: 1: length(app)
-               mean_plt(1).CData(k, :) = [1, 0, 0];
-               mean_plt(2).CData(k, :) = [0, 0, 1];
-               net_plt(1).CData(k, :) = [1, 0, 0];
-               net_plt(2).CData(k, :) = [0, 0, 1];
-           end
-           y1max = max(mean_conductances, [], 'all');
-           y1max = y1max+0.1*y1max;
-           if y1max == 0
-               ylim([0, 1]);
-           else
-               ylim([-y1max, y1max]);
-           end
-           y2max = max(spikes_per_rep, [], 'all');
-           y2max = y2max+0.1*y2max;
-           yyaxis right;
-           plot(data_count, spikes_per_rep, '-ok');
-           ylabel('Spikes per stim. rep. (SPS)');
-           if y2max == 0
-               ylim([0, 1]);
-           else
-               ylim([-y2max, y2max]);
-           end
-           set(ax{1, 1},'xticklabel',pulse_rates);
-           ax{2, 1} = nexttile;
-           yyaxis left;
-           mean_plt = bar(data_count, mean_polarizations, 'stacked', 'FaceColor', 'flat');
-           ylabel('Mean Polarizaions (V)');
-           xlabel('Pulse Rate');
-           for k = 1: 1: length(app)
-               mean_plt(1).CData(k, :) = [1, 0, 0];
-               mean_plt(2).CData(k, :) = [0, 0, 1];
-           end
-           y1max = max(mean_polarizations, [], 'all');
-           y1max = y1max+0.1*y1max;
-           if y1max == 0
-               ylim([0, 1]);
-           else
-               ylim([-y1max, y1max]);
-           end
-           y2max = max(spikes_per_rep, [], 'all');
-           y2max = y2max+0.1*y2max;
-           yyaxis right;
-           plot(data_count, spikes_per_rep, '-ok');
-           ylabel('Spikes per stim. rep. (SPS)');
-           if y2max == 0
-               ylim([0, 1]);
-           else
-               ylim([-y2max, y2max]);
-           end
-           set(ax{2, 1},'xticklabel',pulse_rates);
-           fprintf('[%d secs] Plotting stats\n', toc(tStart));
-           stats = table(pulse_rates, spikes_per_rep, mean_polarizations, mean_conductances, net_conductances, mean_active_current);
        end
    end
 end
