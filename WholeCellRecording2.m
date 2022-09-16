@@ -327,12 +327,35 @@ classdef WholeCellRecording2
            end
            fprintf('[%d secs] Computed Stats\n', toc(tStart));
        end
+       function stats = get_stats(app)
+           app = app.compute_stats();
+           measures = ["rate", "ge_net", "gi_net", "ge_mean", "gi_mean", "depolarizations", "hyperpolarizations", "sps", "Iactive"];
+           experiments = [app.paradigm];
+           rates = [app.rate];
+           ge_nets = [app.ge_net];
+           gi_nets = [app.gi_net];
+           ge_means = [app.ge_mean];
+           gi_means = [app.gi_mean];
+           depolarizations_means = [app.depolarizations_mean];
+           hyperpolarizations_means = [app.hyperpolarizations_mean];
+           sps_means = [app.sps_mean];
+           Iactive_means = [app.Iactive_mean];
+           stats = [rates; ge_nets; gi_nets; ge_means; gi_means; depolarizations_means; hyperpolarizations_means; sps_means; Iactive_means];
+           stats = array2table(stats, "RowNames",measures,"VariableNames",experiments);
+       end
+
+       function write_stats_to_file(~, stats, filename, SheetName)
+            tStart = tic;
+            writetable(stats, filename, 'Sheet', SheetName, 'WriteRowNames', 1);
+            fprintf('[%d secs] Writing Stats to %s\n', toc(tStart), filename);
+        end
    end
    %% Methods for meta stats.
    methods(Access=public)
         function meta_stats = compute_meta_stats(app)
            tStart = tic;
-           names = ["max value"; "max rate"; "-3dB value low"; "-3dB rate low"; "Q"];
+           RowNames = ["ge_net", "gi_net", "ge_mean", "gi_mean", "depolarizations", "hyperpolarizations", "sps", "Iactive"];
+           VariableNames = ["max value", "max rate", "-3dB value", "lower cutoff", "upper cutoff", "Q"];
            rates = [app.rate];
            ge_nets = [app.ge_net];
            gi_nets = [app.gi_net];
@@ -342,21 +365,62 @@ classdef WholeCellRecording2
            depolarizations_means = [app.depolarizations_mean];
            hyperpolarizations_means = [app.hyperpolarizations_mean];
            sps_means = [app.sps_mean];
-           net_ge_stats = app.compute_3dB_points(ge_nets, rates);
-           net_gi_stats = app.compute_3dB_points(gi_nets, rates);
-           mean_ge_stats = app.compute_3dB_points(ge_means, rates);
-           mean_gi_stats = app.compute_3dB_points(gi_means, rates);
-           mean_Iactive_stats = app.compute_3dB_points(Iactive_means, rates);
-           mean_depolarizations_stats = app.compute_3dB_points(depolarizations_means, rates);
-           mean_hyperpolarizations_stats = app.compute_3dB_points(-1.*hyperpolarizations_means, rates);
-           mean_hyperpolarizations_stats(1, :) = -1*mean_hyperpolarizations_stats(1, :);
-           mean_hyperpolarizations_stats(3, :) = -1*mean_hyperpolarizations_stats(3, :);
-           mean_sps_stats = app.compute_3dB_points(sps_means, rates);
-           meta_stats = table(names, mean_depolarizations_stats, mean_hyperpolarizations_stats, mean_ge_stats, mean_gi_stats, net_ge_stats, net_gi_stats, mean_sps_stats, mean_Iactive_stats);
+           ge_net_points = app.estimate_filter_points(ge_nets, rates);
+           gi_net_points = app.estimate_filter_points(gi_nets, rates);
+           ge_mean_points = app.estimate_filter_points(ge_means, rates);
+           gi_mean_points = app.estimate_filter_points(gi_means, rates);
+           depolarizations_mean_points = app.estimate_filter_points(depolarizations_means, rates);
+           hyperpolarizations_mean_points = app.estimate_filter_points(-1.*hyperpolarizations_means, rates);
+           hyperpolarizations_mean_points(:, 1) = -1.*hyperpolarizations_mean_points(:, 1);
+           hyperpolarizations_mean_points(:, 3) = -1.*hyperpolarizations_mean_points(:, 3);
+           sps_mean_points = app.estimate_filter_points(sps_means, rates);
+           Iactive_mean_points = app.estimate_filter_points(Iactive_means, rates);
+           meta_stats = [ge_net_points; gi_net_points; ge_mean_points; gi_mean_points; depolarizations_mean_points; hyperpolarizations_mean_points; sps_mean_points; Iactive_mean_points];
+           meta_stats = array2table(meta_stats, "RowNames", RowNames, "VariableNames",VariableNames);
            fprintf('[%d secs] Computed Meta Stats\n', toc(tStart));
         end
+        
+        function meta_stats = get_meta_stats(app)
+            meta_stats = app.compute_meta_stats();
+        end
+
+        function write_meta_stats_to_file(~, stats, filename, SheetName)
+            tStart = tic;
+            writetable(stats, filename, 'Sheet', SheetName, 'WriteRowNames', 1);
+            fprintf('[%d secs] Writing Meta Stats to %s\n', toc(tStart), filename);
+        end
+
+        function points = estimate_filter_points(~, values, rates)
+            [max_value, max_index] = max(values, [], 2);
+            drop_3dB_value = max_value*0.707;
+            lower_values = values(1:max_index);
+            lower_rates = rates(1:max_index);
+            upper_values = values(max_index:end);
+            upper_rates = rates(max_index:end);
+            if length(lower_values(:)) > 1
+                [lower_values, m1, ~] = unique(lower_values, 'last');
+                [c1, d1] = sort(m1);
+                lower_values = lower_values(d1);
+                lower_rates = lower_rates(c1);
+                lower_cutoff = interp1(lower_values, lower_rates, drop_3dB_value, "linear");
+            else
+                lower_cutoff = lower_rates;
+            end
+            if length(upper_values(:)) > 1
+                [upper_values, m2, ~] = unique(upper_values, 'first');
+                [c2, d2] = sort(m2);
+                upper_values = upper_values(d2);
+                upper_rates = upper_rates(c2);
+                upper_cutoff = interp1(upper_values, upper_rates, drop_3dB_value, "makima");
+            else
+                upper_cutoff = upper_rates;
+            end
+
+            Q = rates(max_index)/(2*(upper_cutoff - lower_cutoff));
+            points = [max_value, rates(max_index), drop_3dB_value, lower_cutoff, upper_cutoff, Q];
+        end
        
-        function cuton_rate = get_estimated_cuton_rate(~, rates, values, query_value)
+        function cutoff_rate = estimate_cutoff_rate(~, rates, values, query_value)
                high_index = find(values >= query_value, 1, 'first');
                if isempty(high_index)
                    high_index = size(rates, 2);
@@ -366,18 +430,18 @@ classdef WholeCellRecording2
                    low_index = 1;
                end
                if high_index == low_index
-                   cuton_rate = rates(high_index);
+                   cutoff_rate = rates(high_index);
                else
-                   cuton_rate = rates(low_index) + (query_value - values(low_index))*(rates(high_index) - rates(low_index))/(values(high_index) - values(low_index));
+                   cutoff_rate = rates(low_index) + (query_value - values(low_index))*(rates(high_index) - rates(low_index))/(values(high_index) - values(low_index));
                end
            end
         
            function  points = compute_3dB_points(app, values, rates)
                [max_value, max_index] = max(values, [], 2);
                drop_3dB_value = max_value*0.707;
-               drop_3dB_rate = app.get_estimated_cuton_rate(rates, values, drop_3dB_value);
+               drop_3dB_rate = app.estimate_cutoff_rate(rates, values, drop_3dB_value);
                Q = rates(max_index)/(2*abs(rates(max_index) - drop_3dB_rate));
-               points = [max_value; rates(max_index); drop_3dB_value; drop_3dB_rate; Q];
+               points = [max_value, rates(max_index), drop_3dB_value, drop_3dB_rate, Q];
            end
    end
    %% Methods for plotting.
@@ -396,7 +460,7 @@ classdef WholeCellRecording2
                         switch k
                             case 1
                                 plot(app(i, j).time, app(i, j).Vm);
-                                ax{j, k}.Title.String = strcat(num2str(app(i, j).rate), 'pps');
+                                ax{j, k}.Title.String = app(i, j).paradigm;
                                 if j == 1
                                     ax{j, k}.YLabel.String = 'Vm (V)';
                                 end
@@ -480,6 +544,7 @@ classdef WholeCellRecording2
             app = app.zero_phase_filter_Im(filter_parameters);
             app = app.compute_passive_conductances();
             app = app.compute_passive_currents();
+            app = app.compute_stats();
        end
 
        function app = dynamics_plots(app)
