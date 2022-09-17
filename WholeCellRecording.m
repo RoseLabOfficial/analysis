@@ -3,6 +3,10 @@ classdef WholeCellRecording
        %% Sampling/Acquistion properties.
        Fs % Sampling Frequency of acquisition (Hz).
        response_samples % How long the response lasts in a sampling domain (samples).
+
+       %% Stimulus properties.
+       rate
+       npulses
        
        %% Cell properties.
        Cm % Membrane Capacitance (F).
@@ -25,7 +29,8 @@ classdef WholeCellRecording
        StopbandAttenuation % The attentuation of noise (dB).
        
        %% analysis properties
-       time % Pseudo time array created as per Fs, to analyze the temporal dynamics of excitation and inhibition.
+       stimulus
+       time % times(secs) extracted from recorded data.
        Vm % Transmembrane Potential (V) recorded at Fs.
        Im % Transmembrane current (A) computed as Cm*(dVm/dt).
        Iinj % Injected Current (A).
@@ -41,264 +46,536 @@ classdef WholeCellRecording
        hyperpolarizations % Vm < Er at every time point (V).
        excitation % ge > 0. Biological data is noisy, excitation variable is free of aberrent negative values of ge.
        inhibition % gi > 0. Biological data is noisy, inhibition variable is free of aberrent negative values of gi after non-linear filtering using alpha and beta.
-       condition % condition (string) is different types of stimuli, for pulse rate 5pps, 10pps, 60pps, etc., or for duration 20ms, 40ms, 160ms, etc.
+       paradigm % paradigm (string) is different types of stimuli, for pulse rate 5pps, 10pps, 60pps, etc., or for duration 20ms, 40ms, 160ms, etc.
        filename % filename (string) is the name of the file containing the current clamp data along with various parameters for cell and membrane potential constants.
-       
+       response_durations
+
+       %% stats
+        ge_net
+        gi_net
+        ge_mean
+        gi_mean
+        depolarizations_mean
+        hyperpolarizations_mean
+        Iactive_mean
+        sps_mean
+
+        %% meta stats
+        maxima
+        drop_3dB
    end
    properties(Access=private)
        %% fig properties
        fig
    end
-   %% Methods
-   methods
+   %% Methods to access data.
+   methods(Access=private)
+       function app = readXLSXdata(app)
+           [m, n] = size(app);
+           for i = 1: 1: m
+               for j = 1: 1: n
+                    data = readtable(app(i, j).filename, 'Sheet', app(i, j).paradigm, 'ReadVariableNames', 1, 'VariableNamingRule', 'preserve');
+                    try
+                        app(i, j).time = data.times;
+                        data.times = [];
+                    catch
+                        error(strcat('times array was not found! Check ', app(i, j).filename, ' and ', app(i, j).paradigm, ' !'));
+                    end
+                    try
+                        app(i, j).stimulus = data.stimulus;
+                        data.stimulus = [];
+                    catch
+                        app(i, j).stimulus = zeros(size(app(i, j).time));
+                    end
+                    app(i, j).Vm = table2array(data).*1e-3;
+                    app(i, j).Fs = 1/(app(i, j).time(2, 1) - app(i, j).time(1, 1));
+                    app(i, j).response_samples = floor(app(i, j).Fs*app(i, j).response_durations(i));
+                    samples = size(app(i, j).time, 1);
+                    if app(i, j).response_samples > samples-1
+                       app(i, j).response_samples = samples-1;
+                    end
+               end
+           end
+       end
+
+       function app = adjust_membrane_potential_with_steady_state(app)
+           [m, n] = size(app);
+           for i = 1: 1: m
+               for j = 1: 1: n
+                   app(i, j).Iinj = (1./app(i, j).Rin).*(app(i, j).Ess - app(i, j).Er);
+                   app(i, j).Vm = app(i, j).Vm - app(i, j).Vm(1, :) + app(i, j).Ess;
+               end
+           end
+       end
+
+       function app = readXLSXparameters(app)
+           [m, n] = size(app);
+           for i = 1: 1: m
+               for j = 1: 1: n
+                    parameters = readtable(app(i, j).filename, 'Sheet', strcat("parameters_", app(i, j).paradigm));
+                    app(i, j).Iinj = parameters.Iinj' + zeros(size(app(i, j).Vm));
+                    app(i, j).Cm = parameters.Cm' + zeros(size(app(i, j).Vm));
+                    app(i, j).Rin = parameters.Rin' + zeros(size(app(i, j).Vm));
+                    app(i, j).Er = parameters.Er' + zeros(size(app(i, j).Vm));
+                    app(i, j).Ee = parameters.Ee' + zeros(size(app(i, j).Vm));
+                    app(i, j).Ei = parameters.Ei' + zeros(size(app(i, j).Vm));
+                    app(i, j).Et = parameters.Et' + zeros(size(app(i, j).Vm));
+                    app(i, j).Eact = parameters.Eact' + zeros(size(app(i, j).Vm));
+                    app(i, j).Ess = parameters.Ess' + zeros(size(app(i, j).Vm));
+                    app(i, j).xalpha = parameters.xalpha' + zeros(size(app(i, j).Vm));
+                    app(i, j).xbeta = parameters.xbeta' + zeros(size(app(i, j).Vm));
+                    app(i, j).sps = parameters.sps' + zeros(size(app(i, j).Vm));
+                    app(i, j).Eref = parameters.Eref' + zeros(size(app(i, j).Vm));
+                    app(i, j).rate = parameters.rate(1);
+                    app(i, j).npulses = parameters.npulses(1);
+               end
+           end
+       end
+
+       function app = build_arrays(app)
+           [m, n] = size(app);
+           for i = 1: 1: m
+               for j = 1: 1: n
+                    samples = size(app(i, j).Vm, 2);
+                    app(i, j).Iactive = zeros(size(app(i, j).Vm));
+                    app(i, j).ge = zeros(samples, 1);
+                    app(i, j).gi = zeros(samples, 1);
+                    app(i, j).Ie = zeros(size(app(i, j).Vm));
+                    app(i, j).Ii = zeros(size(app(i, j).Vm));
+                    app(i, j).depolarizations = zeros(samples, 1);
+                    app(i, j).hyperpolarizations = zeros(samples, 1);
+                    app(i, j).excitation = zeros(samples, 1);
+                    app(i, j).inhibition = zeros(samples, 1);
+                    app(i, j).ge_mean = 0;
+                    app(i, j).gi_mean = 0;
+                    app(i, j).ge_net = 0;
+                    app(i, j).gi_net = 0;
+                    app(i, j).Iactive_mean = 0;
+                    app(i, j).depolarizations_mean = 0;
+                    app(i, j).hyperpolarizations_mean = 0;
+                    app(i, j).sps_mean = 0;
+                    app(i, j).maxima.ge_mean = zeros(1, 2);
+                    app(i, j).maxima.gi_mean = zeros(1, 2);
+                    app(i, j).maxima.ge_net = zeros(1, 2);
+                    app(i, j).maxima.gi_net = zeros(1, 2);
+                    app(i, j).maxima.Iactive_mean = zeros(1, 2);
+                    app(i, j).maxima.depolarizations_mean = zeros(1, 2);
+                    app(i, j).maxima.hyperpolarizations_mean = zeros(1, 2);
+                    app(i, j).maxima.sps_mean = zeros(1, 2);
+                    app(i, j).drop_3dB.ge_mean = zeros(1, 2);
+                    app(i, j).drop_3dB.gi_mean = zeros(1, 2);
+                    app(i, j).drop_3dB.ge_net = zeros(1, 2);
+                    app(i, j).drop_3dB.gi_net = zeros(1, 2);
+                    app(i, j).drop_3dB.Iactive_mean = zeros(1, 2);
+                    app(i, j).drop_3dB.depolarizations_mean = zeros(1, 2);
+                    app(i, j).drop_3dB.hyperpolarizations_mean = zeros(1, 2);
+                    app(i, j).drop_3dB.sps_mean = zeros(1, 2);
+               end
+           end
+       end
+   end
+   %% Methods to filter data
+   methods(Access=public)
+       function app = zero_phase_filter_Vm(app, filter_parameters)
+           tStart = tic;
+           [m, n] = size(app);
+           for i = 1: 1: m
+               for j = 1: 1: n
+                   Fnorm = filter_parameters.CutOffFrequency/(app(i, j).Fs/2);
+                   lpFilt = designfilt('lowpassiir', ...
+                                'PassbandFrequency', Fnorm, ...
+                                'FilterOrder', filter_parameters.FilterOrder, ...
+                                'PassbandRipple', filter_parameters.PassbandRipple, ...
+                                'StopbandAttenuation', filter_parameters.StopbandAttenuation);
+                   v = cat(1, ones(size(app(i, j).Vm)).*(app(i, j).Vm(1, :)), app(i, j).Vm);
+                   v = cat(1, v, ones(size(app(i, j).Vm)).*(app(i, j).Vm(end, :)));
+                   vn = v - v(1, :);
+                   Vmf = filtfilt(lpFilt, vn);
+                   app(i, j).Vm = Vmf(size(app(i, j).Vm, 1)+1:end-size(app(i, j).Vm, 1), :) + app(i, j).Vm(1, :);
+               end
+           end
+           fprintf('[%d secs] Zero phase filtering Vm \n', toc(tStart));
+       end
+       function app = zero_phase_filter_Im(app, filter_parameters)
+            tStart = tic;
+            [m, n] = size(app);
+            for i = 1: 1: m
+                for j = 1: 1: n
+                    Fnorm = filter_parameters.CutOffFrequency2/(app(i, j).Fs/2);
+                    lpFilt = designfilt('lowpassiir', ...
+                                'PassbandFrequency', Fnorm, ...
+                                'FilterOrder', filter_parameters.FilterOrder, ...
+                                'PassbandRipple', filter_parameters.PassbandRipple, ...
+                                'StopbandAttenuation', filter_parameters.StopbandAttenuation);
+                    I = cat(1, ones(size(app(i, j).Im)).*(app(i, j).Im(1, :)), app(i, j).Im);
+                    I = cat(1, I, ones(size(app(i, j).Im)).*(app(i, j).Im(end, :)));
+                    in = I - I(1, :);
+                    Imf = filtfilt(lpFilt, in);
+                    app(i, j).Im = Imf(size(app(i, j).Im, 1)+1:end-size(app(i, j).Im, 1), :) + app(i, j).Im(1, :);
+                end
+            end
+            fprintf('[%d secs] Zero phase filtering Im \n', toc(tStart));
+       end
+   end
+   %% Methods for conductance reconstruction.
+   methods(Access=public)
+       function app = compute_active_conductances(app)
+           tStart = tic;
+           [m, n] = size(app);
+           for i = 1: 1: m
+               for j = 1: 1: n
+                   app(i, j).alpha = ((1./app(i, j).Rin)./(2.*(app(i, j).Eact-app(i, j).Ess)));
+                   app(i, j).beta = app(i, j).alpha.*(app(i, j).Et - app(i, j).Ess);
+                   app(i, j).alpha = app(i, j).alpha.*app(i, j).xalpha;
+                   app(i, j).beta = app(i, j).beta.*app(i, j).xbeta;
+               end
+           end
+           fprintf('[%d secs] Computed active conductances (constants)\n', toc(tStart));
+       end
+
+       function app = compute_active_currents(app)
+           tStart = tic;
+           [m, n] = size(app);
+           for i = 1: 1: m
+               for j = 1: 1: n
+                  app(i, j).Iactive = (app(i, j).alpha.*(app(i, j).Vm-app(i, j).Et).*(app(i, j).Vm-app(i, j).Er)) ...
+                          + (app(i, j).beta.*(app(i, j).Vm-app(i, j).Er));
+               end
+           end
+           fprintf('[%d secs] Computed active currents\n', toc(tStart));
+       end
+
+       function app = compute_leakage_currents(app)
+           tStart = tic;
+           [m, n] = size(app);
+           for i = 1: 1: m
+               for j = 1: 1: n
+                   app(i, j).Ileak = (1./app(i, j).Rin).*(app(i, j).Vm-app(i, j).Er);
+               end
+           end
+           fprintf('[%d secs] Computed leakage currents\n', toc(tStart));
+       end
+
+       function app = compute_membrane_currents(app)
+           tStart=tic;
+           [m, n] = size(app);
+           for i = 1: 1: m
+               for j = 1: 1: n
+                    Vm_appended = cat(1, app(i, j).Vm(1, :), app(i, j).Vm, app(i, j).Vm(end, :));
+                    dVmdt = diff(Vm_appended);
+                    app(i, j).Im = app(i, j).Cm.*dVmdt(1:end-1, :).*(app(i, j).Fs);
+               end
+           end
+           fprintf('[%d secs] Computed membrane currents\n', toc(tStart));
+       end
+       function app = compute_passive_conductances(app)
+           tStart = tic;
+           [m, n] = size(app);
+           for i = 1: 1: m
+               for j = 1: 1: n
+                   samples = size(app(i, j).Vm, 1);
+                   A = zeros(2, 2, samples);
+                   B = zeros(2, 1, samples);
+                   A(1, 1, :) = sum((app(i, j).Vm - app(i, j).Ee).^2, 2);
+                   A(1, 2, :) = sum((app(i, j).Vm - app(i, j).Ee).*(app(i, j).Vm - app(i, j).Ei), 2);
+                   A(2, 1, :) = A(1, 2, :);
+                   A(2, 2, :) = sum((app(i, j).Vm - app(i, j).Ei).^2, 2);
+                   C = app(i, j).Im - app(i, j).Iinj - app(i, j).Iactive + app(i, j).Ileak;
+                   B(1, 1, :) = -sum(C.*(app(i, j).Vm - app(i, j).Ee), 2);
+                   B(2, 1, :) = -sum(C.*(app(i, j).Vm - app(i, j).Ei), 2);
+                   G = pagemtimes(pageinv(A), B);
+                   app(i, j).ge = reshape(G(1, 1, :), [samples, 1]);
+                   app(i, j).gi = reshape(G(2, 1, :), [samples, 1]);
+               end
+           end
+           fprintf('[%d secs] Computed passive conductances\n', toc(tStart));
+       end
+       function app = compute_passive_currents(app)
+           tStart = tic;
+               [m, n] = size(app);
+               for i = 1: 1: m
+                   for j = 1: 1: n
+                       app(i, j).Ie = app(i, j).ge.*(app(i, j).Vm - app(i, j).Ee);
+                       app(i, j).Ii = app(i, j).gi.*(app(i, j).Vm - app(i, j).Ei);
+                   end
+               end
+           fprintf('[%d secs] Computed passive currents\n', toc(tStart));
+       end
+   end
+   %% Methods for stats
+   methods(Access=public)
+       function app = compute_stats(app)
+           tStart = tic;
+           [m, n] = size(app);
+           for i = 1: 1: m
+               for j = 1: 1: n
+                   del_Vm = app(i, j).Vm - app(i, j).Eref;
+                   app(i, j).depolarizations = del_Vm.*(del_Vm(:, 1) > 0);
+                   app(i, j).hyperpolarizations = del_Vm.*(del_Vm(:, 1) < 0);
+                   app(i, j).excitation = app(i, j).ge.*(app(i, j).ge>0);
+                   app(i, j).inhibition = app(i, j).gi.*(app(i, j).gi>0);
+                   resultant_conductance = app(i, j).excitation(1:app(i, j).response_samples) - app(i, j).inhibition(1:app(i, j).response_samples);
+                   app(i, j).ge_net = mean(resultant_conductance.*(resultant_conductance>0), 1);
+                   app(i, j).gi_net = -1*mean(resultant_conductance.*(resultant_conductance<0), 1);
+                   app(i, j).ge_mean = mean(app(i, j).excitation(1:app(i, j).response_samples), 1);
+                   app(i, j).gi_mean = mean(app(i, j).inhibition(1:app(i, j).response_samples), 1);
+                   app(i, j).Iactive_mean = mean(app(i, j).Iactive(1:app(i, j).response_samples, 1), 1);
+                   app(i, j).depolarizations_mean = mean(app(i, j).depolarizations(1:app(i, j).response_samples, 1), 1);
+                   app(i, j).hyperpolarizations_mean = mean(app(i, j).hyperpolarizations(1:app(i, j).response_samples, 1), 1);
+                   app(i, j).sps_mean = mean(app(i, j).sps(1:app(i, j).response_samples, 1), 1);
+               end
+           end
+           fprintf('[%d secs] Computed Stats\n', toc(tStart));
+       end
+       function stats = get_stats(app)
+           app = app.compute_stats();
+           measures = ["rate", "ge_net", "gi_net", "ge_mean", "gi_mean", "depolarizations", "hyperpolarizations", "sps", "Iactive"];
+           experiments = [app.paradigm];
+           rates = [app.rate];
+           ge_nets = [app.ge_net];
+           gi_nets = [app.gi_net];
+           ge_means = [app.ge_mean];
+           gi_means = [app.gi_mean];
+           depolarizations_means = [app.depolarizations_mean];
+           hyperpolarizations_means = [app.hyperpolarizations_mean];
+           sps_means = [app.sps_mean];
+           Iactive_means = [app.Iactive_mean];
+           stats = [rates; ge_nets; gi_nets; ge_means; gi_means; depolarizations_means; hyperpolarizations_means; sps_means; Iactive_means];
+           stats = array2table(stats, "RowNames",measures,"VariableNames",experiments);
+       end
+
+       function write_stats_to_file(~, stats, filename, SheetName)
+            tStart = tic;
+            writetable(stats, filename, 'Sheet', SheetName, 'WriteRowNames', 1);
+            fprintf('[%d secs] Writing Stats to %s\n', toc(tStart), filename);
+        end
+   end
+   %% Methods for meta stats.
+   methods(Access=public)
+        function meta_stats = compute_meta_stats(app)
+           tStart = tic;
+           RowNames = ["ge_net", "gi_net", "ge_mean", "gi_mean", "depolarizations", "hyperpolarizations", "sps", "Iactive"];
+           VariableNames = ["max value", "max rate", "-3dB value", "lower cutoff", "upper cutoff", "Q"];
+           rates = [app.rate];
+           ge_nets = [app.ge_net];
+           gi_nets = [app.gi_net];
+           ge_means = [app.ge_mean];
+           gi_means = [app.gi_mean];
+           Iactive_means = [app.Iactive_mean];
+           depolarizations_means = [app.depolarizations_mean];
+           hyperpolarizations_means = [app.hyperpolarizations_mean];
+           sps_means = [app.sps_mean];
+           ge_net_points = app.estimate_filter_points(ge_nets, rates);
+           gi_net_points = app.estimate_filter_points(gi_nets, rates);
+           ge_mean_points = app.estimate_filter_points(ge_means, rates);
+           gi_mean_points = app.estimate_filter_points(gi_means, rates);
+           depolarizations_mean_points = app.estimate_filter_points(depolarizations_means, rates);
+           hyperpolarizations_mean_points = app.estimate_filter_points(-1.*hyperpolarizations_means, rates);
+           hyperpolarizations_mean_points(:, 1) = -1.*hyperpolarizations_mean_points(:, 1);
+           hyperpolarizations_mean_points(:, 3) = -1.*hyperpolarizations_mean_points(:, 3);
+           sps_mean_points = app.estimate_filter_points(sps_means, rates);
+           Iactive_mean_points = app.estimate_filter_points(Iactive_means, rates);
+           meta_stats = [ge_net_points; gi_net_points; ge_mean_points; gi_mean_points; depolarizations_mean_points; hyperpolarizations_mean_points; sps_mean_points; Iactive_mean_points];
+           meta_stats = array2table(meta_stats, "RowNames", RowNames, "VariableNames",VariableNames);
+           fprintf('[%d secs] Computed Meta Stats\n', toc(tStart));
+        end
+        
+        function meta_stats = get_meta_stats(app)
+            meta_stats = app.compute_meta_stats();
+        end
+
+        function write_meta_stats_to_file(~, stats, filename, SheetName)
+            tStart = tic;
+            writetable(stats, filename, 'Sheet', SheetName, 'WriteRowNames', 1);
+            fprintf('[%d secs] Writing Meta Stats to %s\n', toc(tStart), filename);
+        end
+
+        function points = estimate_filter_points(~, values, rates)
+            [max_value, max_index] = max(values, [], 2);
+            drop_3dB_value = max_value*0.707;
+            lower_values = values(1:max_index);
+            lower_rates = rates(1:max_index);
+            upper_values = values(max_index:end);
+            upper_rates = rates(max_index:end);
+            if length(lower_values(:)) > 1
+                [lower_values, m1, ~] = unique(lower_values, 'last');
+                [c1, d1] = sort(m1);
+                lower_values = lower_values(d1);
+                lower_rates = lower_rates(c1);
+                lower_cutoff = interp1(lower_values, lower_rates, drop_3dB_value, "linear");
+            else
+                lower_cutoff = lower_rates;
+            end
+            if length(upper_values(:)) > 1
+                [upper_values, m2, ~] = unique(upper_values, 'first');
+                [c2, d2] = sort(m2);
+                upper_values = upper_values(d2);
+                upper_rates = upper_rates(c2);
+                upper_cutoff = interp1(upper_values, upper_rates, drop_3dB_value, "makima");
+            else
+                upper_cutoff = upper_rates;
+            end
+
+            Q = rates(max_index)/(2*(upper_cutoff - lower_cutoff));
+            points = [max_value, rates(max_index), drop_3dB_value, lower_cutoff, upper_cutoff, Q];
+        end
+       
+        function cutoff_rate = estimate_cutoff_rate(~, rates, values, query_value)
+               high_index = find(values >= query_value, 1, 'first');
+               if isempty(high_index)
+                   high_index = size(rates, 2);
+               end
+               low_index = find(values <= query_value, 1, 'last');
+               if isempty(low_index)
+                   low_index = 1;
+               end
+               if high_index == low_index
+                   cutoff_rate = rates(high_index);
+               else
+                   cutoff_rate = rates(low_index) + (query_value - values(low_index))*(rates(high_index) - rates(low_index))/(values(high_index) - values(low_index));
+               end
+           end
+        
+           function  points = compute_3dB_points(app, values, rates)
+               [max_value, max_index] = max(values, [], 2);
+               drop_3dB_value = max_value*0.707;
+               drop_3dB_rate = app.estimate_cutoff_rate(rates, values, drop_3dB_value);
+               Q = rates(max_index)/(2*abs(rates(max_index) - drop_3dB_rate));
+               points = [max_value, rates(max_index), drop_3dB_value, drop_3dB_rate, Q];
+           end
+   end
+   %% Methods for plotting.
+   methods(Access=public)
+        function app = plots(app)
+            tStart = tic;
+            nplots = 6;
+            [m, n] = size(app);
+            app(1, 1).fig = figure('Name', strcat(app(1, 1).filename, ' Reconstructions'));
+            for i = 1: 1: m
+                tiledlayout(nplots, n);
+                ax = cell(nplots, n);
+                for k = 1: 1: nplots
+                    for j = 1: 1: n
+                        ax{j, k} = nexttile;
+                        switch k
+                            case 1
+                                plot(app(i, j).time, app(i, j).Vm);
+                                ax{j, k}.Title.String = app(i, j).paradigm;
+                                if j == 1
+                                    ax{j, k}.YLabel.String = 'Vm (V)';
+                                end
+                            case 2
+                                plot(app(i, j).time, app(i, j).Iactive);
+                                if j == 1
+                                    ax{j, k}.YLabel.String = 'Iactive (A)';
+                                end
+                            case 3
+                                plot(app(i, j).time, app(i, j).Ileak);
+                                if j == 1
+                                    ax{j, k}.YLabel.String = 'Ileak (A)';
+                                end
+                            case 4
+                                plot(app(i, j).time, app(i, j).Im);
+                                if j == 1
+                                    ax{j, k}.YLabel.String = 'Im (A)';
+                                end
+                            case 5
+                                plot(app(i, j).time, app(i, j).ge, 'r', app(i, j).time, app(i, j).gi, 'b');
+                                if j == 1
+                                    ax{j, k}.YLabel.String = 'G (S)';
+                                end
+                            case 6
+                                plot(app(i, j).time, app(i, j).Ie(:, 1), 'r', app(i, j).time, app(i, j).Ii(:, 1), 'b');
+                                if j == 1
+                                    ax{j, k}.YLabel.String = 'Isyn (A)';
+                                end
+                                ax{j, k}.XLabel.String = 'time (sec)';
+                        end
+                        linkaxes([ax{j, :}], 'x');
+                    end
+                end
+            end
+            fprintf('[%d secs] Plotting data\n', toc(tStart));
+        end
+   end
+   %% Methods for constructor and run.
+   methods(Access=public)
        %% Constructor
-       function DATA = WholeCellRecording(filename, conditions, response_durations)
+       function app = WholeCellRecording(filename, paradigms, response_durations)
             if nargin > 0
                 tStart = tic;
                 %% Input format check
                 if ~isa(filename, 'string')
                     error('filename must be a string'); 
                 end
-                if ~isa(conditions, 'string')
+                if ~isa(paradigms, 'string')
                     error('conditions (rates/durations) must be strings'); 
                 end
                 if ~isa(response_durations, 'double')
                     error('responseDurations must be doubles');
                 end
-                if ~isequal(size(conditions), size(response_durations))
+                if ~isequal(size(paradigms), size(response_durations))
                     error('Dimensions of conditions and responseDurations must match.');
                 end
-                DATA(1).filename = filename;
-                %% Reading worksheets from excel files.
-                for k = numel(conditions):-1:1
-                    data = xlsread(filename, conditions(k));
-                    [samples, ~] = size(data);
-                    DATA(k).condition = conditions(k);
-                    DATA(k).time = data(2:samples, 1);
-                    DATA(k).Fs = 1/(DATA(k).time(2, 1) - DATA(k).time(1, 1));
-                    DATA(k).response_samples = floor(DATA(k).Fs*response_durations(k));
-                    if DATA(k).response_samples > samples-1
-                       DATA(k).response_samples = samples-1;
-                    end
-                    DATA(k).Vm = data(2:samples, 2:end)*1e-3;
-                    DATA(k).Iactive = zeros(size(DATA(k).Vm));
-                    DATA(k).ge = zeros(size(DATA(k).Vm, 1), 1);
-                    DATA(k).gi = zeros(size(DATA(k).Vm, 1), 1);
-                    DATA(k).Ie = zeros(size(DATA(k).Vm));
-                    DATA(k).Ii = zeros(size(DATA(k).Vm));
-                    parameters = xlsread(filename, "parameters_"+conditions(k));
-                    DATA(k).Iinj = parameters(1:end, 1);
-                    DATA(k).Cm = parameters(1:end, 2);
-                    DATA(k).Rin = parameters(1:end, 3);
-                    DATA(k).Er = parameters(1:end, 4);
-                    DATA(k).Ee = parameters(1:end, 5);
-                    DATA(k).Ei = parameters(1:end, 6);
-                    DATA(k).Et = parameters(1:end, 7);
-                    DATA(k).Eact = parameters(1:end, 8);
-                    DATA(k).Ess = parameters(1:end, 9);
-                    DATA(k).xalpha = parameters(1:end, 10);
-                    DATA(k).xbeta = parameters(1:end, 11);
-                    try
-                        DATA(k).sps = parameters(1:end, 12);
-                    catch
-                        DATA(k).sps = zeros(size(parameters, 1), 1);
-                    end
-                    try
-                        DATA(k).Eref = parameters(1:end, 13);
-                    catch
-                        DATA(k).Eref = DATA(k).Ess;
-                    end
-                    for m = 1: 1: size(DATA(k).Iinj, 1)
-                        DATA(k).Iinj(m) = (1/DATA(k).Rin(m)).*(DATA(k).Ess(m) - DATA(k).Er(m));
-                        DATA(k).Vm(:, m) = DATA(k).Vm(:, m) - DATA(k).Vm(1, m) + DATA(k).Ess(m);
+                [m, n] = size(response_durations);
+                app(m, n) = app;
+                for i = 1: 1: m
+                    for j = 1: 1: n
+                        app(i, j).filename = filename;
+                        app(i, j).paradigm = paradigms(i, j);
+                        app(i, j).response_durations = response_durations(i, j);
                     end
                 end
+                %% Reading worksheets from excel files.
+                app = app.readXLSXdata();
+                app = app.build_arrays();
+                app = app.readXLSXparameters();
+                app = app.adjust_membrane_potential_with_steady_state();
                 fprintf('[%d secs] Read %s\n', toc(tStart), filename);
             end
        end
-       function DATA = zero_phase_filter_Vm(DATA, filter_parameters)
-           tStart = tic;
-           Fnorm = filter_parameters.CutOffFrequency/(DATA(1).Fs/2);
-           lpFilt = designfilt('lowpassiir', ...
-                                'PassbandFrequency', Fnorm, ...
-                                'FilterOrder', filter_parameters.FilterOrder, ...
-                                'PassbandRipple', filter_parameters.PassbandRipple, ...
-                                'StopbandAttenuation', filter_parameters.StopbandAttenuation);
-           for k = 1: 1: length(DATA)
-               [~, clamps] = size(DATA(k).Vm);
-               v = cat(1, ones(size(DATA(k).Vm)).*(DATA(k).Vm(1, :)), DATA(k).Vm);
-               v = cat(1, v, ones(size(DATA(k).Vm)).*(DATA(k).Vm(end, :)));
-               vn = v - v(1, :);
-               Vmf = zeros(size(vn));
-               for clamp = 1: 1: clamps
-                   Vmf(:, clamp) = filtfilt(lpFilt, vn(:, clamp));
-               end
-               DATA(k).Vm = Vmf(size(DATA(k).Vm, 1)+1:end-size(DATA(k).Vm, 1), :) + DATA(k).Vm(1, :);
-           end
-           fprintf('[%d secs] Zero phase filtering Vm \n', toc(tStart));
+
+       function app = call(app, filter_parameters)
+            app = app.zero_phase_filter_Vm(filter_parameters);
+            app = app.compute_active_conductances();
+            app = app.compute_active_currents();
+            app = app.compute_leakage_currents();
+            app = app.compute_membrane_currents();
+            app = app.zero_phase_filter_Im(filter_parameters);
+            app = app.compute_passive_conductances();
+            app = app.compute_passive_currents();
+            app = app.compute_stats();
        end
-       function DATA = compute_active_conductances(DATA)
-           tStart = tic;
-           for k = 1: 1: length(DATA)
-               DATA(k).alpha = ((1./DATA(k).Rin)./(2.*(DATA(k).Eact-DATA(k).Ess)));
-               DATA(k).beta = DATA(k).alpha.*(DATA(k).Et - DATA(k).Ess);
-               DATA(k).alpha = DATA(k).alpha.*DATA(k).xalpha;
-               DATA(k).beta = DATA(k).beta.*DATA(k).xbeta;
-           end
-           fprintf('[%d secs] Computed active conductances (constants)\n', toc(tStart));
-       end
-       function DATA = compute_active_currents(DATA)
-           tStart = tic;
-           for k = 1: 1: length(DATA)
-               DATA(k).Iactive = zeros(size(DATA(k).Vm));
-              for m = 1: 1: size(DATA(k).Iactive, 2)
-                  DATA(k).Iactive(:, m) = (DATA(k).alpha(m).*(DATA(k).Vm(:, m)-DATA(k).Et(m)).*(DATA(k).Vm(:, m)-DATA(k).Er(m))) ...
-                      + (DATA(k).beta(m).*(DATA(k).Vm(:, m)-DATA(k).Er(m)));
-              end
-           end
-           fprintf('[%d secs] Computed active currents\n', toc(tStart));
-       end
-       function DATA = compute_leakage_currents(DATA)
-           tStart = tic;
-           for k = 1: 1: length(DATA)
-               DATA(k).Ileak = zeros(size(DATA(k).Vm));
-              for m = 1: 1: size(DATA(k).Iactive, 2)
-                  DATA(k).Ileak(:, m) = (1./DATA(k).Rin(m)).*(DATA(k).Vm(:, m)-DATA(k).Er(m));
-              end
-           end
-           fprintf('[%d secs] Computed leakage currents\n', toc(tStart));
-       end
-       function DATA = compute_membrane_currents(DATA)
-           tStart=tic;
-           for k = 1:1:length(DATA)
-               DATA(k).Im = zeros(size(DATA(k).Vm));
-               for m = 1: 1: size(DATA(k).Vm, 2)
-                   Vm_appended = cat(1, DATA(k).Vm(1, m), DATA(k).Vm(:, m), DATA(k).Vm(end, m));
-                   dVmdt = diff(Vm_appended);
-                   DATA(k).Im(:, m) = DATA(k).Cm(m).*dVmdt(1:end-1).*(DATA(k).Fs);
-               end
-           end
-           fprintf('[%d secs] Computed membrane currents\n', toc(tStart));
-       end
-       function DATA = zero_phase_filter_Im(DATA, filter_parameters)
+
+       function app = dynamics_plots(app)
             tStart = tic;
-            Fnorm = filter_parameters.CutOffFrequency/(DATA(1).Fs/2);
-            lpFilt = designfilt('lowpassiir', ...
-                                'PassbandFrequency', Fnorm, ...
-                                'FilterOrder', filter_parameters.FilterOrder, ...
-                                'PassbandRipple', filter_parameters.PassbandRipple, ...
-                                'StopbandAttenuation', filter_parameters.StopbandAttenuation);
-            for k = 1: 1: length(DATA)
-                [~, clamps] = size(DATA(k).Im);
-                i = cat(1, ones(size(DATA(k).Im)).*(DATA(k).Im(1, :)), DATA(k).Im);
-                i = cat(1, i, ones(size(DATA(k).Im)).*(DATA(k).Im(end, :)));
-                in = i - i(1, :);
-                Imf = zeros(size(in));
-                for clamp = 1: 1: clamps
-                    Imf(:, clamp) = filtfilt(lpFilt, in(:, clamp));
-                end
-                DATA(k).Im = Imf(size(DATA(k).Im, 1)+1:end-size(DATA(k).Im, 1), :) + DATA(k).Im(1, :);
-            end
-            fprintf('[%d secs] Zero phase filtering Im \n', toc(tStart));
-       end
-       function DATA = compute_passive_conductances(DATA)
-           tStart = tic;
-           for k = 1: 1: length(DATA)
-               for n = 1: 1: size(DATA(k).time, 1)
-                   A = zeros(2, 2);
-                   B = zeros(2, 1);
-                   A(1, 1) = sum((DATA(k).Vm(n, :) - DATA(k).Ee').^2);
-                   A(1, 2) = sum((DATA(k).Vm(n, :) - DATA(k).Ee').*(DATA(k).Vm(n, :) - DATA(k).Ei'));
-                   A(2, 1) = A(1, 2);
-                   A(2, 2) = sum((DATA(k).Vm(n, :) - DATA(k).Ei').^2);
-                   C = DATA(k).Im(n, :) - DATA(k).Iinj' - DATA(k).Iactive(n, :) + DATA(k).Ileak(n, :);
-                   B(1, 1) = -sum(C.*(DATA(k).Vm(n, :) - DATA(k).Ee'));
-                   B(2, 1) = -sum(C.*(DATA(k).Vm(n, :) - DATA(k).Ei'));
-                   G = pinv(A)*B;
-                   DATA(k).ge(n, 1) = G(1, 1);
-                   DATA(k).gi(n, 1) = G(2, 1);
-               end
-               DATA(k).Ie = -1.*DATA(k).ge.*(DATA(k).Vm - DATA(k).Ee');
-               DATA(k).Ii = -1.*DATA(k).gi.*(DATA(k).Vm - DATA(k).Ei');
-           end
-           fprintf('[%d secs] Computed passive conductances\n', toc(tStart));
-       end
-       function DATA = plots(DATA)
-            tStart = tic;
-            DATA(1).fig = figure('Name', strcat(DATA(1).filename, ' Reconstructions'));
-            tiledlayout(6, length(DATA));
-            ax = cell(6, length(DATA));
-            for m = 1: 1: 6
-               for k = 1: 1: length(DATA)
-                   ax{m, k} = nexttile;
-                   if m == 1
-                      plot(DATA(k).time, DATA(k).Vm);
-                      if k == 1
-                        ylabel('Vm (V)');
-                      end
-                      title(strcat(DATA(k).condition));
-                   elseif m == 2
-                      plot(DATA(k).time, DATA(k).Iactive);
-                      if k == 1
-                        ylabel('Iactive (A)');
-                      end
-                   elseif m == 3
-                      plot(DATA(k).time, DATA(k).Ileak);
-                      if k == 1
-                        ylabel('Ileak (A)');
-                      end
-                   elseif m == 4
-                      plot(DATA(k).time, DATA(k).Im);
-                      if k == 1
-                        ylabel('Im (A)');
-                      end
-                   elseif m == 5
-                       plot(DATA(k).time, DATA(k).ge, 'r', DATA(k).time, DATA(k).gi, 'b');
-                       if k == 1
-                         ylabel('G (S)');
-                       end
-                       xlabel('Time (sec)');
-                   elseif m == 6
-                       plot(DATA(k).time, DATA(k).Ie(:, 1), 'r', DATA(k).time, -1.*DATA(k).Ii(:, 1), 'b');
-                       if k == 1
-                           ylabel('I (A)');
-                       end
-                       xlabel('Time (sec)');
-                   end
-               end
-               linkaxes([ax{m, :}], 'xy');
-            end
-            fprintf('[%d secs] Plotting data\n', toc(tStart));
-       end
-       function DATA = dynamics_plots(DATA)
-            tStart = tic;
-            DATA(1).fig = figure('Name', strcat(DATA(1).filename, ' Dynamics plots'));
-            tiledlayout(4, length(DATA));
-            ax = cell(4, length(DATA));
+            app(1).fig = figure('Name', strcat(app(1).filename, ' Dynamics plots'));
+            tiledlayout(4, length(app));
+            ax = cell(4, length(app));
             for m = 1: 1: 4
-                for k = 1: 1: length(DATA)
+                for k = 1: 1: length(app)
                     ax{m, k} = nexttile;
                     if m == 1
-                        plot(DATA(k).Vm, DATA(k).Im);
+                        plot(app(k).Vm, app(k).Im);
                         xlabel('Vm (V)');
                         if k == 1
                             ylabel('Im (A)');
                         end
-                        title(strcat(DATA(k).condition'));
+                        title(strcat(app(k).condition'));
                     elseif m == 2
-                        plot(DATA(k).Vm, DATA(k).Iactive);
+                        plot(app(k).Vm, app(k).Iactive);
                         xlabel('Vm (V)');
                         if k == 1
                             ylabel('Iactive (A)');
                         end
                     elseif m == 3
-                        plot(DATA(k).Vm, DATA(k).Ileak);
+                        plot(app(k).Vm, app(k).Ileak);
                         xlabel('Vm (V)');
                         if k == 1
                             ylabel('Ileak (A)');
                         end
                     elseif m == 4
-                        plot(DATA(k).Im, DATA(k).Iactive);
+                        plot(app(k).Im, app(k).Iactive);
                         xlabel('Im (A)');
                         if k == 1
                             ylabel('Iactive (A)');
@@ -307,100 +584,6 @@ classdef WholeCellRecording
                 end
             end
             fprintf('[%d secs] Dynamics Plotting data\n', toc(tStart));
-       end
-       function [DATA, stats] = generate_stats(DATA)
-           tStart = tic;
-           net_conductances = zeros(length(DATA), 2);
-           mean_conductances = zeros(length(DATA), 2);
-           mean_polarizations = zeros(length(DATA), 2);
-           mean_active_current = zeros(length(DATA), 1);
-           spikes_per_rep = zeros(length(DATA), 1);
-           pulse_rates = strings([length(DATA), 1]);
-           data_count = zeros(length(DATA), 1);
-           DATA(1).fig = figure('Name', strcat(DATA(1).filename, ' Stats'));
-           set(DATA(1).fig,'defaultAxesColorOrder',[[0.5 0.5 0]; [0 0 0]]);
-           tiledlayout(2, 1);
-           ax = cell(2, 1);
-           for k = 1: 1: length(DATA)
-               del_Vm = (DATA(k).Vm(:, 1) - DATA(k).Eref(1));
-               DATA(k).depolarizations = del_Vm(:, 1).*(del_Vm(:, 1)>0);
-               DATA(k).hyperpolarizations = del_Vm(:, 1).*(del_Vm(:, 1)<0);
-               DATA(k).excitation = DATA(k).ge.*(DATA(k).ge>0);
-               DATA(k).inhibition = DATA(k).gi.*(DATA(k).gi>0);
-               resultant_conductance = DATA(k).excitation(1:DATA(k).response_samples) - DATA(k).inhibition(1:DATA(k).response_samples);
-               net_conductances(k, 1) = mean(resultant_conductance.*(resultant_conductance>0));
-               net_conductances(k, 2) = mean(resultant_conductance.*(resultant_conductance<0));
-               mean_conductances(k, 1) = mean(DATA(k).excitation(1:DATA(k).response_samples));
-               mean_conductances(k, 2) = -1.*mean(DATA(k).inhibition(1:DATA(k).response_samples));
-               mean_polarizations(k, 1) = mean(DATA(k).depolarizations(1:DATA(k).response_samples));
-               mean_polarizations(k, 2) = mean(DATA(k).hyperpolarizations(1:DATA(k).response_samples));
-               mean_active_current(k, 1) = mean(DATA(k).Iactive(1:DATA(k).response_samples, 1));
-               spikes_per_rep(k, 1) = DATA(k).sps(1);
-               pulse_rates(k, 1) = DATA(k).condition;
-               data_count(k, 1) = k;
-%                fprintf('mean depolarization %d, mean hyperpolarization %d, mean excitation %d, mean inhibition %d\n', mean(DATA(k).depolarizations), mean(DATA(k).hyperpolarizations), mean(DATA(k).excitation), mean(DATA(k).inhibition));
-           end
-           ax{1, 1} = nexttile;
-           yyaxis left;
-           mean_plt = bar(data_count, mean_conductances, 0.3, 'stacked', 'FaceColor', 'flat');
-           hold on;
-           net_plt = bar(data_count, net_conductances, 0.5, 'stacked', 'FaceColor', 'flat');
-           hold off;
-           ylabel('Mean Conductance (S)');
-           xlabel('Pulse Rate');
-           for k = 1: 1: length(DATA)
-               mean_plt(1).CData(k, :) = [1, 0, 0];
-               mean_plt(2).CData(k, :) = [0, 0, 1];
-               net_plt(1).CData(k, :) = [1, 0, 0];
-               net_plt(2).CData(k, :) = [0, 0, 1];
-           end
-           y1max = max(mean_conductances, [], 'all');
-           y1max = y1max+0.1*y1max;
-           if y1max == 0
-               ylim([0, 1]);
-           else
-               ylim([-y1max, y1max]);
-           end
-           y2max = max(spikes_per_rep, [], 'all');
-           y2max = y2max+0.1*y2max;
-           yyaxis right;
-           plot(data_count, spikes_per_rep, '-ok');
-           ylabel('Spikes per stim. rep. (SPS)');
-           if y2max == 0
-               ylim([0, 1]);
-           else
-               ylim([-y2max, y2max]);
-           end
-           set(ax{1, 1},'xticklabel',pulse_rates);
-           ax{2, 1} = nexttile;
-           yyaxis left;
-           mean_plt = bar(data_count, mean_polarizations, 'stacked', 'FaceColor', 'flat');
-           ylabel('Mean Polarizaions (V)');
-           xlabel('Pulse Rate');
-           for k = 1: 1: length(DATA)
-               mean_plt(1).CData(k, :) = [1, 0, 0];
-               mean_plt(2).CData(k, :) = [0, 0, 1];
-           end
-           y1max = max(mean_polarizations, [], 'all');
-           y1max = y1max+0.1*y1max;
-           if y1max == 0
-               ylim([0, 1]);
-           else
-               ylim([-y1max, y1max]);
-           end
-           y2max = max(spikes_per_rep, [], 'all');
-           y2max = y2max+0.1*y2max;
-           yyaxis right;
-           plot(data_count, spikes_per_rep, '-ok');
-           ylabel('Spikes per stim. rep. (SPS)');
-           if y2max == 0
-               ylim([0, 1]);
-           else
-               ylim([-y2max, y2max]);
-           end
-           set(ax{2, 1},'xticklabel',pulse_rates);
-           fprintf('[%d secs] Plotting stats\n', toc(tStart));
-           stats = table(pulse_rates, spikes_per_rep, mean_polarizations, mean_conductances, net_conductances, mean_active_current);
        end
    end
 end
