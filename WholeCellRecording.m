@@ -328,7 +328,6 @@ classdef WholeCellRecording
            fprintf('[%d secs] Computed Stats\n', toc(tStart));
        end
        function stats = get_stats(app)
-           app = app.compute_stats();
            measures = ["rate", "ge_net", "gi_net", "ge_mean", "gi_mean", "depolarizations", "hyperpolarizations", "sps", "Iactive"];
            experiments = [app.paradigm];
            rates = [app.rate];
@@ -402,7 +401,11 @@ classdef WholeCellRecording
                 [c1, d1] = sort(m1);
                 lower_values = lower_values(d1);
                 lower_rates = lower_rates(c1);
-                lower_cutoff = interp1(lower_values, lower_rates, drop_3dB_value, "linear");
+                if length(c1(:)) > 1
+                    lower_cutoff = interp1(lower_values, lower_rates, drop_3dB_value, "linear");
+                else
+                    lower_cutoff = lower_rates;
+                end
             else
                 lower_cutoff = lower_rates;
             end
@@ -411,11 +414,14 @@ classdef WholeCellRecording
                 [c2, d2] = sort(m2);
                 upper_values = upper_values(d2);
                 upper_rates = upper_rates(c2);
-                upper_cutoff = interp1(upper_values, upper_rates, drop_3dB_value, "makima");
+                if length(c2(:)) > 1
+                    upper_cutoff = interp1(upper_values, upper_rates, drop_3dB_value, "linear");
+                else
+                    upper_cutoff = upper_rates;
+                end
             else
                 upper_cutoff = upper_rates;
             end
-
             Q = rates(max_index)/(2*(upper_cutoff - lower_cutoff));
             points = [max_value, rates(max_index), drop_3dB_value, lower_cutoff, upper_cutoff, Q];
         end
