@@ -327,6 +327,7 @@ classdef WholeCellRecording
            end
            fprintf('[%d secs] Computed Stats\n', toc(tStart));
        end
+
        function stats = get_stats(app)
            measures = ["rate", "ge_net", "gi_net", "ge_mean", "gi_mean", "depolarizations", "hyperpolarizations", "sps", "Iactive"];
            experiments = [app.paradigm];
@@ -397,7 +398,7 @@ classdef WholeCellRecording
             upper_values = values(max_index:end);
             upper_rates = rates(max_index:end);
             if length(lower_values(:)) > 1
-                [lower_values, m1, ~] = unique(lower_values, 'last');
+                [lower_values, m1, ~] = unique(lower_values, 'first');
                 [c1, d1] = sort(m1);
                 lower_values = lower_values(d1);
                 lower_rates = lower_rates(c1);
@@ -410,7 +411,7 @@ classdef WholeCellRecording
                 lower_cutoff = lower_rates;
             end
             if length(upper_values(:)) > 1
-                [upper_values, m2, ~] = unique(upper_values, 'first');
+                [upper_values, m2, ~] = unique(upper_values, 'last');
                 [c2, d2] = sort(m2);
                 upper_values = upper_values(d2);
                 upper_rates = upper_rates(c2);
