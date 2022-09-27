@@ -403,7 +403,10 @@ classdef WholeCellRecording
                 lower_values = lower_values(d1);
                 lower_rates = lower_rates(c1);
                 if length(c1(:)) > 1
-                    lower_cutoff = interp1(lower_values, lower_rates, drop_3dB_value, "linear");
+                    lower_cutoff = interp1(lower_values, lower_rates, drop_3dB_value, "linear", "extrap");
+                    if lower_cutoff < 0
+                        lower_cutoff = 0;
+                    end
                 else
                     lower_cutoff = lower_rates;
                 end
@@ -416,7 +419,7 @@ classdef WholeCellRecording
                 upper_values = upper_values(d2);
                 upper_rates = upper_rates(c2);
                 if length(c2(:)) > 1
-                    upper_cutoff = interp1(upper_values, upper_rates, drop_3dB_value, "linear");
+                    upper_cutoff = interp1(upper_values, upper_rates, drop_3dB_value, "linear", "extrap");
                 else
                     upper_cutoff = upper_rates;
                 end
