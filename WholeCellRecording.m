@@ -174,6 +174,73 @@ classdef WholeCellRecording
            end
        end
    end
+
+   %% Methods for reverse estimation:
+   methods(Access=public)
+       function app = reset_passive_conductances(app, ge_gain, gi_gain)
+           tStart = tic;
+           [m, n] = size(app);
+           for i = 1: 1: m
+               for j = 1: 1: n
+                   app(i, j).ge = app(i, j).ge - app(i, j).ge(1, :);
+                   app(i, j).gi = app(i, j).gi - app(i, j).gi(1, :);
+                   app(i, j).ge = ge_gain.*app(i, j).ge;
+                   app(i, j).gi = gi_gain.*app(i, j).gi;
+               end
+           end
+           fprintf('[%d secs] Resetting passive conductances using user conductance gains \n', toc(tStart));
+       end
+
+       function app = reverse_estimate_membrane_potential(app)
+            tStart = tic;
+            [m, n] = size(app);
+            for i = 1: 1: m
+                for j = 1: 1: n
+                   app(i, j).Vm = 0.*app(i, j).Vm + app(i, j).Ess;
+                   for k = 2: 1: size(app(i, j).Vm, 1)
+                       app(i, j).Vm(k, :) = app(i, j).Vm(k-1, :) + (1./app(i, j).Fs).*(1./app(i, j).Cm(k-1, :)).*(app(i, j).Iinj(k-1, :) ...
+                           - (1./app(i, j).Rin(k-1, :)).*(app(i, j).Vm(k-1, :) - app(i, j).Er(k-1, :)) ...
+                           - app(i, j).ge(k-1, :).*(app(i, j).Vm(k-1, :) - app(i, j).Ee(k-1, :)) ...
+                           - app(i, j).gi(k-1, :).*(app(i, j).Vm(k-1, :) - app(i, j).Ei(k-1, :)));
+%                           - app(i, j).alpha(k-1, :).*(app(i, j).Vm(k-1, :) - app(i, j).Et(k-1, :)).*(app(i, j).Vm(k-1, :) - app(i, j).Er(k-1, :)) ...
+%                            - app(i, j).beta(k-1, :).*(app(i, j).Vm(k-1, :) - app(i, j).Er(k-1, :)) ...
+                   end
+                end
+            end
+            fprintf('[%d secs] Reverse estimating Vm using user conductance gains \n', toc(tStart));
+       end
+       function app = plot_reverse_estimations(app)
+            tStart = tic;
+            nplots = 2;
+            [m, n] = size(app);
+            app(1, 1).fig = figure('Name', strcat(app(1, 1).filename, ' Reconstructions'));
+            for i = 1: 1: m
+                tiledlayout(nplots, n);
+                ax = cell(nplots, n);
+                for k = 1: 1: nplots
+                    for j = 1: 1: n
+                        ax{j, k} = nexttile;
+                        switch k
+                            case 1
+                                plot(app(i, j).time, app(i, j).Vm);
+                                ax{j, k}.Title.String = app(i, j).paradigm;
+                                if j == 1
+                                    ax{j, k}.YLabel.String = 'Vm (V)';
+                                end
+                            case 2
+                                plot(app(i, j).time, app(i, j).ge, 'r', app(i, j).time, app(i, j).gi, 'b');
+                                if j == 1
+                                    ax{j, k}.YLabel.String = 'G (S)';
+                                end
+                                ax{j, k}.XLabel.String = 'time (sec)'; 
+                        end
+                        linkaxes([ax{j, :}], 'x');
+                    end
+                end
+            end
+            fprintf('[%d secs] Plotting reverse estimations. \n', toc(tStart));
+        end
+   end
    %% Methods to filter data
    methods(Access=public)
        function app = zero_phase_filter_Vm(app, filter_parameters)
