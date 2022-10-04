@@ -188,10 +188,11 @@ classdef WholeCellRecording
                    app(i, j).gi = gi_gain.*app(i, j).gi;
                end
            end
-           fprintf('[%d secs] Resetting passive conductances using user conductance gains \n', toc(tStart));
+           fprintf('[%d secs] Resetting passive conductances using user conductance gains (%d, %d). \n', toc(tStart), ge_gain, gi_gain);
        end
 
-       function app = reverse_estimate_membrane_potential(app)
+       function app = reverse_estimate_membrane_potential(app, ge_gain, gi_gain)
+            app = app.reset_passive_conductances(ge_gain, gi_gain);
             tStart = tic;
             [m, n] = size(app);
             for i = 1: 1: m
@@ -207,7 +208,7 @@ classdef WholeCellRecording
                    end
                 end
             end
-            fprintf('[%d secs] Reverse estimating Vm using user conductance gains \n', toc(tStart));
+            fprintf('[%d secs] Reverse estimating Vm using user conductance gains (%d, %d). \n', toc(tStart), ge_gain, gi_gain);
        end
        function app = plot_reverse_estimations(app)
             tStart = tic;
@@ -570,6 +571,7 @@ classdef WholeCellRecording
                         end
                         linkaxes([ax{j, :}], 'x');
                     end
+                    linkaxes([ax{:, k}], 'y');
                 end
             end
             fprintf('[%d secs] Plotting data\n', toc(tStart));
