@@ -412,6 +412,21 @@ classdef WholeCellRecording
            stats = array2table(stats, "RowNames",measures,"VariableNames",experiments);
        end
 
+       function plot_stats(app)
+            rates = categorical(arrayfun(@(a)num2str(a), [app.rate], 'UniformOutput', 0));
+            figure();
+            hold on;
+            bar(rates, [app.ge_mean], "BarWidth", 0.5, "FaceColor", [0.5, 0.0, 0.0]);
+            bar(rates, [app.ge_net], "BarWidth", 0.35, "FaceColor", [1.0, 0.0, 0.0]);
+            bar(rates, -1.*[app.gi_mean], "BarWidth", 0.5, "FaceColor", [0, 0.0, 0.7]);
+            bar(rates, -1.*[app.gi_net], "BarWidth", 0.35, "FaceColor", [0.0, 0.5, 1.0]);
+            hold off;
+            ylim([-1*max(max([app.ge_mean]), max([app.gi_mean])),max(max([app.ge_mean]), max([app.gi_mean]))]);
+            yyaxis right;
+            plot(rates, [app.sps_mean], '-ok', 'MarkerFaceColor',[0, 0, 0], 'MarkerSize', 6);
+            ylim([-1*(max([app.sps_mean])+0.2), (max([app.sps_mean])+0.2)]);
+       end
+
        function write_stats_to_file(~, stats, filename, SheetName)
             tStart = tic;
             writetable(stats, filename, 'Sheet', SheetName, 'WriteRowNames', 1);
