@@ -358,6 +358,34 @@ classdef WholeCellRecording
            end
            fprintf('[%d secs] Computed passive conductances\n', toc(tStart));
        end
+
+       function app = compute_passive_conductances_nopage(app)
+           tStart = tic;
+           [m, n] = size(app);
+           for i = 1: 1: m
+               for j = 1: 1: n
+                   samples = size(app(i, j).Vm, 1);
+                   A = zeros(2, 2, samples);
+                   B = zeros(2, 1, samples);
+                   G = zeros(2, 1, samples);
+                   A(1, 1, :) = sum((app(i, j).Vm - app(i, j).Ee).^2, 2);
+                   A(1, 2, :) = sum((app(i, j).Vm - app(i, j).Ee).*(app(i, j).Vm - app(i, j).Ei), 2);
+                   A(2, 1, :) = A(1, 2, :);
+                   A(2, 2, :) = sum((app(i, j).Vm - app(i, j).Ei).^2, 2);
+                   C = app(i, j).Im - app(i, j).Iinj - app(i, j).Iactive + app(i, j).Ileak;
+                   B(1, 1, :) = -sum(C.*(app(i, j).Vm - app(i, j).Ee), 2);
+                   B(2, 1, :) = -sum(C.*(app(i, j).Vm - app(i, j).Ei), 2);
+                   for k = 1: 1: samples
+                       G(:, :, k) = pinv(A(:, :, k))*B(:, :, k);
+                   end
+%                    G = pagemtimes(pageinv(A), B);
+                   app(i, j).ge = reshape(G(1, 1, :), [samples, 1]);
+                   app(i, j).gi = reshape(G(2, 1, :), [samples, 1]);
+               end
+           end
+           fprintf('[%d secs] Computed passive conductances\n', toc(tStart));
+       end
+
        function app = compute_passive_currents(app)
            tStart = tic;
                [m, n] = size(app);
@@ -636,7 +664,7 @@ classdef WholeCellRecording
             app = app.compute_leakage_currents();
             app = app.compute_membrane_currents();
             app = app.zero_phase_filter_Im(filter_parameters);
-            app = app.compute_passive_conductances();
+            app = app.compute_passive_conductances_nopage();
             app = app.compute_passive_currents();
             app = app.compute_stats();
        end
