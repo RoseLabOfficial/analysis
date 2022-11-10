@@ -411,7 +411,7 @@ classdef WholeCellRecording
                    app(i, j).excitation = app(i, j).ge.*(app(i, j).ge>0);
                    app(i, j).inhibition = app(i, j).gi.*(app(i, j).gi>0);
 %                    resultant_conductance = app(i, j).excitation(1:app(i, j).response_samples) - app(i, j).inhibition(1:app(i, j).response_samples);
-                   resultant_conductance = app(i, j).excitation(1:app(i, j).response_samples) - app(i, j).inhibition(1:app(i, j).response_samples);
+                   resultant_conductance = app(i, j).excitation - app(i, j).inhibition;
                    app(i, j).ge_net = mean(resultant_conductance.*(resultant_conductance>0), 1);
                    app(i, j).gi_net = -1*mean(resultant_conductance.*(resultant_conductance<0), 1);
                    app(i, j).ge_mean = mean(app(i, j).excitation(1:app(i, j).response_samples), 1);
