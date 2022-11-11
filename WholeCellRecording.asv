@@ -433,13 +433,13 @@ classdef WholeCellRecording
                    app(i, j).hyperpolarizations_mean = mean(app(i, j).hyperpolarizations(:, 1), 1);
                    app(i, j).sps_mean = mean(app(i, j).sps(:, 1), 1);
 
-                   Iexcitation = -1.*app(i, j).Ie(:, 1).*((-1.*app(i, j).Ie(:, 1)) > 0);
-                   Iinhibition = app(i, j).Ii(:, 1).*(app(i, j).Ii(:, 1) > 0);
+                   Iexcitation = -1.*app(i, j).Ie.*((-1.*app(i, j).Ie) > 0);
+                   Iinhibition = app(i, j).Ii.*(app(i, j).Ii > 0);
                    resultant_current = Iexcitation - Iinhibition;
                    app(i, j).Ie_net = mean(resultant_current.*(resultant_current > 0), 1);
                    app(i, j).Ii_net = -1.*mean(resultant_current.*(resultant_current < 0), 1);
-                   app(i, j).Ie_mean = mean(Iexcitation, 1);
-                   app(i, j).Ii_mean = mean(Iinhibition, 1);
+                   app(i, j).Ie_mean = app(mean(i, j).Iexcitation, 1);
+                   app(i, i).Ii_mean = app(mean(i, j).Iinhibition, 1);
                end
            end
            fprintf('[%d secs] Computed Stats\n', toc(tStart));
@@ -465,14 +465,9 @@ classdef WholeCellRecording
            stats = array2table(stats, "RowNames",measures,"VariableNames",experiments);
        end
 
-       function plot_stats(app)
-            app.plot_conductance_stats();
-            app.plot_current_stats();
-       end
-
        function plot_conductance_stats(app)
             rates = categorical(arrayfun(@(a)num2str(a), [app.rate], 'UniformOutput', 0));
-            figure("Name", app(1, 1).filename+" conductance stats");
+            figure();
             hold on;
             bar(rates, [app.ge_mean], "BarWidth", 0.5, "FaceColor", [0.5, 0.0, 0.0]);
             bar(rates, [app.ge_net], "BarWidth", 0.35, "FaceColor", [1.0, 0.0, 0.0]);
@@ -487,7 +482,7 @@ classdef WholeCellRecording
 
        function plot_current_stats(app)
             rates = categorical(arrayfun(@(a)num2str(a), [app.rate], 'UniformOutput', 0));
-            figure("Name", app(1, 1).filename+" current stats");
+            figure();
             hold on;
             bar(rates, [app.Ie_mean], "BarWidth", 0.5, "FaceColor", [0.5, 0.0, 0.0]);
             bar(rates, [app.Ie_net], "BarWidth", 0.35, "FaceColor", [1.0, 0.0, 0.0]);
@@ -510,7 +505,7 @@ classdef WholeCellRecording
    methods(Access=public)
         function meta_stats = compute_meta_stats(app)
            tStart = tic;
-           RowNames = ["ge_net", "gi_net", "ge_mean", "gi_mean", "depolarizations", "hyperpolarizations", "sps", "Iactive", "Ie_net", "Ii_net", "Ie_mean", "Ii_mean"];
+           RowNames = ["ge_net", "gi_net", "ge_mean", "gi_mean", "depolarizations", "hyperpolarizations", "sps", "Iactive", "Ie_net", "Ie_mean", "Ii_net", "Ii_mean"];
            VariableNames = ["min value", "min rate", "max value", "max rate", "Percent change", "-3dB value", "lower cutoff", "upper cutoff", "Q"];
            rates = [app.rate];
            ge_nets = [app.ge_net];
@@ -536,10 +531,8 @@ classdef WholeCellRecording
            sps_mean_points = app.estimate_filter_points(sps_means, rates);
            Iactive_mean_points = app.estimate_filter_points(Iactive_means, rates);
            Ie_net_points = app.estimate_filter_points(Ie_nets, rates);
-           Ii_net_points = app.estimate_filter_points(Ii_nets, rates);
-           Ie_mean_points = app.estimate_filter_points(Ie_means, rates);
-           Ii_mean_points = app.estimate_filter_points(Ii_means, rates);
-           meta_stats = [ge_net_points; gi_net_points; ge_mean_points; gi_mean_points; depolarizations_mean_points; hyperpolarizations_mean_points; sps_mean_points; Iactive_mean_points; Ie_net_points; Ii_net_points; Ie_mean_points; Ii_mean_points];
+           
+           meta_stats = [ge_net_points; gi_net_points; ge_mean_points; gi_mean_points; depolarizations_mean_points; hyperpolarizations_mean_points; sps_mean_points; Iactive_mean_points];
            meta_stats = array2table(meta_stats, "RowNames", RowNames, "VariableNames",VariableNames);
            fprintf('[%d secs] Computed Meta Stats\n', toc(tStart));
         end
@@ -661,7 +654,7 @@ classdef WholeCellRecording
                                     ax{j, k}.YLabel.String = 'G (S)';
                                 end
                             case 6
-                                plot(app(i, j).time, -1.*app(i, j).Ie(:, 1), 'r', app(i, j).time, app(i, j).Ii(:, 1), 'b');
+                                plot(app(i, j).time, app(i, j).Ie(:, 1), 'r', app(i, j).time, app(i, j).Ii(:, 1), 'b');
                                 if j == 1
                                     ax{j, k}.YLabel.String = 'Isyn (A)';
                                 end
