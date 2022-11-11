@@ -62,6 +62,7 @@ classdef WholeCellRecording
 
         %% meta stats
         maxima
+        minima
         drop_3dB
    end
    properties(Access=private)
@@ -162,6 +163,14 @@ classdef WholeCellRecording
                     app(i, j).maxima.depolarizations_mean = zeros(1, 2);
                     app(i, j).maxima.hyperpolarizations_mean = zeros(1, 2);
                     app(i, j).maxima.sps_mean = zeros(1, 2);
+                    app(i, j).minima.ge_mean = zeros(1, 2);
+                    app(i, j).minima.gi_mean = zeros(1, 2);
+                    app(i, j).minima.ge_net = zeros(1, 2);
+                    app(i, j).minima.gi_net = zeros(1, 2);
+                    app(i, j).minima.Iactive_mean = zeros(1, 2);
+                    app(i, j).minima.depolarizations_mean = zeros(1, 2);
+                    app(i, j).minima.hyperpolarizations_mean = zeros(1, 2);
+                    app(i, j).minima.sps_mean = zeros(1, 2);
                     app(i, j).drop_3dB.ge_mean = zeros(1, 2);
                     app(i, j).drop_3dB.gi_mean = zeros(1, 2);
                     app(i, j).drop_3dB.ge_net = zeros(1, 2);
@@ -467,7 +476,7 @@ classdef WholeCellRecording
         function meta_stats = compute_meta_stats(app)
            tStart = tic;
            RowNames = ["ge_net", "gi_net", "ge_mean", "gi_mean", "depolarizations", "hyperpolarizations", "sps", "Iactive"];
-           VariableNames = ["max value", "max rate", "-3dB value", "lower cutoff", "upper cutoff", "Q"];
+           VariableNames = ["min value", "min rate", "max value", "max rate", "Percent change", "-3dB value", "lower cutoff", "upper cutoff", "Q"];
            rates = [app.rate];
            ge_nets = [app.ge_net];
            gi_nets = [app.gi_net];
@@ -504,6 +513,8 @@ classdef WholeCellRecording
 
         function points = estimate_filter_points(~, values, rates)
             [max_value, max_index] = max(values, [], 2);
+            [min_value, min_index] = min(values, [], 2);
+            percent_change = ((max_value - min_value)/max_value)*100;
             drop_3dB_value = max_value*0.707;
             lower_values = values(1:max_index);
             lower_rates = rates(1:max_index);
@@ -539,7 +550,7 @@ classdef WholeCellRecording
                 upper_cutoff = upper_rates;
             end
             Q = rates(max_index)/(2*(upper_cutoff - lower_cutoff));
-            points = [max_value, rates(max_index), drop_3dB_value, lower_cutoff, upper_cutoff, Q];
+            points = [min_value, rates(min_index), max_value, rates(max_index), percent_change, drop_3dB_value, lower_cutoff, upper_cutoff, Q];
         end
        
         function cutoff_rate = estimate_cutoff_rate(~, rates, values, query_value)
