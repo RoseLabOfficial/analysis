@@ -423,29 +423,15 @@ classdef WholeCellRecording
                    app(i, j).hyperpolarizations = del_Vm.*(del_Vm(:, 1) < 0);
                    app(i, j).excitation = app(i, j).ge.*(app(i, j).ge>0);
                    app(i, j).inhibition = app(i, j).gi.*(app(i, j).gi>0);
-%                    resultant_conductance = app(i, j).excitation(1:app(i, j).response_samples) - app(i, j).inhibition(1:app(i, j).response_samples);
                    resultant_conductance = app(i, j).excitation - app(i, j).inhibition;
                    app(i, j).ge_net = mean(resultant_conductance.*(resultant_conductance>0), 1);
                    app(i, j).gi_net = -1*mean(resultant_conductance.*(resultant_conductance<0), 1);
-
-%                    app(i, j).ge_mean = mean(app(i, j).excitation(1:app(i, j).response_samples), 1);
-%                    app(i, j).gi_mean = mean(app(i, j).inhibition(1:app(i, j).response_samples), 1);
-%                    app(i, j).Iactive_mean = mean(app(i, j).Iactive(1:app(i, j).response_samples, 1), 1);
-%                    app(i, j).depolarizations_mean = mean(app(i, j).depolarizations(1:app(i, j).response_samples, 1), 1);
-%                    app(i, j).hyperpolarizations_mean = mean(app(i, j).hyperpolarizations(1:app(i, j).response_samples, 1), 1);
-%                    app(i, j).sps_mean = mean(app(i, j).sps(1:app(i, j).response_samples, 1), 1);
-
                    app(i, j).ge_mean = mean(app(i, j).excitation, 1);
                    app(i, j).gi_mean = mean(app(i, j).inhibition, 1);
-                   app(i, j).Iactive_mean = mean(app(i, j).Iactive, 1);
-                   app(i, j).depolarizations_mean = mean(app(i, j).depolarizations, 1);
-                   app(i, j).hyperpolarizations_mean = mean(app(i, j).hyperpolarizations, 1);
-                   app(i, j).sps_mean = mean(app(i, j).sps, 1);
-
-%                    resultant_current = (-1.*app(i, j).Ie) - app(i, j).Ii;
-%                    app(i, j).Ie_net = mean(resultant_current.*(resultant_current>0), 1);
-%                    app(i, j).Ii_net = -1.*mean(resultant_current.*(resultant_current<0), 1);
-
+                   app(i, j).Iactive_mean = mean(app(i, j).Iactive(:, 1), 1);
+                   app(i, j).depolarizations_mean = mean(app(i, j).depolarizations(:, 1), 1);
+                   app(i, j).hyperpolarizations_mean = mean(app(i, j).hyperpolarizations(:, 1), 1);
+                   app(i, j).sps_mean = mean(app(i, j).sps(:, 1), 1);
                end
            end
            fprintf('[%d secs] Computed Stats\n', toc(tStart));
