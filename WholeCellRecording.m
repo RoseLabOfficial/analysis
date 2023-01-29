@@ -467,26 +467,37 @@ classdef WholeCellRecording
 
        function plot_stats(app)
             app.plot_conductance_stats();
-            app.plot_current_stats();
+%             app.plot_current_stats();
        end
 
        function plot_conductance_stats(app)
-            rates = categorical(arrayfun(@(a)num2str(a), [app.rate], 'UniformOutput', 0));
+            [rates, idxs] = sort([app.rate]);
+            ge_means = [app.ge_mean];
+            gi_means = [app.gi_mean];
+            ge_nets = [app.ge_net];
+            gi_nets = [app.gi_net];
+            spss = [];
+            for i = 1: 1: size(app, 2)
+                spss(end+1) = app(1, i).sps(1, 1);
+            end
+%             spss = [app.sps(1, 1)];
             figure("Name", app(1, 1).filename+" conductance stats");
             hold on;
-            bar(rates, [app.ge_mean], "BarWidth", 0.5, "FaceColor", [0.5, 0.0, 0.0]);
-            bar(rates, [app.ge_net], "BarWidth", 0.35, "FaceColor", [1.0, 0.0, 0.0]);
-            bar(rates, -1.*[app.gi_mean], "BarWidth", 0.5, "FaceColor", [0, 0.0, 0.7]);
-            bar(rates, -1.*[app.gi_net], "BarWidth", 0.35, "FaceColor", [0.0, 0.5, 1.0]);
+            bar(rates, ge_means(idxs), "BarWidth", 0.5, "FaceColor", [0.5, 0.0, 0.0]);
+            bar(rates, ge_nets(idxs), "BarWidth", 0.35, "FaceColor", [1.0, 0.0, 0.0]);
+            bar(rates, -1.*gi_means(idxs), "BarWidth", 0.5, "FaceColor", [0, 0.0, 0.7]);
+            bar(rates, -1.*gi_nets(idxs), "BarWidth", 0.35, "FaceColor", [0.0, 0.5, 1.0]);
             hold off;
             ylim([-1*max(max([app.ge_mean]), max([app.gi_mean])),max(max([app.ge_mean]), max([app.gi_mean]))]);
             yyaxis right;
-            plot(rates, [app.sps_mean], '-ok', 'MarkerFaceColor',[0, 0, 0], 'MarkerSize', 6);
+            plot(rates, spss, '-ok', 'MarkerFaceColor',[0, 0, 0], 'MarkerSize', 6);
             ylim([-1*(max([app.sps_mean])+0.2), (max([app.sps_mean])+0.2)]);
        end
 
        function plot_current_stats(app)
-            rates = categorical(arrayfun(@(a)num2str(a), [app.rate], 'UniformOutput', 0));
+%             rates = categorical(arrayfun(@(a)num2str(a), [app.rate], 'UniformOutput', 0));
+            rates = [app.rate];
+%             rates = 1: 1: length(rates);
             figure("Name", app(1, 1).filename+" current stats");
             hold on;
             bar(rates, [app.Ie_mean], "BarWidth", 0.5, "FaceColor", [0.5, 0.0, 0.0]);
