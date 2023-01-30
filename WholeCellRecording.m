@@ -656,20 +656,32 @@ classdef WholeCellRecording
                                 if j == 1
                                     ax{j, k}.YLabel.String = 'Iactive (A)';
                                 end
+%                             case 3
+%                                 plot(app(i, j).time, app(i, j).Ileak);
+%                                 if j == 1
+%                                     ax{j, k}.YLabel.String = 'Ileak (A)';
+%                                 end
                             case 3
-                                plot(app(i, j).time, app(i, j).Ileak);
-                                if j == 1
-                                    ax{j, k}.YLabel.String = 'Ileak (A)';
-                                end
-                            case 4
                                 plot(app(i, j).time, app(i, j).Im);
                                 if j == 1
                                     ax{j, k}.YLabel.String = 'Im (A)';
                                 end
-                            case 5
+                            case 4
                                 plot(app(i, j).time, app(i, j).ge, 'r', app(i, j).time, app(i, j).gi, 'b');
                                 if j == 1
                                     ax{j, k}.YLabel.String = 'G (S)';
+                                end
+                            case 5
+                                resultant_ge = app(i, j).ge - app(i, j).gi;
+                                resultant_ge = resultant_ge .* (resultant_ge > 0);
+                                resultant_gi = app(i, j).ge - app(i, j).gi;
+                                resultant_gi = resultant_gi .* (resultant_gi < 0);
+                                area(app(i, j).time, resultant_ge, 'FaceColor', 'r');
+                                hold on;
+                                area(app(i, j).time, resultant_gi, 'FaceColor', 'b');
+                                hold off;
+                                if j == 1
+                                    ax{j, k}.YLabel.String = 'Gnet (S)';
                                 end
                             case 6
                                 plot(app(i, j).time, -1.*app(i, j).Ie(:, 1), 'r', app(i, j).time, app(i, j).Ii(:, 1), 'b');
