@@ -446,9 +446,10 @@ classdef WholeCellRecording
        end
 
        function stats = get_stats(app)
-           measures = ["rate", "ge_net", "gi_net", "ge_mean", "gi_mean", "depolarizations", "hyperpolarizations", "sps", "Iactive", "Ie_net", "Ii_net", "Ie_mean", "Ii_mean"];
+           measures = ["rate", "pulse_number", "ge_net", "gi_net", "ge_mean", "gi_mean", "depolarizations", "hyperpolarizations", "sps", "Iactive", "Ie_net", "Ii_net", "Ie_mean", "Ii_mean"];
            experiments = [app.paradigm];
            rates = [app.rate];
+           pulse_number = [app.npulses];
            ge_nets = [app.ge_net];
            gi_nets = [app.gi_net];
            ge_means = [app.ge_mean];
@@ -461,17 +462,22 @@ classdef WholeCellRecording
            hyperpolarizations_means = [app.hyperpolarizations_mean];
            sps_means = [app.sps_mean];
            Iactive_means = [app.Iactive_mean];
-           stats = [rates; ge_nets; gi_nets; ge_means; gi_means; depolarizations_means; hyperpolarizations_means; sps_means; Iactive_means; Ie_nets; Ii_nets; Ie_means; Ii_means];
+           stats = [rates; pulse_number; ge_nets; gi_nets; ge_means; gi_means; depolarizations_means; hyperpolarizations_means; sps_means; Iactive_means; Ie_nets; Ii_nets; Ie_means; Ii_means];
            stats = array2table(stats, "RowNames",measures,"VariableNames",experiments);
        end
 
        function plot_stats(app)
-            app.plot_conductance_stats();
+            app.plot_conductance_stats('rate');
+            app.plot_conductance_stats('pulse_number');
 %             app.plot_current_stats();
        end
 
-       function plot_conductance_stats(app)
-            [rates, idxs] = sort([app.rate]);
+       function plot_conductance_stats(app, kind)
+           if strcmp(kind, 'rate')
+               [x, idxs] = sort([app.rate]);
+           elseif strcmp(kind, 'pulse_number')
+               [x, idxs] = sort([app.npulses]);
+           end 
             ge_means = [app.ge_mean];
             gi_means = [app.gi_mean];
             ge_nets = [app.ge_net];
@@ -481,16 +487,20 @@ classdef WholeCellRecording
                 spss(end+1) = app(1, i).sps(1, 1);
             end
 %             spss = [app.sps(1, 1)];
+            if x == x(1)
+                fprintf('Cannot plot %s stats, %ss must be unique. \n', kind, kind);
+                return;
+            end
             figure("Name", app(1, 1).filename+" conductance stats");
             hold on;
-            bar(rates, ge_means(idxs), "BarWidth", 0.5, "FaceColor", [0.5, 0.0, 0.0]);
-            bar(rates, ge_nets(idxs), "BarWidth", 0.35, "FaceColor", [1.0, 0.0, 0.0]);
-            bar(rates, -1.*gi_means(idxs), "BarWidth", 0.5, "FaceColor", [0, 0.0, 0.7]);
-            bar(rates, -1.*gi_nets(idxs), "BarWidth", 0.35, "FaceColor", [0.0, 0.5, 1.0]);
+            bar(x, ge_means(idxs), "BarWidth", 0.5, "FaceColor", [0.5, 0.0, 0.0]);
+            bar(x, ge_nets(idxs), "BarWidth", 0.35, "FaceColor", [1.0, 0.0, 0.0]);
+            bar(x, -1.*gi_means(idxs), "BarWidth", 0.5, "FaceColor", [0, 0.0, 0.7]);
+            bar(x, -1.*gi_nets(idxs), "BarWidth", 0.35, "FaceColor", [0.0, 0.5, 1.0]);
             hold off;
             ylim([-1*max(max([app.ge_mean]), max([app.gi_mean])),max(max([app.ge_mean]), max([app.gi_mean]))]);
             yyaxis right;
-            plot(rates, spss, '-ok', 'MarkerFaceColor',[0, 0, 0], 'MarkerSize', 6);
+            plot(x, spss, '-ok', 'MarkerFaceColor',[0, 0, 0], 'MarkerSize', 6);
             ylim([-1*(max([app.sps_mean])+0.2), (max([app.sps_mean])+0.2)]);
        end
 
@@ -519,7 +529,7 @@ classdef WholeCellRecording
    end
    %% Methods for meta stats.
    methods(Access=public)
-        function meta_stats = compute_meta_stats(app)
+        function meta_stats = compute_rate_meta_stats(app)
            tStart = tic;
            RowNames = ["ge_net", "gi_net", "ge_mean", "gi_mean", "depolarizations", "hyperpolarizations", "sps", "Iactive", "Ie_net", "Ii_net", "Ie_mean", "Ii_mean"];
            VariableNames = ["min value", "min rate", "max value", "max rate", "Percent change", "-3dB value", "lower cutoff", "upper cutoff", "Q"];
@@ -554,9 +564,49 @@ classdef WholeCellRecording
            meta_stats = array2table(meta_stats, "RowNames", RowNames, "VariableNames",VariableNames);
            fprintf('[%d secs] Computed Meta Stats\n', toc(tStart));
         end
+
+        function meta_stats = compute_pulse_number_meta_stats(app)
+           tStart = tic;
+           RowNames = ["ge_net", "gi_net", "ge_mean", "gi_mean", "depolarizations", "hyperpolarizations", "sps", "Iactive", "Ie_net", "Ii_net", "Ie_mean", "Ii_mean"];
+           VariableNames = ["min value", "min pulses", "max value", "max pulses", "Percent change", "-3dB value", "lower cutoff", "upper cutoff", "Q"];
+           pulses = [app.npulses];
+           ge_nets = [app.ge_net];
+           gi_nets = [app.gi_net];
+           ge_means = [app.ge_mean];
+           gi_means = [app.gi_mean];
+           Iactive_means = [app.Iactive_mean];
+           depolarizations_means = [app.depolarizations_mean];
+           hyperpolarizations_means = [app.hyperpolarizations_mean];
+           sps_means = [app.sps_mean];
+           Ie_nets = [app.Ie_net];
+           Ii_nets = [app.Ii_net];
+           Ie_means = [app.Ie_mean];
+           Ii_means = [app.Ii_mean];
+           ge_net_points = app.estimate_filter_points(ge_nets, pulses);
+           gi_net_points = app.estimate_filter_points(gi_nets, pulses);
+           ge_mean_points = app.estimate_filter_points(ge_means, pulses);
+           gi_mean_points = app.estimate_filter_points(gi_means, pulses);
+           depolarizations_mean_points = app.estimate_filter_points(depolarizations_means, pulses);
+           hyperpolarizations_mean_points = app.estimate_filter_points(-1.*hyperpolarizations_means, pulses);
+           hyperpolarizations_mean_points(:, 1) = -1.*hyperpolarizations_mean_points(:, 1);
+           hyperpolarizations_mean_points(:, 3) = -1.*hyperpolarizations_mean_points(:, 3);
+           sps_mean_points = app.estimate_filter_points(sps_means, pulses);
+           Iactive_mean_points = app.estimate_filter_points(Iactive_means, pulses);
+           Ie_net_points = app.estimate_filter_points(Ie_nets, pulses);
+           Ii_net_points = app.estimate_filter_points(Ii_nets, pulses);
+           Ie_mean_points = app.estimate_filter_points(Ie_means, pulses);
+           Ii_mean_points = app.estimate_filter_points(Ii_means, pulses);
+           meta_stats = [ge_net_points; gi_net_points; ge_mean_points; gi_mean_points; depolarizations_mean_points; hyperpolarizations_mean_points; sps_mean_points; Iactive_mean_points; Ie_net_points; Ii_net_points; Ie_mean_points; Ii_mean_points];
+           meta_stats = array2table(meta_stats, "RowNames", RowNames, "VariableNames",VariableNames);
+           fprintf('[%d secs] Computed Meta Stats\n', toc(tStart));
+        end
         
-        function meta_stats = get_meta_stats(app)
-            meta_stats = app.compute_meta_stats();
+        function meta_stats = get_rate_meta_stats(app)
+            meta_stats = app.compute_rate_meta_stats();
+        end
+
+        function meta_stats = get_pulse_number_meta_stats(app)
+            meta_stats = app.compute_pulse_number_meta_stats();
         end
 
         function write_meta_stats_to_file(~, stats, filename, SheetName)
