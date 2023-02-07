@@ -1,4 +1,4 @@
-function [ds, stats, rate_meta_stats] = analyze(filename, paradigms, response_times, filter_parameters, overwrite_stats)
+function [ds, stats, meta_stats] = analyze(filename, paradigms, response_times, filter_parameters, overwrite_stats)
     %% Data reading parameters.
     ds = WholeCellRecording(filename, paradigms, response_times);
     %% Filter parameters.
@@ -18,10 +18,11 @@ function [ds, stats, rate_meta_stats] = analyze(filename, paradigms, response_ti
     stats = ds.get_stats();
     disp(stats);
     %% Computing meta-stats.
-    rate_meta_stats = ds.get_rate_meta_stats();
-    disp(rate_meta_stats);
-    pulse_number_meta_stats = ds.get_pulse_number_meta_stats();
-    disp(pulse_number_meta_stats);
+    meta_stats = {};
+    meta_stats.rate = ds.get_rate_meta_stats();
+    disp(meta_stats.rate);
+    meta_stats.pulses = ds.get_pulse_number_meta_stats();
+    disp(meta_stats.pulses);
     %% Plotting.
     ds = ds.plots();
     %% Writing stats to file.
