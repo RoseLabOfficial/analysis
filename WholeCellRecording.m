@@ -734,11 +734,19 @@ classdef WholeCellRecording
                                     ax{j, k}.YLabel.String = 'Gnet (S)';
                                 end
                             case 6
-                                plot(app(i, j).time, -1.*app(i, j).Ie(:, 1), 'r', app(i, j).time, app(i, j).Ii(:, 1), 'b');
-                                if j == 1
-                                    ax{j, k}.YLabel.String = 'Isyn (A)';
+                                if isempty(app(i, j).stimulus)
+                                    plot(app(i, j).time, -1.*app(i, j).Ie(:, 1), 'r', app(i, j).time, app(i, j).Ii(:, 1), 'b');
+                                    if j == 1
+                                        ax{j, k}.YLabel.String = 'Isyn (A)';
+                                    end
+                                else
+                                    plot(app(i, j).time, app(i, j).stimulus, 'k');
+                                    if j == 1
+                                       ax{j, k}.YLabel.String = 'Stimulus (V)';
+                                    end
                                 end
                                 ax{j, k}.XLabel.String = 'time (sec)';
+
                         end
                         linkaxes([ax{j, :}], 'x');
                     end
