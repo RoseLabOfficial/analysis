@@ -90,7 +90,7 @@ classdef WholeCellRecording
                         app(i, j).stimulus = data.stimulus;
                         data.stimulus = [];
                     catch
-                        app(i, j).stimulus = zeros(size(app(i, j).time));
+                        app(i, j).stimulus = [];
                     end
                     app(i, j).Vm = table2array(data).*1e-3;
                     app(i, j).Fs = 1/(app(i, j).time(2, 1) - app(i, j).time(1, 1));
@@ -734,7 +734,7 @@ classdef WholeCellRecording
                                     ax{j, k}.YLabel.String = 'Gnet (S)';
                                 end
                             case 6
-                                if isempty(app(i, j).stimulus)
+                                if (isempty(app(i, j).stimulus))
                                     plot(app(i, j).time, -1.*app(i, j).Ie(:, 1), 'r', app(i, j).time, app(i, j).Ii(:, 1), 'b');
                                     if j == 1
                                         ax{j, k}.YLabel.String = 'Isyn (A)';
