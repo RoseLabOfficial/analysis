@@ -1,0 +1,12 @@
+clc; clear;
+filename = "./example_data.xlsx";
+paradigms = ["1pulse", "80pps-2pulses", "80pps-4pulses"];
+response_durations = [0.98, 0.98, 0.98];
+filter_parameters.differentiatorfir.order = 10;
+filter_parameters.differentiatorfir.Fpass = 100;
+filter_parameters.differentiatorfir.Fstop = 120;
+filter_parameters.lowpassfir.order = 10;
+filter_parameters.lowpassfir.Fpass = 100;
+filter_parameters.lowpassfir.Fstop = 120;
+ds = WholeCellRecordingV2(filename, paradigms, response_durations, filter_parameters);
+ds.call();
