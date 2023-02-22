@@ -53,6 +53,10 @@ classdef WholeCellRecordingV2
         firlowpass
 
         %% Stats
+
+        %% Plots
+        estimations_figure
+        stats_figure
     end
 
     methods(Access=public)
@@ -72,6 +76,8 @@ classdef WholeCellRecordingV2
                 app = app.read_parameters();
                 app = app.build_membrane_potential_filters(membrane_potential_filter_parameters);
                 app = app.build_membrane_current_filters(membrane_current_filter_parameters);
+                app = app.build_analysis_arrays();
+                app = app.build_plots();
             end
         end
 
@@ -222,13 +228,14 @@ classdef WholeCellRecordingV2
                     appender = zeros(app(i, j).membrane_potential_filters.firdifferentiator.delay*2, ...
                         size(app(i, j).membrane_potential, 2));
                     Vm = cat(1, appender+app(i, j).membrane_potential(1, :), app(i, j).membrane_potential, appender+app(i, j).membrane_potential(end, :));
-                    dVmdt = filter(app(i, j).membrane_potential_filters.firdifferentiator.window, Vm);
+                    dVmdt = filter(app(i, j).membrane_potential_filters.firdifferentiator.window, Vm).*app(i, j).fs;
                     app(i, j).membrane_current = app(i, j).membrane_capacitance .* dVmdt(app(i, j).membrane_potential_filters.firdifferentiator.delay*3 + 1: end-app(i, j).membrane_potential_filters.firdifferentiator.delay, :);
                 end
             end
         end
 
         function app = compute_leakage_current(app)
+            [m, n] = size(app);
             for i = 1: m
                 for j = 1: n
                     app(i, j).leakage_current = (1./app(i, j).input_resistance).*(app(i, j).membrane_potential - app(i, j).resting_potential);
@@ -237,6 +244,7 @@ classdef WholeCellRecordingV2
         end
 
         function app = compute_active_conductances(app)
+            [m, n] = size(app);
             for i = 1: m
                 for j = 1: n
                     app(i, j).alpha = ((1./app(i, j).input_resistance)./(2.*(app(i, j).activation_potential-app(i, j).steady_state_potential)));
@@ -248,7 +256,7 @@ classdef WholeCellRecordingV2
         end
 
         function app = compute_activation_currents(app)
-            app.compute_active_conductances();
+            app = app.compute_active_conductances();
             [m, n] = size(app);
             for i = 1: 1: m
                for j = 1: 1: n
@@ -291,7 +299,8 @@ classdef WholeCellRecordingV2
         end
 
     end
-
+    
+    %% Call method for estimator
     methods
         function app = call(app)
             app = app.filter_membrane_potential();
@@ -300,6 +309,75 @@ classdef WholeCellRecordingV2
             app = app.compute_leakage_current();
             app = app.compute_activation_currents();
             app = app.compute_passive_currents();
+        end
+    end
+
+    %% Plot methods
+    methods
+        function app = build_plots(app)
+            app(1, 1).estimations_figure = figure('Name', strcat('Estimations for ', app(1, 1).filename));
+            app(1, 1).stats_figure.mean = figure('Name', strcat('Means for ', app(1, 1).filename));
+        end
+
+        function app = plot_estimations(app)
+            nplots = 6;
+            figure(app(1, 1).estimations_figure);
+            [m, n] = size(app);
+            for i = 1: m
+                tiledlayout(nplots, n);
+                ax = cell(nplots, n);
+                for k = 1: nplots
+                    for j = 1: n
+                        ax{j, k} = nexttile;
+                        switch k
+                            case 1
+                                plot(app(i, j).times, app(i, j).membrane_potential);
+                                ax{j, k}.Title.String = strcat('Eact=', num2str(app(i, j).activation_potential(1, :)));
+                                if j == 1
+                                    ax{j, k}.YLabel.String = 'Vm (V)';
+                                end
+                            case 2
+                                plot(app(i, j).times, app(i, j).activation_current);
+                                ax{j, k}.Title.String = strcat('xalpha=', num2str(app(i, j).alpha_multiplier(1, :)), '; xbeta=', num2str(app(i, j).beta_multiplier(1, :)));
+                                if j == 1
+                                    ax{j, k}.YLabel.String = 'Iact (A)';
+                                end
+                            case 3
+                                plot(app(i, j).times, app(i, j).leakage_current);
+                                ax{j, k}.Title.String = strcat('Cm=', num2str(app(i, j).membrane_capacitance(1, :)), '; Rin=', num2str(app(i, j).input_resistance(1, :)));
+                                if j == 1
+                                    ax{j, k}.YLabel.String = 'Ileak (A)';
+                                end
+                            case 4
+                                plot(app(i, j).times, app(i, j).membrane_current);
+                                ax{j, k}.Title.String = strcat('FO=', num2str(app(i, j).membrane_current_filters.firlowpass.window.FilterOrder), '; Fpass=', num2str(app(i, j).membrane_current_filters.firlowpass.window.PassbandFrequency), '; Fstop=', num2str(app(i, j).membrane_current_filters.firlowpass.window.StopbandFrequency));
+                                if j == 1
+                                    ax{j, k}.YLabel.String = 'Im (A)';
+                                end
+                            case 5
+                                plot(app(i, j).times, app(i, j).excitatory_conductance, 'r', app(i, j).times, app(i, j).inhibitory_conductance, 'b');
+                                if j == 1
+                                    ax{j, k}.YLabel.String = 'G (S)';
+                                end
+                            case 6
+                                if (isempty(app(i, j).stimulus))
+                                    plot(app(i, j).times, -1.*app(i, j).excitatory_current(:, 1), 'r', app(i, j).times, app(i, j).inhibitory_current(:, 1), 'b');
+                                    if j == 1
+                                        ax{j, k}.YLabel.String = 'Isyn (A)';
+                                    end
+                                else
+                                    plot(app(i, j).times, app(i, j).stimulus, 'k');
+                                    if j == 1
+                                       ax{j, k}.YLabel.String = 'Stimulus (V)';
+                                    end
+                                end
+                                ax{j, k}.XLabel.String = 'time (sec)';
+                        end
+                        linkaxes([ax{j, :}], 'x');
+                    end
+                    linkaxes([ax{:, k}], 'y');
+                end
+            end
         end
     end
 end
