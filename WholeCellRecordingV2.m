@@ -156,6 +156,16 @@ classdef WholeCellRecordingV2
             end
         end
 
+        function app = adjust_membrane_potential_wrt_steady_state(app)
+            [m, n] = size(app);
+            for i = 1: m
+                for j = 1: n
+                    app(i, j).injected_current = (1./app(i, j).input_resistance).*(app(i, j).steady_state_potential - app(i, j).resting_potential);
+                    app(i, j).membrane_potential = app(i, j).membrane_potential - app(i, j).membrane_potential(1, :) + app(i, j).steady_state_potential;
+                end
+            end
+        end
+
     end
     %% Filter methods
     methods
@@ -304,8 +314,9 @@ classdef WholeCellRecordingV2
     methods
         function app = call(app)
             app = app.filter_membrane_potential();
+            app = app.adjust_membrane_potential_wrt_steady_state();
             app = app.compute_membrane_current();
-            app = app.filter_membrane_current();
+%             app = app.filter_membrane_current();
             app = app.compute_leakage_current();
             app = app.compute_activation_currents();
             app = app.compute_passive_currents();
@@ -332,25 +343,26 @@ classdef WholeCellRecordingV2
                         switch k
                             case 1
                                 plot(app(i, j).times, app(i, j).membrane_potential);
-                                ax{j, k}.Title.String = strcat('Eact=', num2str(app(i, j).activation_potential(1, :)));
+                                ax{j, k}.Title.String = app(i, j).paradigm;
+                                ax{j, k}.Subtitle.String = strcat('Eact=', num2str(app(i, j).activation_potential(1, :)));
                                 if j == 1
                                     ax{j, k}.YLabel.String = 'Vm (V)';
                                 end
                             case 2
                                 plot(app(i, j).times, app(i, j).activation_current);
-                                ax{j, k}.Title.String = strcat('xalpha=', num2str(app(i, j).alpha_multiplier(1, :)), '; xbeta=', num2str(app(i, j).beta_multiplier(1, :)));
+                                ax{j, k}.Subtitle.String = strcat('xalpha=', num2str(app(i, j).alpha_multiplier(1, :)), '; xbeta=', num2str(app(i, j).beta_multiplier(1, :)));
                                 if j == 1
                                     ax{j, k}.YLabel.String = 'Iact (A)';
                                 end
                             case 3
                                 plot(app(i, j).times, app(i, j).leakage_current);
-                                ax{j, k}.Title.String = strcat('Cm=', num2str(app(i, j).membrane_capacitance(1, :)), '; Rin=', num2str(app(i, j).input_resistance(1, :)));
+                                ax{j, k}.Subtitle.String = strcat('Cm=', num2str(app(i, j).membrane_capacitance(1, 1)), '; Rin=', num2str(app(i, j).input_resistance(1, 1)));
                                 if j == 1
                                     ax{j, k}.YLabel.String = 'Ileak (A)';
                                 end
                             case 4
                                 plot(app(i, j).times, app(i, j).membrane_current);
-                                ax{j, k}.Title.String = strcat('FO=', num2str(app(i, j).membrane_current_filters.firlowpass.window.FilterOrder), '; Fpass=', num2str(app(i, j).membrane_current_filters.firlowpass.window.PassbandFrequency), '; Fstop=', num2str(app(i, j).membrane_current_filters.firlowpass.window.StopbandFrequency));
+                                ax{j, k}.Subtitle.String = strcat('FO=', num2str(app(i, j).membrane_potential_filters.firdifferentiator.window.FilterOrder), '; Fpass=', num2str(app(i, j).membrane_potential_filters.firdifferentiator.window.PassbandFrequency), '; Fstop=', num2str(app(i, j).membrane_potential_filters.firdifferentiator.window.StopbandFrequency));
                                 if j == 1
                                     ax{j, k}.YLabel.String = 'Im (A)';
                                 end

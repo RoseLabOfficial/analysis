@@ -4,7 +4,7 @@ function [ds, stats, meta_stats] = analyze(filename, paradigms, response_times, 
     %% Filter parameters.
     if nargin < 4 || isempty(filter_parameters)
         filter_parameters.CutOffFrequency = 100; % Vm cuttoff. The lower this value, the smoother the traces get, but stay above 80 (Hz) for now.
-        filter_parameters.CutOffFrequency2 = 20; % Im cuttoff.
+        filter_parameters.CutOffFrequency2 = 60; % Im cuttoff.
         filter_parameters.FilterOrder = 100;
         filter_parameters.PassbandRipple = 0.01;
         filter_parameters.StopbandAttenuation = 80;
