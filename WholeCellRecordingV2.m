@@ -168,58 +168,72 @@ classdef WholeCellRecordingV2
     end
     %% Filter methods
     methods
+        function app = build_differentiator_using_order(app, params)
+            if mod(params.Order, 2) == 0
+                app(1, 1).membrane_potential_filters.firdifferentiator.window = designfilt('differentiatorfir', ...
+                    'FilterOrder', params.Order, ...
+                    'PassbandFrequency', params.Fp, ...
+                    'StopbandFrequency', params.Fst, ...
+                    'SampleRate', app(1, 1).fs);
+            else
+                app(1, 1).membrane_potential_filters.firdifferentiator.window = designfilt('differentiatorfir', ...
+                   'FilterOrder', order);
+            end
+            app(1, 1).membrane_potential_filters.firdifferentiator.delay = mean(grpdelay(app(1, 1).membrane_potential_filters.firdifferentiator.window));
+        end
         function app = build_differentiator(app, params)
             d = fdesign.differentiator('Fp,Fst,Ap,Ast', params.Fp, params.Fst, params.Ap, params.Ast, app(1, 1).fs);
             Hd = design(d,'equiripple','SystemObject',true);
             order = length(Hd.Numerator)-1;
-            [m, n] = size(app);
-            for i = 1: m
-                for j = 1: n
-                    if mod(order, 2) == 0
-                        app(i, j).membrane_potential_filters.firdifferentiator.window = designfilt('differentiatorfir', ...
-                           'FilterOrder', order, ...
-                           'PassbandFrequency', params.Fp, ...
-                           'StopbandFrequency', params.Fst, ...
-                           'SampleRate', app(i, j).fs);
-                    else
-                        app(i, j).membrane_potential_filters.firdifferentiator.window = designfilt('differentiatorfir', ...
-                           'FilterOrder', order);
-                    end
-                    app(i, j).membrane_potential_filters.firdifferentiator.delay = mean(grpdelay(app(i, j).membrane_potential_filters.firdifferentiator.window));
-                end
+            if mod(order, 2) == 0
+                app(1, 1).membrane_potential_filters.firdifferentiator.window = designfilt('differentiatorfir', ...
+                   'FilterOrder', order, ...
+                   'PassbandFrequency', params.Fp, ...
+                   'StopbandFrequency', params.Fst, ...
+                   'SampleRate', app(1, 1).fs);
+            else
+                app(1, 1).membrane_potential_filters.firdifferentiator.window = designfilt('differentiatorfir', ...
+                   'FilterOrder', order);
             end
+            app(1, 1).membrane_potential_filters.firdifferentiator.delay = mean(grpdelay(app(1, 1).membrane_potential_filters.firdifferentiator.window));
+        end
+
+        function app = build_lowpass_using_order(app, params)
+            app(1, 1).membrane_potential_filters.firlowpass.window = designfilt('lowpassfir', ...
+                   'FilterOrder', params.Order, ...
+                   'PassbandFrequency', params.Fp, ...
+                   'StopbandFrequency', params.Fst, ...
+                   'SampleRate', app(1, 1).fs);
+            app(1, 1).membrane_potential_filters.firlowpass.delay = floor(mean(grpdelay(app(1, 1).membrane_potential_filters.firlowpass.window)));
         end
         
         function app = build_lowpass(app, params)
             d = fdesign.lowpass('Fp,Fst,Ap,Ast', params.Fp, params.Fst, params.Ap, params.Ast, app(1, 1).fs);
             Hd = design(d,'equiripple','SystemObject',true);
             order = length(Hd.Numerator)-1;
-            [m, n] = size(app);
-            for i = 1: m
-                for j = 1: n
-                    app(i, j).membrane_potential_filters.firlowpass.window = designfilt('lowpassfir', ...
-                       'FilterOrder', order, ...
-                       'PassbandFrequency', params.Fp, ...
-                       'StopbandFrequency', params.Fst, ...
-                       'SampleRate', app(i, j).fs);
-                    app(i, j).membrane_potential_filters.firlowpass.delay = floor(mean(grpdelay(app(i, j).membrane_potential_filters.firlowpass.window)));
-                end
-            end
+            app(1, 1).membrane_potential_filters.firlowpass.window = designfilt('lowpassfir', ...
+               'FilterOrder', order, ...
+               'PassbandFrequency', params.Fp, ...
+               'StopbandFrequency', params.Fst, ...
+               'SampleRate', app(1, 1).fs);
+            app(1, 1).membrane_potential_filters.firlowpass.delay = floor(mean(grpdelay(app(1, 1).membrane_potential_filters.firlowpass.window)));
         end
 
         function app = build_membrane_potential_filters(app, parameters)
-            app = app.build_differentiator(parameters.firdifferentiator);
-            app = app.build_lowpass(parameters.firlowpass);
+%             app = app.build_differentiator(parameters.firdifferentiator);
+            app = app.build_differentiator_using_order(parameters.firdifferentiator);
+%             app = app.build_lowpass(parameters.firlowpass);
+            app = app.build_lowpass_using_order(parameters.firlowpass);
         end
 
         function app = filter_membrane_potential(app)
             [m, n] = size(app);
             for i = 1: m
                 for j = 1: n
-                    appender = zeros(app(i, j).membrane_potential_filters.firlowpass.delay*2, size(app(i, j).membrane_potential, 2));
+                    appender = zeros(app(1, 1).membrane_potential_filters.firlowpass.delay*2, size(app(i, j).membrane_potential, 2));
                     Vm = cat(1, appender+app(i, j).membrane_potential(1, :), app(i, j).membrane_potential, appender+app(i, j).membrane_potential(end, :));
-                    Vm = filter(app(i, j).membrane_potential_filters.firlowpass.window, Vm);
-                    app(i, j).membrane_potential = Vm(app(i, j).membrane_potential_filters.firlowpass.delay*3 + 1: end - app(i, j).membrane_potential_filters.firlowpass.delay, :);
+                    Vm = filter(app(1, 1).membrane_potential_filters.firlowpass.window, Vm);
+                    app(i, j).membrane_potential = Vm(app(1, 1).membrane_potential_filters.firlowpass.delay*3 + 1: end - app(1, 1).membrane_potential_filters.firlowpass.delay, :);
                 end
             end
         end
@@ -228,10 +242,10 @@ classdef WholeCellRecordingV2
             [m, n] = size(app);
             for i = 1: m
                 for j = 1: n
-                    appender = zeros(app(i, j).membrane_current_filters.firlowpass.delay*2, size(app(i, j).membrane_current, 2));
+                    appender = zeros(app(1, 1).membrane_current_filters.firlowpass.delay*2, size(app(i, j).membrane_current, 2));
                     Im = cat(1, appender+app(i, j).membrane_current(1, :), app(i, j).membrane_current, appender+app(i, j).membrane_current(end, :));
-                    Im = filter(app(i, j).membrane_current_filters.firlowpass.window, Im);
-                    app(i, j).membrane_current = Im(app(i, j).membrane_current_filters.firlowpass.delay*3 + 1: end - app(i, j).membrane_current_filters.firlowpass.delay, :);
+                    Im = filter(app(1, 1).membrane_current_filters.firlowpass.window, Im);
+                    app(i, j).membrane_current = Im(app(1, 1).membrane_current_filters.firlowpass.delay*3 + 1: end - app(1, 1).membrane_current_filters.firlowpass.delay, :);
                 end
             end
         end
@@ -244,11 +258,11 @@ classdef WholeCellRecordingV2
             [m, n] = size(app);
             for i = 1: m
                 for j = 1: n
-                    appender = zeros(app(i, j).membrane_potential_filters.firdifferentiator.delay*2, ...
+                    appender = zeros(app(1, 1).membrane_potential_filters.firdifferentiator.delay*2, ...
                         size(app(i, j).membrane_potential, 2));
                     Vm = cat(1, appender+app(i, j).membrane_potential(1, :), app(i, j).membrane_potential, appender+app(i, j).membrane_potential(end, :));
-                    dVmdt = filter(app(i, j).membrane_potential_filters.firdifferentiator.window, Vm).*app(i, j).fs;
-                    app(i, j).membrane_current = app(i, j).membrane_capacitance .* dVmdt(app(i, j).membrane_potential_filters.firdifferentiator.delay*3 + 1: end-app(i, j).membrane_potential_filters.firdifferentiator.delay, :);
+                    dVmdt = filter(app(1, 1).membrane_potential_filters.firdifferentiator.window, Vm).*app(i, j).fs;
+                    app(i, j).membrane_current = app(i, j).membrane_capacitance .* dVmdt(app(1, 1).membrane_potential_filters.firdifferentiator.delay*3 + 1: end-app(1, 1).membrane_potential_filters.firdifferentiator.delay, :);
                 end
             end
         end
@@ -370,7 +384,7 @@ classdef WholeCellRecordingV2
                                 end
                             case 4
                                 plot(app(i, j).times, app(i, j).membrane_current);
-                                ax{j, k}.Subtitle.String = strcat('Diff: O=', num2str(app(i, j).membrane_potential_filters.firdifferentiator.window.FilterOrder), '; Band=(', num2str(app(i, j).membrane_potential_filters.firdifferentiator.window.PassbandFrequency), ', ', num2str(app(i, j).membrane_potential_filters.firdifferentiator.window.StopbandFrequency), ')');
+                                ax{j, k}.Subtitle.String = strcat('Diff: O=', num2str(app(1, 1).membrane_potential_filters.firdifferentiator.window.FilterOrder), '; Band=(', num2str(app(1, 1).membrane_potential_filters.firdifferentiator.window.PassbandFrequency), ', ', num2str(app(1, 1).membrane_potential_filters.firdifferentiator.window.StopbandFrequency), ')');
                                 if j == 1
                                     ax{j, k}.YLabel.String = 'Im (A)';
                                 end
