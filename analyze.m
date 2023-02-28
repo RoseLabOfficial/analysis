@@ -4,10 +4,10 @@ function [ds, stats, meta_stats] = analyze(filename, paradigms, response_times, 
     %% Filter parameters.
     if nargin < 4 || isempty(filter_parameters)
         filter_parameters.CutOffFrequency = 100; % Vm cuttoff. The lower this value, the smoother the traces get, but stay above 80 (Hz) for now.
-        filter_parameters.CutOffFrequency2 = 60; % Im cuttoff.
-        filter_parameters.FilterOrder = 100;
+        filter_parameters.CutOffFrequency2 = 100; % Im cuttoff.
+        filter_parameters.FilterOrder = 20;
         filter_parameters.PassbandRipple = 0.01;
-        filter_parameters.StopbandAttenuation = 80;
+        filter_parameters.StopbandAttenuation = 60;
     end
     if nargin < 5 || isempty(overwrite_stats)
         overwrite_stats = 0;
@@ -24,7 +24,7 @@ function [ds, stats, meta_stats] = analyze(filename, paradigms, response_times, 
     meta_stats.pulses = ds.get_pulse_number_meta_stats();
     disp(meta_stats.pulses);
     %% Plotting.
-    ds = ds.plots();
+%     ds = ds.plots();
     %% Writing stats to file.
     if overwrite_stats == 0
         ds.write_stats_to_file(stats, filename, strcat('Stats', strrep(datestr(now), ':', '-')));
