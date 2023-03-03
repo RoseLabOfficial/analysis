@@ -1,847 +1,509 @@
 classdef WholeCellRecording
-   properties
-       %% Sampling/Acquistion properties.
-       Fs % Sampling Frequency of acquisition (Hz).
-       response_samples % How long the response lasts in a sampling domain (samples).
+    properties
+        %% Acquisition:
+        fs
 
-       %% Stimulus properties.
-       rate
-       npulses
-       
-       %% Cell properties.
-       Cm % Membrane Capacitance (F).
-       Rin % Input Resistance of the cell (Ohms).
-       Er % Resting Potential of the cell: Steady State Potential at 0nA current clamp(V).
-       Ee % Excitatory Reversal Potential: potential at which excitation is reversed and appears as hyperpolarization (V).
-       Ei % Inhibitory Reversal Potential: potential at which inhibition is reversed and appears as depolarization (V).
-       Et % Threshold Potential: potential at which an action potential is triggered or supra-threshold active currents are triggered (V).
-       Eact % Activation Potential: potential at which subthreshold active currents are triggered (V).
-       Ess % Steady State Potential: settled potential at a given current clamp when no stimulus is presented (V).
-       xalpha % Alpha Multiplier: multiplier on the active current estimate (dimensionless).
-       xbeta % Beta Multiplier: multiplier on the compensator for the active current (dimensionless).
-       sps % spikes for stimulus repetition (spikes/stim.rep.).
-       Eref % Reference Potential: potential used as reference to measure de- and hyperpolarizations (V).
-       
-       %% filter properties
-       CutOffFrequency % Frequency in the signal where the noise starts to dominate the signal (Hz). 
-       FilterOrder % The number of previous timesteps that need to be used in filtering (dimensionless).
-       PassbandRipple % The amplitude of ripples in frequencies of the passband (dB).
-       StopbandAttenuation % The attentuation of noise (dB).
-       
-       %% analysis properties
-       stimulus
-       time % times(secs) extracted from recorded data.
-       Vm % Transmembrane Potential (V) recorded at Fs.
-       Im % Transmembrane current (A) computed as Cm*(dVm/dt).
-       Iinj % Injected Current (A).
-       Ileak % Leakage current (A) of the cell, computed as (1/Rin)*(Vm - Er).
-       alpha % Active conductance constant (S/V); Estimated using algorithm from Alluri, 2021. 
-       beta % Active conductance constant (S); Estimated using algorithm from Alluri, 2021.
-       Iactive % Active current (A) computed using active conductance terms. Alluri, 2021.
-       ge % Excitatory conductance (S) estimated using alogrithm from Alluri, 2016.
-       gi % Inhibitory conductance (S) estimated using alogrith from Alluri, 2016.
-       Ie % Excitatory currents (A) at various current clamps computed as ge*(Vm - Ee).
-       Ii % Inhibitory currents (A) at various current clamps computed as gi*(Vm - Ei).
-       depolarizations % Vm > Er at every time point (V).
-       hyperpolarizations % Vm < Er at every time point (V).
-       excitation % ge > 0. Biological data is noisy, excitation variable is free of aberrent negative values of ge.
-       inhibition % gi > 0. Biological data is noisy, inhibition variable is free of aberrent negative values of gi after non-linear filtering using alpha and beta.
-       paradigm % paradigm (string) is different types of stimuli, for pulse rate 5pps, 10pps, 60pps, etc., or for duration 20ms, 40ms, 160ms, etc.
-       filename % filename (string) is the name of the file containing the current clamp data along with various parameters for cell and membrane potential constants.
-       response_durations
+        %% Database:
+        filename
+        paradigms
+        response_durations
+        response_samples
 
-       %% stats
-        ge_net
-        gi_net
-        ge_mean
-        gi_mean
-        depolarizations_mean
-        hyperpolarizations_mean
-        Iactive_mean
-        sps_mean
-        Ie_net
-        Ii_net
-        Ie_mean
-        Ii_mean
+        %% Stimulus:
+        rates
+        npulses
 
-        %% meta stats
-        maxima
-        minima
-        drop_3dB
-   end
-   properties(Access=private)
-       %% fig properties
-       fig
-   end
-   %% Methods to access data.
-   methods(Access=private)
-       function app = readXLSXdata(app)
-           [m, n] = size(app);
-           for i = 1: 1: m
-               for j = 1: 1: n
-                    data = readtable(app(i, j).filename, 'Sheet', app(i, j).paradigm, 'ReadVariableNames', 1, 'VariableNamingRule', 'preserve');
+        %% Recording:
+        times
+        stimulus
+        membrane_potential
+        injected_current
+
+        %% Cell:
+        membrane_capacitance
+        input_resistance
+        resting_potential
+        excitatory_reversal_potential 
+        inhibitory_reversal_potential
+        threshold_potential
+        activation_potential
+        steady_state_potential
+        alpha_multiplier
+        beta_multiplier
+        spikes_per_stimulus
+        reference_potential
+
+        %% Analysis:
+        membrane_current
+        leakage_current
+        alpha
+        beta
+        activation_current
+        excitatory_conductance
+        inhibitory_conductance
+        excitatory_current
+        inhibitory_current
+        depolarizations
+        hyperpolarizations
+        excitation
+        inhibition
+        resultant_excitaiton
+        resultant_inhibition
+
+        %% Filters
+        lowpass
+        notch
+
+        %% Stats
+        means
+
+        %% Plots
+        estimations_figure
+        stats_figure
+    end
+
+    methods(Access=public)
+        %% Datastructure building methods
+        function app = WholeCellRecording(filename, paradigms, response_durations, filter_parameters)
+            if nargin > 0
+                [m, n] = size(paradigms);
+                app(m, n) = app;
+                for i = 1: m
+                    for j = 1: n
+                        app(i, j).filename = filename;
+                        app(i, j).paradigms = paradigms(i, j);
+                        app(i, j).response_durations = response_durations(i, j);
+                    end
+                end
+                app = app.read_data();
+                app = app.read_parameters();
+                app = app.build_filters(filter_parameters);
+                app = app.build_analysis_arrays();
+            end
+        end
+
+        function app = read_data(app)
+            [m, n] = size(app);
+            for i = 1: m
+                for j = 1: n
+                    data = readtable(app(i, j).filename, 'Sheet', app(i, j).paradigms, 'ReadVariableNames', 1, 'VariableNamingRule', 'preserve');
                     try
-                        app(i, j).time = data.times;
+                        app(i, j).times = data.times;
+                        app(i, j).fs = 1/(app(i, j).times(2, 1) - app(i, j).times(1, 1));
                         data.times = [];
                     catch
-                        error(strcat('times array was not found! Check ', app(i, j).filename, ' and ', app(i, j).paradigm, ' !'));
+                        error(strcat('times array was not found in ', app(i, j).paradigms, '!'));
                     end
                     try
                         app(i, j).stimulus = data.stimulus;
                         data.stimulus = [];
                     catch
+                        warning(strcat('stimulus array was not found in ', app(i, j).paradigms, '!'));
                         app(i, j).stimulus = [];
                     end
-                    app(i, j).Vm = table2array(data).*1e-3;
-                    app(i, j).Fs = 1/(app(i, j).time(2, 1) - app(i, j).time(1, 1));
-                    app(i, j).response_samples = floor(app(i, j).Fs*app(i, j).response_durations(i));
-                    samples = size(app(i, j).time, 1);
-                    if app(i, j).response_samples > samples-1
-                       app(i, j).response_samples = samples-1;
+                    try
+                        app(i, j).membrane_potential = table2array(data).*1e-3;
+                    catch
+                        error(strcat('membrane potentials was not found in ', app(i, j).paradigms, '!'));
                     end
-               end
-           end
-       end
-
-       function app = adjust_membrane_potential_with_steady_state(app)
-           [m, n] = size(app);
-           for i = 1: 1: m
-               for j = 1: 1: n
-                   app(i, j).Iinj = (1./app(i, j).Rin).*(app(i, j).Ess - app(i, j).Er);
-                   app(i, j).Vm = app(i, j).Vm - app(i, j).Vm(1, :) + app(i, j).Ess;
-               end
-           end
-       end
-
-       function app = readXLSXparameters(app)
-           [m, n] = size(app);
-           for i = 1: 1: m
-               for j = 1: 1: n
-                    parameters = readtable(app(i, j).filename, 'Sheet', strcat("parameters_", app(i, j).paradigm));
-                    app(i, j).Iinj = parameters.Iinj' + zeros(size(app(i, j).Vm));
-                    app(i, j).Cm = parameters.Cm' + zeros(size(app(i, j).Vm));
-                    app(i, j).Rin = parameters.Rin' + zeros(size(app(i, j).Vm));
-                    app(i, j).Er = parameters.Er' + zeros(size(app(i, j).Vm));
-                    app(i, j).Ee = parameters.Ee' + zeros(size(app(i, j).Vm));
-                    app(i, j).Ei = parameters.Ei' + zeros(size(app(i, j).Vm));
-                    app(i, j).Et = parameters.Et' + zeros(size(app(i, j).Vm));
-                    app(i, j).Eact = parameters.Eact' + zeros(size(app(i, j).Vm));
-                    app(i, j).Ess = parameters.Ess' + zeros(size(app(i, j).Vm));
-                    app(i, j).xalpha = parameters.xalpha' + zeros(size(app(i, j).Vm));
-                    app(i, j).xbeta = parameters.xbeta' + zeros(size(app(i, j).Vm));
-                    app(i, j).sps = parameters.sps' + zeros(size(app(i, j).Vm));
-                    app(i, j).Eref = parameters.Eref' + zeros(size(app(i, j).Vm));
-                    app(i, j).rate = parameters.rate(1);
-                    app(i, j).npulses = parameters.npulses(1);
-               end
-           end
-       end
-
-       function app = build_arrays(app)
-           [m, n] = size(app);
-           for i = 1: 1: m
-               for j = 1: 1: n
-                    samples = size(app(i, j).Vm, 2);
-                    app(i, j).Iactive = zeros(size(app(i, j).Vm));
-                    app(i, j).ge = zeros(samples, 1);
-                    app(i, j).gi = zeros(samples, 1);
-                    app(i, j).Ie = zeros(size(app(i, j).Vm));
-                    app(i, j).Ii = zeros(size(app(i, j).Vm));
-                    app(i, j).depolarizations = zeros(samples, 1);
-                    app(i, j).hyperpolarizations = zeros(samples, 1);
-                    app(i, j).excitation = zeros(samples, 1);
-                    app(i, j).inhibition = zeros(samples, 1);
-                    app(i, j).ge_mean = 0;
-                    app(i, j).gi_mean = 0;
-                    app(i, j).ge_net = 0;
-                    app(i, j).gi_net = 0;
-                    app(i, j).Iactive_mean = 0;
-                    app(i, j).depolarizations_mean = 0;
-                    app(i, j).hyperpolarizations_mean = 0;
-                    app(i, j).sps_mean = 0;
-                    app(i, j).maxima.ge_mean = zeros(1, 2);
-                    app(i, j).maxima.gi_mean = zeros(1, 2);
-                    app(i, j).maxima.ge_net = zeros(1, 2);
-                    app(i, j).maxima.gi_net = zeros(1, 2);
-                    app(i, j).maxima.Iactive_mean = zeros(1, 2);
-                    app(i, j).maxima.depolarizations_mean = zeros(1, 2);
-                    app(i, j).maxima.hyperpolarizations_mean = zeros(1, 2);
-                    app(i, j).maxima.sps_mean = zeros(1, 2);
-                    app(i, j).minima.ge_mean = zeros(1, 2);
-                    app(i, j).minima.gi_mean = zeros(1, 2);
-                    app(i, j).minima.ge_net = zeros(1, 2);
-                    app(i, j).minima.gi_net = zeros(1, 2);
-                    app(i, j).minima.Iactive_mean = zeros(1, 2);
-                    app(i, j).minima.depolarizations_mean = zeros(1, 2);
-                    app(i, j).minima.hyperpolarizations_mean = zeros(1, 2);
-                    app(i, j).minima.sps_mean = zeros(1, 2);
-                    app(i, j).drop_3dB.ge_mean = zeros(1, 2);
-                    app(i, j).drop_3dB.gi_mean = zeros(1, 2);
-                    app(i, j).drop_3dB.ge_net = zeros(1, 2);
-                    app(i, j).drop_3dB.gi_net = zeros(1, 2);
-                    app(i, j).drop_3dB.Iactive_mean = zeros(1, 2);
-                    app(i, j).drop_3dB.depolarizations_mean = zeros(1, 2);
-                    app(i, j).drop_3dB.hyperpolarizations_mean = zeros(1, 2);
-                    app(i, j).drop_3dB.sps_mean = zeros(1, 2);
-               end
-           end
-       end
-   end
-
-   %% Methods for reverse estimation:
-   methods(Access=public)
-       function app = reset_passive_conductances(app, ge_gain, gi_gain)
-           tStart = tic;
-           [m, n] = size(app);
-           for i = 1: 1: m
-               for j = 1: 1: n
-                   app(i, j).ge = app(i, j).ge - app(i, j).ge(1, :);
-                   app(i, j).gi = app(i, j).gi - app(i, j).gi(1, :);
-                   app(i, j).ge = ge_gain.*app(i, j).ge;
-                   app(i, j).gi = gi_gain.*app(i, j).gi;
-               end
-           end
-           fprintf('[%d secs] Resetting passive conductances using user conductance gains (%d, %d). \n', toc(tStart), ge_gain, gi_gain);
-       end
-
-       function app = reverse_estimate_membrane_potential(app, ge_gain, gi_gain)
-            app = app.reset_passive_conductances(ge_gain, gi_gain);
-            tStart = tic;
-            [m, n] = size(app);
-            for i = 1: 1: m
-                for j = 1: 1: n
-                   app(i, j).Vm = 0.*app(i, j).Vm + app(i, j).Ess;
-                   for k = 2: 1: size(app(i, j).Vm, 1)
-                       app(i, j).Vm(k, :) = app(i, j).Vm(k-1, :) + (1./app(i, j).Fs).*(1./app(i, j).Cm(k-1, :)).*(app(i, j).Iinj(k-1, :) ...
-                           - (1./app(i, j).Rin(k-1, :)).*(app(i, j).Vm(k-1, :) - app(i, j).Er(k-1, :)) ...
-                           - app(i, j).ge(k-1, :).*(app(i, j).Vm(k-1, :) - app(i, j).Ee(k-1, :)) ...
-                           - app(i, j).gi(k-1, :).*(app(i, j).Vm(k-1, :) - app(i, j).Ei(k-1, :)))...
-                          - app(i, j).alpha(k-1, :).*(app(i, j).Vm(k-1, :) - app(i, j).Et(k-1, :)).*(app(i, j).Vm(k-1, :) - app(i, j).Er(k-1, :)) ...
-                           - app(i, j).beta(k-1, :).*(app(i, j).Vm(k-1, :) - app(i, j).Er(k-1, :));
-                   end
+                    app(i, j).response_samples = app(i, j).fs * app(i, j).response_durations;
+                    if app(i, j).response_samples > size(app(i, j).membrane_potential, 1)
+                        app(i, j).response_samples = size(app(i, j).membrane_potential, 1);
+                    end
                 end
             end
-            fprintf('[%d secs] Reverse estimating Vm using user conductance gains (%d, %d). \n', toc(tStart), ge_gain, gi_gain);
-       end
-       function app = plot_reverse_estimations(app)
-            tStart = tic;
-            nplots = 2;
+        end
+
+        function app = read_parameters(app)
             [m, n] = size(app);
-            app(1, 1).fig = figure('Name', strcat(app(1, 1).filename, ' Reconstructions'));
+            for i = 1: m
+                for j = 1: n
+                    parameters = readtable(app(i, j).filename, 'Sheet', strcat('parameters_', app(i, j).paradigms));
+                    app(i, j).injected_current = parameters.Iinj' + zeros(size(app(i, j).membrane_potential));
+                    app(i, j).membrane_capacitance = parameters.Cm' + zeros(size(app(i, j).membrane_potential));
+                    app(i, j).input_resistance = parameters.Rin' + zeros(size(app(i, j).membrane_potential));
+                    app(i, j).resting_potential = parameters.Er' + zeros(size(app(i, j).membrane_potential));
+                    app(i, j).excitatory_reversal_potential = parameters.Ee' + zeros(size(app(i, j).membrane_potential));
+                    app(i, j).inhibitory_reversal_potential = parameters.Ei' + zeros(size(app(i, j).membrane_potential));
+                    app(i, j).threshold_potential = parameters.Et' + zeros(size(app(i, j).membrane_potential));
+                    app(i, j).activation_potential = parameters.Eact' + zeros(size(app(i, j).membrane_potential));
+                    app(i, j).steady_state_potential = parameters.Ess' + zeros(size(app(i, j).membrane_potential));
+                    app(i, j).alpha_multiplier = parameters.xalpha' + zeros(size(app(i, j).membrane_potential));
+                    app(i, j).beta_multiplier = parameters.xbeta' + zeros(size(app(i, j).membrane_potential));
+                    app(i, j).spikes_per_stimulus = parameters.sps' + zeros(size(app(i, j).membrane_potential));
+                    app(i, j).reference_potential = parameters.Eref' + zeros(size(app(i, j).membrane_potential));
+                    app(i, j).rates = parameters.rate';
+                    app(i, j).npulses = parameters.npulses';
+                end
+            end
+        end
+
+        function app = build_analysis_arrays(app)
+            [m, n] = size(app);
+            for i = 1: m
+                for j = 1: n
+                    app(i, j).membrane_current = zeros(size(app(i, j).membrane_potential));
+                    app(i, j).leakage_current = zeros(size(app(i, j).membrane_potential));
+                    app(i, j).alpha = zeros(size(app(i, j).membrane_potential));
+                    app(i, j).beta = zeros(size(app(i, j).membrane_potential));
+                    app(i, j).activation_current = zeros(size(app(i, j).membrane_potential));
+                    app(i, j).excitatory_conductance = zeros(size(app(i, j).membrane_potential, 1), 1);
+                    app(i, j).inhibitory_conductance = zeros(size(app(i, j).membrane_potential, 1), 1);
+                    app(i, j).excitatory_current = zeros(size(app(i, j).membrane_potential));
+                    app(i, j).inhibitory_current = zeros(size(app(i, j).membrane_potential));
+                    app(i, j).depolarizations = zeros(size(app(i, j).membrane_potential));
+                    app(i, j).hyperpolarizations = zeros(size(app(i, j).membrane_potential));
+                    app(i, j).excitation = zeros(size(app(i, j).membrane_potential, 1), 1);
+                    app(i, j).inhibition = zeros(size(app(i, j).membrane_potential, 1), 1);
+                    app(i, j).resultant_excitaiton = zeros(size(app(i, j).membrane_potential, 1), 1);
+                    app(i, j).resultant_inhibition = zeros(size(app(i, j).membrane_potential, 1), 1);
+                end
+            end
+        end
+
+        function app = adjust_membrane_potential_wrt_steady_state(app)
+            [m, n] = size(app);
+            for i = 1: m
+                for j = 1: n
+                    app(i, j).injected_current = (1./app(i, j).input_resistance).*(app(i, j).steady_state_potential - app(i, j).resting_potential);
+                    app(i, j).membrane_potential = app(i, j).membrane_potential - app(i, j).membrane_potential(1, :) + app(i, j).steady_state_potential;
+                end
+            end
+        end
+
+    end
+    %% Filter methods
+    methods
+        function app = build_notch(app, params)
+            nyquist_frequency = app(1, 1).fs/2;
+            normalized_stop_frequency = params.Fst/nyquist_frequency;
+            normalized_stopband_width = params.BW/nyquist_frequency;
+            [app(1, 1).notch.num, app(1, 1).notch.den] = iirnotch(normalized_stop_frequency, normalized_stopband_width);
+        end
+        
+        function app = build_lowpass(app, params)
+            app(1, 1).lowpass = designfilt("lowpassiir", ...
+                "PassbandFrequency", params.Fp, ...
+                "StopbandFrequency", params.Fst, ...
+                "PassbandRipple", params.Ap, ...
+                "StopbandAttenuation", params.Ast, ...
+                "SampleRate", app(1, 1).fs);
+        end
+
+        function app = build_filters(app, params)
+            app = app.build_lowpass(params.lowpass);
+            app = app.build_notch(params.notch);
+        end
+
+        function app = filter_membrane_potential(app)
+            [m, n] = size(app);
+            for i = 1: m
+                for j = 1: n
+                    appender = zeros(size(app(i, j).membrane_potential));
+                    vm = cat(1, appender+app(i, j).membrane_potential(1, :), app(i, j).membrane_potential, appender+app(i, j).membrane_potential(end, :));
+                    vm = filtfilt(app(1, 1).lowpass, vm);
+                    vm = filtfilt(app(1, 1).notch.num, app(1, 1).notch.den, vm);
+                    app(i, j).membrane_potential = vm(size(app(i, j).membrane_potential, 1)+1: end-size(app(i, j).membrane_potential, 1), :);
+                end
+            end
+        end
+    end
+
+    %% Computing current methods
+    methods
+
+        function app = compute_membrane_current(app)
+            [m, n] = size(app);
+            for i = 1: m
+                for j = 1: n
+                    appender = zeros(1, size(app(i, j).membrane_potential, 2));
+                      dvmdt = diff(cat(1, appender+app(i, j).membrane_potential(1, :), app(i, j).membrane_potential, appender+app(i, j).membrane_potential(end, :)), 1);
+                      dvmdt = dvmdt(2:end, :); 
+                      app(i, j).membrane_current = app(i, j).membrane_capacitance.*dvmdt.*app(i, j).fs;
+                end
+            end
+        end
+
+        function app = compute_leakage_current(app)
+            [m, n] = size(app);
+            for i = 1: m
+                for j = 1: n
+                    app(i, j).leakage_current = (1./app(i, j).input_resistance).*(app(i, j).membrane_potential - app(i, j).resting_potential);
+                end
+            end
+        end
+
+        function app = compute_active_conductances(app)
+            [m, n] = size(app);
+            for i = 1: m
+                for j = 1: n
+                    app(i, j).alpha = ((1./app(i, j).input_resistance)./(2.*(app(i, j).activation_potential-app(i, j).steady_state_potential)));
+                    app(i, j).beta = app(i, j).alpha.*(app(i, j).threshold_potential - app(i, j).steady_state_potential);
+                    app(i, j).alpha = app(i, j).alpha.*app(i, j).alpha_multiplier;
+                    app(i, j).beta = app(i, j).beta.*app(i, j).beta_multiplier;
+                end
+            end
+        end
+
+        function app = compute_activation_currents(app)
+            app = app.compute_active_conductances();
+            [m, n] = size(app);
             for i = 1: 1: m
+               for j = 1: 1: n
+                  app(i, j).activation_current = (app(i, j).alpha.*(app(i, j).membrane_potential-app(i, j).threshold_potential).*(app(i, j).membrane_potential-app(i, j).resting_potential)) ...
+                          + (app(i, j).beta.*(app(i, j).membrane_potential-app(i, j).resting_potential));
+               end
+            end
+        end
+
+        function app = compute_passive_conductances(app)
+            [m, n] = size(app);
+            for i = 1: m
+                for j = 1: n
+                    samples = size(app(i, j).membrane_potential, 1);
+                    A = zeros(2, 2, samples);
+                    B = zeros(2, 1, samples);
+                    A(1, 1, :) = sum((app(i, j).membrane_potential - app(i, j).excitatory_reversal_potential).^2, 2);
+                    A(1, 2, :) = sum((app(i, j).membrane_potential - app(i, j).excitatory_reversal_potential).*(app(i, j).membrane_potential - app(i, j).inhibitory_reversal_potential), 2);
+                    A(2, 1, :) = A(1, 2, :);
+                    A(2, 2, :) = sum((app(i, j).membrane_potential - app(i, j).inhibitory_reversal_potential).^2, 2);
+                    C = app(i, j).membrane_current - app(i, j).injected_current - app(i, j).activation_current + app(i, j).leakage_current;
+                    B(1, 1, :) = -sum(C.*(app(i, j).membrane_potential - app(i, j).excitatory_reversal_potential), 2);
+                    B(2, 1, :) = -sum(C.*(app(i, j).membrane_potential - app(i, j).inhibitory_reversal_potential), 2);
+                    G = pagemtimes(pageinv(A), B);
+                    app(i, j).excitatory_conductance = reshape(G(1, 1, :), [samples, 1]);
+                    app(i, j).inhibitory_conductance = reshape(G(2, 1, :), [samples, 1]);
+                end
+            end
+        end
+
+        function app = compute_passive_currents(app)
+            app = app.compute_passive_conductances();
+            [m, n] = size(app);
+            for i = 1: m
+                for j = 1: n
+                    app(i, j).excitatory_current = -1.*app(i, j).excitatory_conductance.*(app(i, j).membrane_potential - app(i, j).excitatory_conductance);
+                    app(i, j).inhibitory_current = -1.*app(i, j).inhibitory_conductance.*(app(i, j).membrane_potential - app(i, j).inhibitory_conductance);
+                end
+            end
+        end
+    end
+
+    methods
+
+        function app = compute_resultants(app)
+            [m, n] = size(app);
+            for i = 1: m
+                for j = 1: n
+                    app(i, j).excitation = (app(i, j).excitatory_conductance > 0).*app(i, j).excitatory_conductance;
+                    app(i, j).inhibition = (app(i, j).inhibitory_conductance > 0).*app(i, j).inhibitory_conductance;
+                    resultant = app(i, j).excitation - app(i, j).inhibition;
+                    app(i, j).resultant_excitaiton = (resultant > 0).*resultant;
+                    app(i, j).resultant_inhibition = (resultant < 0).*resultant;
+                end
+            end
+        end
+
+        function app = compute_polarizations(app)
+            [m, n] = size(app);
+            for i = 1: m
+                for j = 1: n
+                    polarization = app(i, j).membrane_potential - app(i, j).steady_state_potential;
+                    app(i, j).depolarizations = (polarization > 0).*polarization;
+                    app(i, j).hyperpolarizations = abs((polarization < 0).*polarization);
+                end
+            end
+        end
+
+        function app = compute_means(app, idx)
+            [m, n] = size(app);
+            for i = 1: m
+                for j = 1: n
+                    app(i, j).means.depolarization = mean(app(i, j).depolarizations(:, idx), 1);
+                    app(i, j).means.hyperpolarization = mean(app(i, j).hyperpolarizations(:, idx), 1);
+                    app(i, j).means.excitatory_conductance = mean(app(i, j).excitatory_conductance, 1);
+                    app(i, j).means.inhibitory_conductance = mean(app(i, j).inhibitory_conductance, 1);
+                    app(i, j).means.excitatory_current = mean(app(i, j).excitatory_current(:, idx), 1);
+                    app(i, j).means.inhibitory_current = mean(app(i, j).inhibitory_current(:, idx), 1);
+                    app(i, j).means.excitation = mean(app(i, j).excitation, 1);
+                    app(i, j).means.inhibition = mean(app(i, j).inhibition, 1);
+                    app(i, j).means.resultant_excitation = mean(app(i, j).resultant_excitaiton, 1);
+                    app(i, j).means.resultant_inhibition = mean(app(i, j).resultant_inhibition, 1);
+                    app(i, j).means.activation_current = mean(app(i, j).activation_current(:, idx), 1);
+                    app(i, j).means.membrane_current = mean(app(i, j).membrane_current(:, idx), 1);
+                    app(i, j).means.rates = app(i, j).rates(idx, 1);
+                    app(i, j).means.npulses = app(i, j).npulses(idx, 1);
+                    app(i, j).means.spikes_per_stimulus = app(i, j).spikes_per_stimulus(idx, 1);
+                end
+            end
+        end
+
+        function mean_stats = compute_mean_stats(app)
+            means = [app.means];
+            pps = [means.rates];
+            pulses = [means.npulses];
+            sps = [means.spikes_per_stimulus];
+            depol = [means.depolarization];
+            hyperpol = [means.hyperpolarization];
+            ge = [means.excitation];
+            gi = [means.inhibition];
+            net_ge = [means.resultant_excitation];
+            net_gi = [means.resultant_inhibition];
+            Ie = [means.excitatory_current];
+            Ii = [means.inhibitory_current];
+            Iact = [means.activation_current];
+            Im = [means.membrane_current];
+            mean_stats = [pps; pulses; sps; depol; hyperpol; ge; gi; net_ge; net_gi; Ie; Ii; Iact; Im];
+        end
+
+        function meta_stats = compute_meta_stats(app)
+            paradigms = [app.paradigms];
+            row_names = ["rate"; "pulses"; "sps"; "depol"; "hyperpol"; "ge"; "gi"; "net_ge"; "net_gi"; "Ie"; "Ii"; "Iact"; "Im"];
+            meta_stats = array2table(app.compute_mean_stats(), "RowNames", row_names, "VariableNames",paradigms);
+        end
+
+    end
+    
+    %% Call method for estimator
+    methods
+        function app = call(app)
+            app = app.filter_membrane_potential();
+            app = app.adjust_membrane_potential_wrt_steady_state();
+            app = app.compute_membrane_current();
+            app = app.compute_leakage_current();
+            app = app.compute_activation_currents();
+            app = app.compute_passive_currents();
+            app = app.compute_resultants();
+            app = app.compute_polarizations();
+        end
+    end
+
+    %% Plot methods
+    methods
+        function app = build_plots(app)
+            app(1, 1).estimations_figure = figure('Name', strcat('Estimations for ', app(1, 1).filename));
+            app(1, 1).stats_figure = figure('Name', strcat('Means for ', app(1, 1).filename));
+        end
+
+        function app = plot_estimations(app)
+            nplots = 8;
+            figure(app(1, 1).estimations_figure);
+            [m, n] = size(app);
+            for i = 1: m
                 tiledlayout(nplots, n);
                 ax = cell(nplots, n);
-                for k = 1: 1: nplots
-                    for j = 1: 1: n
+                for k = 1: nplots
+                    for j = 1: n
                         ax{j, k} = nexttile;
                         switch k
                             case 1
-                                plot(app(i, j).time, app(i, j).Vm);
-                                ax{j, k}.Title.String = app(i, j).paradigm;
+                                plot(app(i, j).times, app(i, j).membrane_potential);
+                                ax{j, k}.Title.String = app(i, j).paradigms;
+                                ax{j, k}.Subtitle.String = [strcat("Eact=", num2str(app(i, j).activation_potential(1, :))), strcat('Diff: O=', num2str(size(app(1, 1).lowpass.Coefficients, 1)-1), '; Band=(', num2str(app(1, 1).lowpass.PassbandFrequency), ', ', num2str(app(1, 1).lowpass.StopbandFrequency), ')')];
                                 if j == 1
                                     ax{j, k}.YLabel.String = 'Vm (V)';
                                 end
                             case 2
-                                plot(app(i, j).time, app(i, j).ge, 'r', app(i, j).time, app(i, j).gi, 'b');
+                                plot(app(i, j).times, app(i, j).activation_current);
+                                ax{j, k}.Subtitle.String = strcat('xalpha=', num2str(app(i, j).alpha_multiplier(1, :)), '; xbeta=', num2str(app(i, j).beta_multiplier(1, :)));
                                 if j == 1
-                                    ax{j, k}.YLabel.String = 'G (S)';
+                                    ax{j, k}.YLabel.String = 'Iact (A)';
                                 end
-                                ax{j, k}.XLabel.String = 'time (sec)'; 
-                        end
-                        linkaxes([ax{j, :}], 'x');
-                    end
-                end
-            end
-            fprintf('[%d secs] Plotting reverse estimations. \n', toc(tStart));
-        end
-   end
-   %% Methods to filter data
-   methods(Access=public)
-       function app = zero_phase_filter_Vm(app, filter_parameters)
-           tStart = tic;
-           [m, n] = size(app);
-           for i = 1: 1: m
-               for j = 1: 1: n
-                   Fnorm = filter_parameters.CutOffFrequency/(app(i, j).Fs/2);
-                   lpFilt = designfilt('lowpassiir', ...
-                                'PassbandFrequency', Fnorm, ...
-                                'FilterOrder', filter_parameters.FilterOrder, ...
-                                'PassbandRipple', filter_parameters.PassbandRipple, ...
-                                'StopbandAttenuation', filter_parameters.StopbandAttenuation);
-                   v = cat(1, ones(size(app(i, j).Vm)).*(app(i, j).Vm(1, :)), app(i, j).Vm);
-                   v = cat(1, v, ones(size(app(i, j).Vm)).*(app(i, j).Vm(end, :)));
-                   vn = v - v(1, :);
-                   Vmf = filtfilt(lpFilt, vn);
-                   app(i, j).Vm = Vmf(size(app(i, j).Vm, 1)+1:end-size(app(i, j).Vm, 1), :) + app(i, j).Vm(1, :);
-               end
-           end
-           fprintf('[%d secs] Zero phase filtering Vm \n', toc(tStart));
-       end
-       function app = zero_phase_filter_Im(app, filter_parameters)
-            tStart = tic;
-            [m, n] = size(app);
-            for i = 1: 1: m
-                for j = 1: 1: n
-                    Fnorm = filter_parameters.CutOffFrequency2/(app(i, j).Fs/2);
-                    lpFilt = designfilt('lowpassiir', ...
-                                'PassbandFrequency', Fnorm, ...
-                                'FilterOrder', filter_parameters.FilterOrder, ...
-                                'PassbandRipple', filter_parameters.PassbandRipple, ...
-                                'StopbandAttenuation', filter_parameters.StopbandAttenuation);
-                    I = cat(1, ones(size(app(i, j).Im)).*(app(i, j).Im(1, :)), app(i, j).Im);
-                    I = cat(1, I, ones(size(app(i, j).Im)).*(app(i, j).Im(end, :)));
-                    in = I - I(1, :);
-                    Imf = filtfilt(lpFilt, in);
-                    app(i, j).Im = Imf(size(app(i, j).Im, 1)+1:end-size(app(i, j).Im, 1), :) + app(i, j).Im(1, :);
-                end
-            end
-            fprintf('[%d secs] Zero phase filtering Im \n', toc(tStart));
-       end
-   end
-   %% Methods for conductance reconstruction.
-   methods(Access=public)
-       function app = compute_active_conductances(app)
-           tStart = tic;
-           [m, n] = size(app);
-           for i = 1: 1: m
-               for j = 1: 1: n
-                   app(i, j).alpha = ((1./app(i, j).Rin)./(2.*(app(i, j).Eact-app(i, j).Ess)));
-                   app(i, j).beta = app(i, j).alpha.*(app(i, j).Et - app(i, j).Ess);
-                   app(i, j).alpha = app(i, j).alpha.*app(i, j).xalpha;
-                   app(i, j).beta = app(i, j).beta.*app(i, j).xbeta;
-               end
-           end
-           fprintf('[%d secs] Computed active conductances (constants)\n', toc(tStart));
-       end
-
-       function app = compute_active_currents(app)
-           tStart = tic;
-           [m, n] = size(app);
-           for i = 1: 1: m
-               for j = 1: 1: n
-                  app(i, j).Iactive = (app(i, j).alpha.*(app(i, j).Vm-app(i, j).Et).*(app(i, j).Vm-app(i, j).Er)) ...
-                          + (app(i, j).beta.*(app(i, j).Vm-app(i, j).Er));
-               end
-           end
-           fprintf('[%d secs] Computed active currents\n', toc(tStart));
-       end
-
-       function app = compute_leakage_currents(app)
-           tStart = tic;
-           [m, n] = size(app);
-           for i = 1: 1: m
-               for j = 1: 1: n
-                   app(i, j).Ileak = (1./app(i, j).Rin).*(app(i, j).Vm-app(i, j).Er);
-               end
-           end
-           fprintf('[%d secs] Computed leakage currents\n', toc(tStart));
-       end
-
-       function app = compute_membrane_currents(app)
-           tStart=tic;
-           [m, n] = size(app);
-           for i = 1: 1: m
-               for j = 1: 1: n
-                    Vm_appended = cat(1, app(i, j).Vm(1, :), app(i, j).Vm, app(i, j).Vm(end, :));
-                    dVmdt = diff(Vm_appended);
-                    app(i, j).Im = app(i, j).Cm.*dVmdt(1:end-1, :).*(app(i, j).Fs);
-               end
-           end
-           fprintf('[%d secs] Computed membrane currents\n', toc(tStart));
-       end
-       function app = compute_passive_conductances(app)
-           tStart = tic;
-           [m, n] = size(app);
-           for i = 1: 1: m
-               for j = 1: 1: n
-                   samples = size(app(i, j).Vm, 1);
-                   A = zeros(2, 2, samples);
-                   B = zeros(2, 1, samples);
-                   A(1, 1, :) = sum((app(i, j).Vm - app(i, j).Ee).^2, 2);
-                   A(1, 2, :) = sum((app(i, j).Vm - app(i, j).Ee).*(app(i, j).Vm - app(i, j).Ei), 2);
-                   A(2, 1, :) = A(1, 2, :);
-                   A(2, 2, :) = sum((app(i, j).Vm - app(i, j).Ei).^2, 2);
-                   C = app(i, j).Im - app(i, j).Iinj - app(i, j).Iactive + app(i, j).Ileak;
-                   B(1, 1, :) = -sum(C.*(app(i, j).Vm - app(i, j).Ee), 2);
-                   B(2, 1, :) = -sum(C.*(app(i, j).Vm - app(i, j).Ei), 2);
-                   G = pagemtimes(pageinv(A), B);
-                   app(i, j).ge = reshape(G(1, 1, :), [samples, 1]);
-                   app(i, j).gi = reshape(G(2, 1, :), [samples, 1]);
-               end
-           end
-           fprintf('[%d secs] Computed passive conductances\n', toc(tStart));
-       end
-
-       function app = compute_passive_conductances_nopage(app)
-           tStart = tic;
-           [m, n] = size(app);
-           for i = 1: 1: m
-               for j = 1: 1: n
-                   samples = size(app(i, j).Vm, 1);
-                   A = zeros(2, 2, samples);
-                   B = zeros(2, 1, samples);
-                   G = zeros(2, 1, samples);
-                   A(1, 1, :) = sum((app(i, j).Vm - app(i, j).Ee).^2, 2);
-                   A(1, 2, :) = sum((app(i, j).Vm - app(i, j).Ee).*(app(i, j).Vm - app(i, j).Ei), 2);
-                   A(2, 1, :) = A(1, 2, :);
-                   A(2, 2, :) = sum((app(i, j).Vm - app(i, j).Ei).^2, 2);
-                   C = app(i, j).Im - app(i, j).Iinj - app(i, j).Iactive + app(i, j).Ileak;
-                   B(1, 1, :) = -sum(C.*(app(i, j).Vm - app(i, j).Ee), 2);
-                   B(2, 1, :) = -sum(C.*(app(i, j).Vm - app(i, j).Ei), 2);
-                   for k = 1: 1: samples
-                       G(:, :, k) = pinv(A(:, :, k))*B(:, :, k);
-                   end
-%                    G = pagemtimes(pageinv(A), B);
-                   app(i, j).ge = reshape(G(1, 1, :), [samples, 1]);
-                   app(i, j).gi = reshape(G(2, 1, :), [samples, 1]);
-               end
-           end
-           fprintf('[%d secs] Computed passive conductances\n', toc(tStart));
-       end
-
-       function app = compute_passive_currents(app)
-           tStart = tic;
-               [m, n] = size(app);
-               for i = 1: 1: m
-                   for j = 1: 1: n
-                       app(i, j).Ie = app(i, j).ge.*(app(i, j).Vm - app(i, j).Ee);
-                       app(i, j).Ii = app(i, j).gi.*(app(i, j).Vm - app(i, j).Ei);
-                   end
-               end
-           fprintf('[%d secs] Computed passive currents\n', toc(tStart));
-       end
-   end
-   %% Methods for stats
-   methods(Access=public)
-       function app = compute_stats(app)
-           tStart = tic;
-           [m, n] = size(app);
-           for i = 1: 1: m
-               for j = 1: 1: n
-                   del_Vm = app(i, j).Vm - app(i, j).Eref;
-                   app(i, j).depolarizations = del_Vm.*(del_Vm(:, 1) > 0);
-                   app(i, j).hyperpolarizations = del_Vm.*(del_Vm(:, 1) < 0);
-                   app(i, j).excitation = app(i, j).ge.*(app(i, j).ge>0);
-                   app(i, j).inhibition = app(i, j).gi.*(app(i, j).gi>0);
-                   resultant_conductance = app(i, j).excitation - app(i, j).inhibition;
-                   app(i, j).ge_net = mean(resultant_conductance.*(resultant_conductance>0), 1);
-                   app(i, j).gi_net = -1*mean(resultant_conductance.*(resultant_conductance<0), 1);
-                   app(i, j).ge_mean = mean(app(i, j).excitation, 1);
-                   app(i, j).gi_mean = mean(app(i, j).inhibition, 1);
-                   app(i, j).Iactive_mean = mean(app(i, j).Iactive(:, 1), 1);
-                   app(i, j).depolarizations_mean = mean(app(i, j).depolarizations(:, 1), 1);
-                   app(i, j).hyperpolarizations_mean = mean(app(i, j).hyperpolarizations(:, 1), 1);
-                   app(i, j).sps_mean = mean(app(i, j).sps(:, 1), 1);
-
-                   Iexcitation = -1.*app(i, j).Ie(:, 1).*((-1.*app(i, j).Ie(:, 1)) > 0);
-                   Iinhibition = app(i, j).Ii(:, 1).*(app(i, j).Ii(:, 1) > 0);
-                   resultant_current = Iexcitation - Iinhibition;
-                   app(i, j).Ie_net = mean(resultant_current.*(resultant_current > 0), 1);
-                   app(i, j).Ii_net = -1.*mean(resultant_current.*(resultant_current < 0), 1);
-                   app(i, j).Ie_mean = mean(Iexcitation, 1);
-                   app(i, j).Ii_mean = mean(Iinhibition, 1);
-               end
-           end
-           fprintf('[%d secs] Computed Stats\n', toc(tStart));
-       end
-
-       function stats = get_stats(app)
-           measures = ["rate", "pulse_number", "ge_net", "gi_net", "ge_mean", "gi_mean", "depolarizations", "hyperpolarizations", "sps", "Iactive", "Ie_net", "Ii_net", "Ie_mean", "Ii_mean"];
-           experiments = [app.paradigm];
-           rates = [app.rate];
-           pulse_number = [app.npulses];
-           ge_nets = [app.ge_net];
-           gi_nets = [app.gi_net];
-           ge_means = [app.ge_mean];
-           gi_means = [app.gi_mean];
-           Ie_nets = [app.Ie_net];
-           Ii_nets = [app.Ii_net];
-           Ie_means = [app.Ie_mean];
-           Ii_means = [app.Ii_mean];
-           depolarizations_means = [app.depolarizations_mean];
-           hyperpolarizations_means = [app.hyperpolarizations_mean];
-           sps_means = [app.sps_mean];
-           Iactive_means = [app.Iactive_mean];
-           stats = [rates; pulse_number; ge_nets; gi_nets; ge_means; gi_means; depolarizations_means; hyperpolarizations_means; sps_means; Iactive_means; Ie_nets; Ii_nets; Ie_means; Ii_means];
-           stats = array2table(stats, "RowNames",measures,"VariableNames",experiments);
-       end
-
-       function plot_stats(app)
-            app.plot_conductance_stats('rate');
-            app.plot_conductance_stats('pulse_number');
-%             app.plot_current_stats();
-       end
-
-       function plot_conductance_stats(app, kind)
-           if strcmp(kind, 'rate')
-               [x, idxs] = sort([app.rate]);
-           elseif strcmp(kind, 'pulse_number')
-               [x, idxs] = sort([app.npulses]);
-           end 
-            ge_means = [app.ge_mean];
-            gi_means = [app.gi_mean];
-            ge_nets = [app.ge_net];
-            gi_nets = [app.gi_net];
-            spss = [];
-            for i = 1: 1: size(app, 2)
-                spss(end+1) = app(1, i).sps(1, 1);
-            end
-%             spss = [app.sps(1, 1)];
-            if x == x(1)
-                fprintf('Cannot plot %s stats, %ss must be unique. \n', kind, kind);
-                return;
-            end
-            figure("Name", app(1, 1).filename+" conductance stats");
-            hold on;
-            bar(x, ge_means(idxs), "BarWidth", 0.5, "FaceColor", [0.5, 0.0, 0.0]);
-            bar(x, ge_nets(idxs), "BarWidth", 0.35, "FaceColor", [1.0, 0.0, 0.0]);
-            bar(x, -1.*gi_means(idxs), "BarWidth", 0.5, "FaceColor", [0, 0.0, 0.7]);
-            bar(x, -1.*gi_nets(idxs), "BarWidth", 0.35, "FaceColor", [0.0, 0.5, 1.0]);
-            hold off;
-            ylim([-1*max(max([app.ge_mean]), max([app.gi_mean])),max(max([app.ge_mean]), max([app.gi_mean]))]);
-            yyaxis right;
-            plot(x, spss, '-ok', 'MarkerFaceColor',[0, 0, 0], 'MarkerSize', 6);
-            ylim([-1*(max([app.sps_mean])+0.2), (max([app.sps_mean])+0.2)]);
-       end
-
-       function plot_current_stats(app)
-%             rates = categorical(arrayfun(@(a)num2str(a), [app.rate], 'UniformOutput', 0));
-            rates = [app.rate];
-%             rates = 1: 1: length(rates);
-            figure("Name", app(1, 1).filename+" current stats");
-            hold on;
-            bar(rates, [app.Ie_mean], "BarWidth", 0.5, "FaceColor", [0.5, 0.0, 0.0]);
-            bar(rates, [app.Ie_net], "BarWidth", 0.35, "FaceColor", [1.0, 0.0, 0.0]);
-            bar(rates, -1.*[app.Ii_mean], "BarWidth", 0.5, "FaceColor", [0, 0.0, 0.7]);
-            bar(rates, -1.*[app.Ii_net], "BarWidth", 0.35, "FaceColor", [0.0, 0.5, 1.0]);
-            hold off;
-            ylim([-1*max(max([app.Ie_mean]), max([app.Ii_mean])),max(max([app.Ie_mean]), max([app.Ii_mean]))]);
-            yyaxis right;
-            plot(rates, [app.sps_mean], '-ok', 'MarkerFaceColor',[0, 0, 0], 'MarkerSize', 6);
-            ylim([-1*(max([app.sps_mean])+0.2), (max([app.sps_mean])+0.2)]);
-       end
-
-       function write_stats_to_file(~, stats, filename, SheetName)
-            tStart = tic;
-            writetable(stats, filename, 'Sheet', SheetName, 'WriteRowNames', 1);
-            fprintf('[%d secs] Writing Stats to %s\n', toc(tStart), filename);
-        end
-   end
-   %% Methods for meta stats.
-   methods(Access=public)
-        function meta_stats = compute_rate_meta_stats(app)
-           tStart = tic;
-           RowNames = ["ge_net", "gi_net", "ge_mean", "gi_mean", "depolarizations", "hyperpolarizations", "sps", "Iactive", "Ie_net", "Ii_net", "Ie_mean", "Ii_mean"];
-           VariableNames = ["min value", "min rate", "max value", "max rate", "Percent change", "-3dB value", "lower cutoff", "upper cutoff", "Q"];
-           rates = [app.rate];
-           ge_nets = [app.ge_net];
-           gi_nets = [app.gi_net];
-           ge_means = [app.ge_mean];
-           gi_means = [app.gi_mean];
-           Iactive_means = [app.Iactive_mean];
-           depolarizations_means = [app.depolarizations_mean];
-           hyperpolarizations_means = [app.hyperpolarizations_mean];
-           sps_means = [app.sps_mean];
-           Ie_nets = [app.Ie_net];
-           Ii_nets = [app.Ii_net];
-           Ie_means = [app.Ie_mean];
-           Ii_means = [app.Ii_mean];
-           ge_net_points = app.estimate_filter_points(ge_nets, rates);
-           gi_net_points = app.estimate_filter_points(gi_nets, rates);
-           ge_mean_points = app.estimate_filter_points(ge_means, rates);
-           gi_mean_points = app.estimate_filter_points(gi_means, rates);
-           depolarizations_mean_points = app.estimate_filter_points(depolarizations_means, rates);
-           hyperpolarizations_mean_points = app.estimate_filter_points(-1.*hyperpolarizations_means, rates);
-           hyperpolarizations_mean_points(:, 1) = -1.*hyperpolarizations_mean_points(:, 1);
-           hyperpolarizations_mean_points(:, 3) = -1.*hyperpolarizations_mean_points(:, 3);
-           sps_mean_points = app.estimate_filter_points(sps_means, rates);
-           Iactive_mean_points = app.estimate_filter_points(Iactive_means, rates);
-           Ie_net_points = app.estimate_filter_points(Ie_nets, rates);
-           Ii_net_points = app.estimate_filter_points(Ii_nets, rates);
-           Ie_mean_points = app.estimate_filter_points(Ie_means, rates);
-           Ii_mean_points = app.estimate_filter_points(Ii_means, rates);
-           meta_stats = [ge_net_points; gi_net_points; ge_mean_points; gi_mean_points; depolarizations_mean_points; hyperpolarizations_mean_points; sps_mean_points; Iactive_mean_points; Ie_net_points; Ii_net_points; Ie_mean_points; Ii_mean_points];
-           meta_stats = array2table(meta_stats, "RowNames", RowNames, "VariableNames",VariableNames);
-           fprintf('[%d secs] Computed Meta Stats\n', toc(tStart));
-        end
-
-        function meta_stats = compute_pulse_number_meta_stats(app)
-           tStart = tic;
-           RowNames = ["ge_net", "gi_net", "ge_mean", "gi_mean", "depolarizations", "hyperpolarizations", "sps", "Iactive", "Ie_net", "Ii_net", "Ie_mean", "Ii_mean"];
-           VariableNames = ["min value", "min pulses", "max value", "max pulses", "Percent change", "-3dB value", "lower cutoff", "upper cutoff", "Q"];
-           pulses = [app.npulses];
-           ge_nets = [app.ge_net];
-           gi_nets = [app.gi_net];
-           ge_means = [app.ge_mean];
-           gi_means = [app.gi_mean];
-           Iactive_means = [app.Iactive_mean];
-           depolarizations_means = [app.depolarizations_mean];
-           hyperpolarizations_means = [app.hyperpolarizations_mean];
-           sps_means = [app.sps_mean];
-           Ie_nets = [app.Ie_net];
-           Ii_nets = [app.Ii_net];
-           Ie_means = [app.Ie_mean];
-           Ii_means = [app.Ii_mean];
-           ge_net_points = app.estimate_filter_points(ge_nets, pulses);
-           gi_net_points = app.estimate_filter_points(gi_nets, pulses);
-           ge_mean_points = app.estimate_filter_points(ge_means, pulses);
-           gi_mean_points = app.estimate_filter_points(gi_means, pulses);
-           depolarizations_mean_points = app.estimate_filter_points(depolarizations_means, pulses);
-           hyperpolarizations_mean_points = app.estimate_filter_points(-1.*hyperpolarizations_means, pulses);
-           hyperpolarizations_mean_points(:, 1) = -1.*hyperpolarizations_mean_points(:, 1);
-           hyperpolarizations_mean_points(:, 3) = -1.*hyperpolarizations_mean_points(:, 3);
-           sps_mean_points = app.estimate_filter_points(sps_means, pulses);
-           Iactive_mean_points = app.estimate_filter_points(Iactive_means, pulses);
-           Ie_net_points = app.estimate_filter_points(Ie_nets, pulses);
-           Ii_net_points = app.estimate_filter_points(Ii_nets, pulses);
-           Ie_mean_points = app.estimate_filter_points(Ie_means, pulses);
-           Ii_mean_points = app.estimate_filter_points(Ii_means, pulses);
-           meta_stats = [ge_net_points; gi_net_points; ge_mean_points; gi_mean_points; depolarizations_mean_points; hyperpolarizations_mean_points; sps_mean_points; Iactive_mean_points; Ie_net_points; Ii_net_points; Ie_mean_points; Ii_mean_points];
-           meta_stats = array2table(meta_stats, "RowNames", RowNames, "VariableNames",VariableNames);
-           fprintf('[%d secs] Computed Meta Stats\n', toc(tStart));
-        end
-        
-        function meta_stats = get_rate_meta_stats(app)
-            meta_stats = app.compute_rate_meta_stats();
-        end
-
-        function meta_stats = get_pulse_number_meta_stats(app)
-            meta_stats = app.compute_pulse_number_meta_stats();
-        end
-
-        function write_meta_stats_to_file(~, stats, filename, SheetName)
-            tStart = tic;
-            writetable(stats, filename, 'Sheet', SheetName, 'WriteRowNames', 1);
-            fprintf('[%d secs] Writing Meta Stats to %s\n', toc(tStart), filename);
-        end
-
-        function points = estimate_filter_points(~, values, rates)
-            [max_value, max_index] = max(values, [], 2);
-            [min_value, min_index] = min(values, [], 2);
-            percent_change = ((max_value - min_value)/max_value)*100;
-            drop_3dB_value = max_value*0.707;
-            lower_values = values(1:max_index);
-            lower_rates = rates(1:max_index);
-            upper_values = values(max_index:end);
-            upper_rates = rates(max_index:end);
-            if length(lower_values(:)) > 1
-                [lower_values, m1, ~] = unique(lower_values, 'first');
-                [c1, d1] = sort(m1);
-                lower_values = lower_values(d1);
-                lower_rates = lower_rates(c1);
-                if length(c1(:)) > 1
-                    lower_cutoff = interp1(lower_values, lower_rates, drop_3dB_value, "linear", "extrap");
-                    if lower_cutoff < 0
-                        lower_cutoff = 0;
-                    end
-                else
-                    lower_cutoff = lower_rates;
-                end
-            else
-                lower_cutoff = lower_rates;
-            end
-            if length(upper_values(:)) > 1
-                [upper_values, m2, ~] = unique(upper_values, 'last');
-                [c2, d2] = sort(m2);
-                upper_values = upper_values(d2);
-                upper_rates = upper_rates(c2);
-                if length(c2(:)) > 1
-                    upper_cutoff = interp1(upper_values, upper_rates, drop_3dB_value, "linear", "extrap");
-                else
-                    upper_cutoff = upper_rates;
-                end
-            else
-                upper_cutoff = upper_rates;
-            end
-            Q = rates(max_index)/(2*(upper_cutoff - lower_cutoff));
-            points = [min_value, rates(min_index), max_value, rates(max_index), percent_change, drop_3dB_value, lower_cutoff, upper_cutoff, Q];
-        end
-       
-        function cutoff_rate = estimate_cutoff_rate(~, rates, values, query_value)
-               high_index = find(values >= query_value, 1, 'first');
-               if isempty(high_index)
-                   high_index = size(rates, 2);
-               end
-               low_index = find(values <= query_value, 1, 'last');
-               if isempty(low_index)
-                   low_index = 1;
-               end
-               if high_index == low_index
-                   cutoff_rate = rates(high_index);
-               else
-                   cutoff_rate = rates(low_index) + (query_value - values(low_index))*(rates(high_index) - rates(low_index))/(values(high_index) - values(low_index));
-               end
-           end
-        
-           function  points = compute_3dB_points(app, values, rates)
-               [max_value, max_index] = max(values, [], 2);
-               drop_3dB_value = max_value*0.707;
-               drop_3dB_rate = app.estimate_cutoff_rate(rates, values, drop_3dB_value);
-               Q = rates(max_index)/(2*abs(rates(max_index) - drop_3dB_rate));
-               points = [max_value, rates(max_index), drop_3dB_value, drop_3dB_rate, Q];
-           end
-   end
-   %% Methods for plotting.
-   methods(Access=public)
-        function app = plots(app)
-            tStart = tic;
-            nplots = 6;
-            [m, n] = size(app);
-            app(1, 1).fig = figure('Name', strcat(app(1, 1).filename, ' Reconstructions'));
-            for i = 1: 1: m
-                tiledlayout(nplots, n);
-                ax = cell(nplots, n);
-                for k = 1: 1: nplots
-                    for j = 1: 1: n
-                        ax{j, k} = nexttile;
-                        switch k
-                            case 1
-                                plot(app(i, j).time, app(i, j).Vm);
-                                ax{j, k}.Title.String = app(i, j).paradigm;
-                                if j == 1
-                                    ax{j, k}.YLabel.String = 'Vm (V)';
-                                end
-                            case 2
-                                plot(app(i, j).time, app(i, j).Iactive);
-                                if j == 1
-                                    ax{j, k}.YLabel.String = 'Iactive (A)';
-                                end
-%                             case 3
-%                                 plot(app(i, j).time, app(i, j).Ileak);
-%                                 if j == 1
-%                                     ax{j, k}.YLabel.String = 'Ileak (A)';
-%                                 end
                             case 3
-                                plot(app(i, j).time, app(i, j).Im);
+                                plot(app(i, j).times, app(i, j).leakage_current);
+                                ax{j, k}.Subtitle.String = strcat('Rin=', num2str(app(i, j).input_resistance(1, 1)));
+                                if j == 1
+                                    ax{j, k}.YLabel.String = 'Ileak (A)';
+                                end
+                            case 4
+                                plot(app(i, j).times, app(i, j).membrane_current);
+                                ax{j, k}.Subtitle.String = strcat('Cm=', num2str(app(i, j).membrane_capacitance(1, 1)));
                                 if j == 1
                                     ax{j, k}.YLabel.String = 'Im (A)';
                                 end
-                            case 4
-                                plot(app(i, j).time, app(i, j).ge, 'r', app(i, j).time, app(i, j).gi, 'b');
+                            case 5
+                                plot(app(i, j).times, app(i, j).excitatory_conductance, 'r', app(i, j).times, app(i, j).inhibitory_conductance, 'b');
+                                ax{j, k}.Subtitle.String = strcat('Ee=', num2str(app(i , j).excitatory_reversal_potential(1, 1)), '; Ei=', num2str(app(i, j).inhibitory_reversal_potential(1, 1)));
                                 if j == 1
                                     ax{j, k}.YLabel.String = 'G (S)';
                                 end
-                            case 5
-                                resultant_ge = app(i, j).ge - app(i, j).gi;
-                                resultant_ge = resultant_ge .* (resultant_ge > 0);
-                                resultant_gi = app(i, j).ge - app(i, j).gi;
-                                resultant_gi = resultant_gi .* (resultant_gi < 0);
-                                area(app(i, j).time, resultant_ge, 'FaceColor', 'r');
+                            case 6
+                                area(app(i, j).times, app(i, j).resultant_excitaiton, 'FaceColor', 'r');
                                 hold on;
-                                area(app(i, j).time, resultant_gi, 'FaceColor', 'b');
+                                area(app(i, j).times, app(i, j).resultant_inhibition, 'FaceColor', 'b');
                                 hold off;
                                 if j == 1
-                                    ax{j, k}.YLabel.String = 'Gnet (S)';
+                                   ax{j, k}.YLabel.String = 'Resultant G(S)';
                                 end
-                            case 6
-                                if (isempty(app(i, j).stimulus))
-                                    plot(app(i, j).time, -1.*app(i, j).Ie(:, 1), 'r', app(i, j).time, app(i, j).Ii(:, 1), 'b');
-                                    if j == 1
-                                        ax{j, k}.YLabel.String = 'Isyn (A)';
-                                    end
-                                else
-                                    plot(app(i, j).time, app(i, j).stimulus, 'k');
-                                    if j == 1
-                                       ax{j, k}.YLabel.String = 'Stimulus (V)';
-                                    end
+                            case 7
+                                plot(app(i, j).times, app(i, j).excitatory_current(:, 1), 'r', app(i, j).times, app(i, j).inhibitory_current(:, 1), 'b');
+                                if j == 1
+                                    ax{j, k}.YLabel.String = 'Isyn (A)';
                                 end
-                                ax{j, k}.XLabel.String = 'time (sec)';
-
+                            case 8
+                                if ~(isempty(app(i, j).stimulus))
+                                    plot(app(i, j).times, app(i, j).stimulus, 'k');
+                                end
+                                if j == 1
+                                   ax{j, k}.YLabel.String = 'Stimulus (V)';
+                                end
                         end
                         linkaxes([ax{j, :}], 'x');
                     end
                     linkaxes([ax{:, k}], 'y');
                 end
             end
-            fprintf('[%d secs] Plotting data\n', toc(tStart));
         end
-   end
-   %% Methods for constructor and run.
-   methods(Access=public)
-       %% Constructor
-       function app = WholeCellRecording(filename, paradigms, response_durations)
-            if nargin > 0
-                tStart = tic;
-                %% Input format check
-                if ~isa(filename, 'string')
-                    error('filename must be a string'); 
-                end
-                if ~isa(paradigms, 'string')
-                    error('conditions (rates/durations) must be strings'); 
-                end
-                if ~isa(response_durations, 'double')
-                    error('responseDurations must be doubles');
-                end
-                if ~isequal(size(paradigms), size(response_durations))
-                    error('Dimensions of conditions and responseDurations must match.');
-                end
-                [m, n] = size(response_durations);
-                app(m, n) = app;
-                for i = 1: 1: m
-                    for j = 1: 1: n
-                        app(i, j).filename = filename;
-                        app(i, j).paradigm = paradigms(i, j);
-                        app(i, j).response_durations = response_durations(i, j);
-                    end
-                end
-                %% Reading worksheets from excel files.
-                app = app.readXLSXdata();
-                app = app.build_arrays();
-                app = app.readXLSXparameters();
-                app = app.adjust_membrane_potential_with_steady_state();
-                fprintf('[%d secs] Read %s\n', toc(tStart), filename);
-            end
-       end
 
-       function app = call(app, filter_parameters)
-            app = app.zero_phase_filter_Vm(filter_parameters);
-            app = app.compute_active_conductances();
-            app = app.compute_active_currents();
-            app = app.compute_leakage_currents();
-            app = app.compute_membrane_currents();
-            app = app.zero_phase_filter_Im(filter_parameters);
-            app = app.compute_passive_conductances_nopage();
-            app = app.compute_passive_currents();
-            app = app.compute_stats();
-       end
-
-       function app = dynamics_plots(app)
-            tStart = tic;
-            app(1).fig = figure('Name', strcat(app(1).filename, ' Dynamics plots'));
-            tiledlayout(4, length(app));
-            ax = cell(4, length(app));
-            for m = 1: 1: 4
-                for k = 1: 1: length(app)
-                    ax{m, k} = nexttile;
-                    if m == 1
-                        plot(app(k).Vm, app(k).Im);
-                        xlabel('Vm (V)');
-                        if k == 1
-                            ylabel('Im (A)');
-                        end
-                        title(strcat(app(k).condition'));
-                    elseif m == 2
-                        plot(app(k).Vm, app(k).Iactive);
-                        xlabel('Vm (V)');
-                        if k == 1
-                            ylabel('Iactive (A)');
-                        end
-                    elseif m == 3
-                        plot(app(k).Vm, app(k).Ileak);
-                        xlabel('Vm (V)');
-                        if k == 1
-                            ylabel('Ileak (A)');
-                        end
-                    elseif m == 4
-                        plot(app(k).Im, app(k).Iactive);
-                        xlabel('Im (A)');
-                        if k == 1
-                            ylabel('Iactive (A)');
-                        end
-                    end
+        function app = plot_meta_stats(app, meta_stats)
+            x = categorical(meta_stats.Properties.VariableNames);
+            meta_stats = rows2vars(meta_stats);
+            nplots = 5;
+            figure(app(1, 1).stats_figure);
+            tiledlayout(nplots, 1);
+            ax = cell(nplots, 1);
+            for k = 1: nplots
+                ax{k, 1} = nexttile;
+                switch k
+                    case 1
+                        bar(meta_stats.depol, "BarWidth", 0.5, "FaceColor", [1, 0, 0]);
+                        hold on;
+                        bar(-1.*meta_stats.hyperpol, "BarWidth", 0.5, "FaceColor", [0, 0, 1]);
+                        ylim([-1*max(max(meta_stats.depol), max(meta_stats.hyperpol)),max(max(meta_stats.depol), max(meta_stats.hyperpol))]);
+                        hold off;
+                        ylabel("polarization (V)")
+                    case 2
+                        bar(meta_stats.ge, "BarWidth", 0.5, "FaceColor", [1, 0, 0]);
+                        hold on;
+                        bar(-1.*meta_stats.gi, "BarWidth", 0.5, "FaceColor", [0, 0, 1]);
+                        bar(meta_stats.net_ge, "BarWidth", 0.25, "FaceColor", [1, 0.5, 0]);
+                        bar(meta_stats.net_gi, "BarWidth", 0.25, "FaceColor", [0, 0.5, 1]);
+                        ylim([-1*max(max(meta_stats.ge), max(meta_stats.gi)),max(max(meta_stats.ge), max(meta_stats.gi))]);
+                        hold off;
+                        ylabel("syn conductances (S)")
+                    case 3
+                        bar(meta_stats.Ie, "BarWidth", 0.5, "FaceColor", [1, 0, 0]);
+                        hold on;
+                        bar(-1.*meta_stats.Ii, "BarWidth", 0.5, "FaceColor", [0, 0, 1]);
+                        ylim([-1*max(max(meta_stats.Ie), max(meta_stats.Ii)),max(max(meta_stats.Ie), max(meta_stats.Ii))]);
+                        hold off;
+                        ylabel("syn currents (A)")
+                    case 4
+                        bar(meta_stats.Iact, "BarWidth", 0.5, "FaceColor", [1, 0, 0]);                      
+                        ylim([-1*max(meta_stats.Iact),max(meta_stats.Iact)]);
+                        ylabel("act current (A)")
+                    case 5
+                        bar(meta_stats.Im, "BarWidth", 0.5, "FaceColor", [1, 0, 0]);                      
+                        ylim([-1*max(meta_stats.Im),max(meta_stats.Im)]);
+                        ylabel("mem currents (A)")
                 end
+                xticklabels(x);
+                yyaxis right;
+                plot(meta_stats.sps, '-ok', 'MarkerFaceColor',[0, 0, 0], 'MarkerSize', 6);
+                ylim([-1*(max(meta_stats.sps)+0.2), (max(meta_stats.sps)+0.2)]);
+                ylabel("sps");
             end
-            fprintf('[%d secs] Dynamics Plotting data\n', toc(tStart));
-       end
-   end
+        end
+
+    end
 end
