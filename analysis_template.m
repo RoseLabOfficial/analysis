@@ -13,7 +13,7 @@ filters.notch = {};
 filters.notch.Fst = 60;
 filters.notch.BW = 6;
 %% Whole-cell recordings data structure
-ds = WholeCellRecordingV2(filename, paradigms, response_durations, filters);
+ds = WholeCellRecording(filename, paradigms, response_durations, filters);
 %% Analyze
 ds = ds.call();
 %% Compute Stats
@@ -22,5 +22,5 @@ meta_stats = ds.compute_meta_stats();
 disp(meta_stats);
 %% Build Plots
 ds = ds.build_plots();
-% ds = ds.plot_estimations();
+ds = ds.plot_estimations();
 ds = ds.plot_meta_stats(meta_stats);

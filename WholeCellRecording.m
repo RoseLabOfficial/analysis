@@ -56,6 +56,8 @@ classdef WholeCellRecording
 
         %% Stats
         means
+        maxima
+        minima
 
         %% Plots
         estimations_figure
@@ -98,7 +100,7 @@ classdef WholeCellRecording
                         app(i, j).stimulus = data.stimulus;
                         data.stimulus = [];
                     catch
-                        warning(strcat('stimulus array was not found in ', app(i, j).paradigms, '!'));
+                        warning(strcat("stimulus array was not found in ", app(i, j).paradigms, "!"));
                         app(i, j).stimulus = [];
                     end
                     try
@@ -220,6 +222,7 @@ classdef WholeCellRecording
                       dvmdt = diff(cat(1, appender+app(i, j).membrane_potential(1, :), app(i, j).membrane_potential, appender+app(i, j).membrane_potential(end, :)), 1);
                       dvmdt = dvmdt(2:end, :); 
                       app(i, j).membrane_current = app(i, j).membrane_capacitance.*dvmdt.*app(i, j).fs;
+                      app(i, j).membrane_current = app(i, j).membrane_current - app(i, j).membrane_current(1, :);
                 end
             end
         end
