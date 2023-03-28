@@ -455,6 +455,7 @@ classdef WholeCellRecording
                     end
                     linkaxes([ax{:, k}], 'y');
                 end
+                xlim('tight');
             end
         end
 
