@@ -108,7 +108,7 @@ classdef WholeCellRecording
                     catch
                         error(strcat('membrane potentials was not found in ', app(i, j).paradigms, '!'));
                     end
-                    app(i, j).response_samples = app(i, j).fs * app(i, j).response_durations;
+                    app(i, j).response_samples = floor(app(i, j).fs * app(i, j).response_durations);
                     if app(i, j).response_samples > size(app(i, j).membrane_potential, 1)
                         app(i, j).response_samples = size(app(i, j).membrane_potential, 1);
                     end
@@ -322,18 +322,18 @@ classdef WholeCellRecording
             [m, n] = size(app);
             for i = 1: m
                 for j = 1: n
-                    app(i, j).means.depolarization = mean(app(i, j).depolarizations(:, idx), 1);
-                    app(i, j).means.hyperpolarization = mean(app(i, j).hyperpolarizations(:, idx), 1);
-                    app(i, j).means.excitatory_conductance = mean(app(i, j).excitatory_conductance, 1);
-                    app(i, j).means.inhibitory_conductance = mean(app(i, j).inhibitory_conductance, 1);
-                    app(i, j).means.excitatory_current = mean(app(i, j).excitatory_current(:, idx), 1);
-                    app(i, j).means.inhibitory_current = mean(app(i, j).inhibitory_current(:, idx), 1);
-                    app(i, j).means.excitation = mean(app(i, j).excitation, 1);
-                    app(i, j).means.inhibition = mean(app(i, j).inhibition, 1);
-                    app(i, j).means.resultant_excitation = mean(app(i, j).resultant_excitaiton, 1);
-                    app(i, j).means.resultant_inhibition = mean(app(i, j).resultant_inhibition, 1);
-                    app(i, j).means.activation_current = mean(app(i, j).activation_current(:, idx), 1);
-                    app(i, j).means.membrane_current = mean(app(i, j).membrane_current(:, idx), 1);
+                    app(i, j).means.depolarization = mean(app(i, j).depolarizations(1:app(i, j).response_samples, idx), 1);
+                    app(i, j).means.hyperpolarization = mean(app(i, j).hyperpolarizations(1:app(i, j).response_samples, idx), 1);
+                    app(i, j).means.excitatory_conductance = mean(app(i, j).excitatory_conductance(1:app(i, j).response_samples), 1);
+                    app(i, j).means.inhibitory_conductance = mean(app(i, j).inhibitory_conductance(1:app(i, j).response_samples), 1);
+                    app(i, j).means.excitatory_current = mean(app(i, j).excitatory_current(1:app(i, j).response_samples, idx), 1);
+                    app(i, j).means.inhibitory_current = mean(app(i, j).inhibitory_current(1:app(i, j).response_samples, idx), 1);
+                    app(i, j).means.excitation = mean(app(i, j).excitation(1:app(i, j).response_samples), 1);
+                    app(i, j).means.inhibition = mean(app(i, j).inhibition(1:app(i, j).response_samples), 1);
+                    app(i, j).means.resultant_excitation = mean(app(i, j).resultant_excitaiton(1:app(i, j).response_samples), 1);
+                    app(i, j).means.resultant_inhibition = mean(app(i, j).resultant_inhibition(1:app(i, j).response_samples), 1);
+                    app(i, j).means.activation_current = mean(app(i, j).activation_current(1:app(i, j).response_samples, idx), 1);
+                    app(i, j).means.membrane_current = mean(app(i, j).membrane_current(1:app(i, j).response_samples, idx), 1);
                     app(i, j).means.rates = app(i, j).rates(idx, 1);
                     app(i, j).means.npulses = app(i, j).npulses(idx, 1);
                     app(i, j).means.spikes_per_stimulus = app(i, j).spikes_per_stimulus(idx, 1);
