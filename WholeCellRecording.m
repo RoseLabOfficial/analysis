@@ -18,6 +18,7 @@ classdef WholeCellRecording
         stimulus
         membrane_potential
         injected_current
+        representative_response
 
         %% Cell:
         membrane_capacitance
@@ -102,6 +103,13 @@ classdef WholeCellRecording
                     catch
                         warning(strcat("stimulus array was not found in ", app(i, j).paradigms, "!"));
                         app(i, j).stimulus = [];
+                    end
+                    try
+                        app(i, j).representative_response = data.representative;
+                        data.representative = [];
+                    catch
+                        warning(strcat("Representative array was not found in ", app(i, j).paradigms, "!"));
+                        app(i, j).representative_response = [];
                     end
                     try
                         app(i, j).membrane_potential = table2array(data).*1e-3;
@@ -388,7 +396,7 @@ classdef WholeCellRecording
             app(1, 1).stats_figure = figure('Name', strcat('Means for ', app(1, 1).filename));
         end
 
-        function app = plot_estimations(app)
+        function app = plot_without_representative_response(app)
             nplots = 8;
             figure(app(1, 1).estimations_figure);
             [m, n] = size(app);
@@ -457,6 +465,96 @@ classdef WholeCellRecording
                 end
                 xlim('tight');
             end
+        end
+
+        function app = plot_with_representative_response(app)
+            nplots = 9;
+            figure(app(1, 1).estimations_figure);
+            [m, n] = size(app);
+            for i = 1: m
+                tiledlayout(nplots, n);
+                ax = cell(nplots, n);
+                for k = 1: nplots
+                    for j = 1: n
+                        ax{j, k} = nexttile;
+                        switch k
+                            case 1
+                                if ~(isempty(app(i, j).representative_response))
+                                    plot(app(i, j).times, app(i, j).representative_response, 'k');
+                                end
+                                if j == 1
+                                   ax{j, k}.YLabel.String = 'Rep. (V)';
+                                end
+                            case 2
+                                plot(app(i, j).times, app(i, j).membrane_potential);
+                                ax{j, k}.Title.String = app(i, j).paradigms;
+                                ax{j, k}.Subtitle.String = [strcat("Eact=", num2str(app(i, j).activation_potential(1, :))), strcat('Diff: O=', num2str(size(app(1, 1).lowpass.Coefficients, 1)-1), '; Band=(', num2str(app(1, 1).lowpass.PassbandFrequency), ', ', num2str(app(1, 1).lowpass.StopbandFrequency), ')')];
+                                if j == 1
+                                    ax{j, k}.YLabel.String = 'Vm (V)';
+                                end
+                            case 3
+                                plot(app(i, j).times, app(i, j).activation_current);
+                                ax{j, k}.Subtitle.String = strcat('xalpha=', num2str(app(i, j).alpha_multiplier(1, :)), '; xbeta=', num2str(app(i, j).beta_multiplier(1, :)));
+                                if j == 1
+                                    ax{j, k}.YLabel.String = 'Iact (A)';
+                                end
+                            case 4
+                                plot(app(i, j).times, app(i, j).leakage_current);
+                                ax{j, k}.Subtitle.String = strcat('Rin=', num2str(app(i, j).input_resistance(1, 1)));
+                                if j == 1
+                                    ax{j, k}.YLabel.String = 'Ileak (A)';
+                                end
+                            case 5
+                                plot(app(i, j).times, app(i, j).membrane_current);
+                                ax{j, k}.Subtitle.String = strcat('Cm=', num2str(app(i, j).membrane_capacitance(1, 1)));
+                                if j == 1
+                                    ax{j, k}.YLabel.String = 'Im (A)';
+                                end
+                            case 6
+                                plot(app(i, j).times, app(i, j).excitatory_conductance, 'r', app(i, j).times, app(i, j).inhibitory_conductance, 'b');
+                                ax{j, k}.Subtitle.String = strcat('Ee=', num2str(app(i , j).excitatory_reversal_potential(1, 1)), '; Ei=', num2str(app(i, j).inhibitory_reversal_potential(1, 1)));
+                                if j == 1
+                                    ax{j, k}.YLabel.String = 'G (S)';
+                                end
+                            case 7
+                                area(app(i, j).times, app(i, j).resultant_excitaiton, 'FaceColor', 'r');
+                                hold on;
+                                area(app(i, j).times, app(i, j).resultant_inhibition, 'FaceColor', 'b');
+                                hold off;
+                                if j == 1
+                                   ax{j, k}.YLabel.String = 'Resultant G(S)';
+                                end
+                            case 8
+                                plot(app(i, j).times, app(i, j).excitatory_current(:, 1), 'r', app(i, j).times, app(i, j).inhibitory_current(:, 1), 'b');
+                                if j == 1
+                                    ax{j, k}.YLabel.String = 'Isyn (A)';
+                                end
+                            case 9
+                                if ~(isempty(app(i, j).stimulus))
+                                    plot(app(i, j).times, app(i, j).stimulus, 'k');
+                                end
+                                if j == 1
+                                   ax{j, k}.YLabel.String = 'Stimulus (V)';
+                                end
+                        end
+                        linkaxes([ax{j, :}], 'x');
+                    end
+                    linkaxes([ax{:, k}], 'y');
+                end
+                xlim('tight');
+            end
+        end
+
+        function app = plot_estimations(app, production)
+            if nargin < 2
+                production = 0;
+            end
+            if production == 1
+                app.plot_with_representative_response();
+            else
+                app.plot_without_representative_response();
+            end
+            
         end
 
         function app = plot_meta_stats(app, meta_stats)
