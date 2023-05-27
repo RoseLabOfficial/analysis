@@ -105,7 +105,7 @@ classdef WholeCellRecording
                         app(i, j).stimulus = [];
                     end
                     try
-                        app(i, j).representative_response = data.representative;
+                        app(i, j).representative_response = data.representative .* 1e-3;
                         data.representative = [];
                     catch
                         warning(strcat("Representative array was not found in ", app(i, j).paradigms, "!"));
@@ -468,7 +468,7 @@ classdef WholeCellRecording
         end
 
         function app = plot_with_representative_response(app)
-            nplots = 9;
+            nplots = 5;
             figure(app(1, 1).estimations_figure);
             [m, n] = size(app);
             for i = 1: m
@@ -480,56 +480,36 @@ classdef WholeCellRecording
                         switch k
                             case 1
                                 if ~(isempty(app(i, j).representative_response))
-                                    plot(app(i, j).times, app(i, j).representative_response, 'k');
+                                    plot(app(i, j).times, app(i, j).representative_response, 'k', 'Color', [0, 0, 0]);
                                 end
                                 if j == 1
                                    ax{j, k}.YLabel.String = 'Rep. (V)';
                                 end
                             case 2
-                                plot(app(i, j).times, app(i, j).membrane_potential);
+                                plot(app(i, j).times, app(i, j).membrane_potential, 'Color', [128 128 128]./255);
                                 ax{j, k}.Title.String = app(i, j).paradigms;
                                 ax{j, k}.Subtitle.String = [strcat("Eact=", num2str(app(i, j).activation_potential(1, :))), strcat('Diff: O=', num2str(size(app(1, 1).lowpass.Coefficients, 1)-1), '; Band=(', num2str(app(1, 1).lowpass.PassbandFrequency), ', ', num2str(app(1, 1).lowpass.StopbandFrequency), ')')];
                                 if j == 1
                                     ax{j, k}.YLabel.String = 'Vm (V)';
                                 end
-                            case 3
-                                plot(app(i, j).times, app(i, j).activation_current);
-                                ax{j, k}.Subtitle.String = strcat('xalpha=', num2str(app(i, j).alpha_multiplier(1, :)), '; xbeta=', num2str(app(i, j).beta_multiplier(1, :)));
-                                if j == 1
-                                    ax{j, k}.YLabel.String = 'Iact (A)';
-                                end
                             case 4
-                                plot(app(i, j).times, app(i, j).leakage_current);
-                                ax{j, k}.Subtitle.String = strcat('Rin=', num2str(app(i, j).input_resistance(1, 1)));
-                                if j == 1
-                                    ax{j, k}.YLabel.String = 'Ileak (A)';
-                                end
-                            case 5
-                                plot(app(i, j).times, app(i, j).membrane_current);
-                                ax{j, k}.Subtitle.String = strcat('Cm=', num2str(app(i, j).membrane_capacitance(1, 1)));
-                                if j == 1
-                                    ax{j, k}.YLabel.String = 'Im (A)';
-                                end
-                            case 6
-                                plot(app(i, j).times, app(i, j).excitatory_conductance, 'r', app(i, j).times, app(i, j).inhibitory_conductance, 'b');
+                                plot(app(i, j).times, app(i, j).excitatory_conductance, 'Color', [255 0 0]./255);
+                                hold on;
+                                plot(app(i, j).times, app(i, j).inhibitory_conductance, 'Color', [0 190 216]./255);
+                                hold off;
                                 ax{j, k}.Subtitle.String = strcat('Ee=', num2str(app(i , j).excitatory_reversal_potential(1, 1)), '; Ei=', num2str(app(i, j).inhibitory_reversal_potential(1, 1)));
                                 if j == 1
                                     ax{j, k}.YLabel.String = 'G (S)';
                                 end
-                            case 7
-                                area(app(i, j).times, app(i, j).resultant_excitaiton, 'FaceColor', 'r');
+                            case 3
+                                area(app(i, j).times, app(i, j).resultant_excitaiton, 'FaceColor', [255 0 0]./255);
                                 hold on;
-                                area(app(i, j).times, app(i, j).resultant_inhibition, 'FaceColor', 'b');
+                                area(app(i, j).times, app(i, j).resultant_inhibition, 'FaceColor', [0 190 216]./255);
                                 hold off;
                                 if j == 1
                                    ax{j, k}.YLabel.String = 'Resultant G(S)';
                                 end
-                            case 8
-                                plot(app(i, j).times, app(i, j).excitatory_current(:, 1), 'r', app(i, j).times, app(i, j).inhibitory_current(:, 1), 'b');
-                                if j == 1
-                                    ax{j, k}.YLabel.String = 'Isyn (A)';
-                                end
-                            case 9
+                            case 5
                                 if ~(isempty(app(i, j).stimulus))
                                     plot(app(i, j).times, app(i, j).stimulus, 'k');
                                 end
@@ -537,10 +517,15 @@ classdef WholeCellRecording
                                    ax{j, k}.YLabel.String = 'Stimulus (V)';
                                 end
                         end
-                        linkaxes([ax{j, :}], 'x');
+%                         linkaxes([ax{j, :}], 'x');
                     end
-                    linkaxes([ax{:, k}], 'y');
+%                     linkaxes([ax{:, k}], 'y');
                 end
+                linkaxes([ax{:, :}], 'x');
+                linkaxes([ax{:, 1}, ax{:, 2}], 'y');
+                linkaxes([ax{:, 3}], 'y');
+                linkaxes([ax{:, 4}], 'y');
+                linkaxes([ax{:, 5}], 'y');
                 xlim('tight');
             end
         end
