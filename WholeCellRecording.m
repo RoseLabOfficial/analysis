@@ -523,8 +523,7 @@ classdef WholeCellRecording
                 end
                 linkaxes([ax{:, :}], 'x');
                 linkaxes([ax{:, 1}, ax{:, 2}], 'y');
-                linkaxes([ax{:, 3}], 'y');
-                linkaxes([ax{:, 4}], 'y');
+                linkaxes([ax{:, 3}, ax{:, 4}], 'y');
                 linkaxes([ax{:, 5}], 'y');
                 xlim('tight');
             end
@@ -542,7 +541,30 @@ classdef WholeCellRecording
             
         end
 
-        function app = plot_meta_stats(app, meta_stats)
+        function app = plot_meta_stats_production(app, meta_stats)
+            x = categorical(meta_stats.Properties.VariableNames);
+            meta_stats = rows2vars(meta_stats);
+            nplots = 1;
+            figure(app(1, 1).stats_figure);
+            tiledlayout(nplots, 1);
+            ax = cell(nplots, 1);
+            ax{1, 1} = nexttile;
+            bar(meta_stats.ge, "BarWidth", 0.5, "FaceColor", [1, 0, 0]);
+            hold on;
+            bar(-1.*meta_stats.gi, "BarWidth", 0.5, "FaceColor", [0 190 216]./255);
+            bar(meta_stats.net_ge, "BarWidth", 0.25, "FaceColor", [1, 0, 0]);
+            bar(meta_stats.net_gi, "BarWidth", 0.25, "FaceColor", [0 190 216]./255);
+            ylim([-1*max(max(meta_stats.ge), max(meta_stats.gi)),max(max(meta_stats.ge), max(meta_stats.gi))]);
+            hold off;
+            ylabel("syn conductances (S)");
+            xticklabels(x);
+            yyaxis right;
+            plot(meta_stats.sps, '-ok', 'MarkerFaceColor',[0, 0, 0], 'MarkerSize', 6);
+            ylim([-1*(max(meta_stats.sps)+0.2), (max(meta_stats.sps)+0.2)]);
+            ylabel("sps");
+        end
+
+        function app = plot_meta_stats_analysis(app, meta_stats)
             x = categorical(meta_stats.Properties.VariableNames);
             meta_stats = rows2vars(meta_stats);
             nplots = 5;
@@ -590,6 +612,18 @@ classdef WholeCellRecording
                 ylim([-1*(max(meta_stats.sps)+0.2), (max(meta_stats.sps)+0.2)]);
                 ylabel("sps");
             end
+        end
+
+        function app = plot_meta_stats(app, meta_stats, production)
+            if nargin < 3
+                production = 0;
+            end
+            if production == 1
+                app.plot_meta_stats_production(meta_stats);
+            else
+                app.plot_meta_stats_analysis(meta_stats);
+            end
+            
         end
 
     end
