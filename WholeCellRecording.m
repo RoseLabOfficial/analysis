@@ -50,6 +50,8 @@ classdef WholeCellRecording
         inhibition
         resultant_excitaiton
         resultant_inhibition
+        estimated_membrane_potential
+        threshold_crossing
 
         %% Filters
         lowpass
@@ -144,6 +146,7 @@ classdef WholeCellRecording
                     app(i, j).reference_potential = parameters.Eref' + zeros(size(app(i, j).membrane_potential));
                     app(i, j).rates = parameters.rate';
                     app(i, j).npulses = parameters.npulses';
+                    app(i, j).threshold_crossing = 0;
                 end
             end
         end
@@ -167,6 +170,7 @@ classdef WholeCellRecording
                     app(i, j).inhibition = zeros(size(app(i, j).membrane_potential, 1), 1);
                     app(i, j).resultant_excitaiton = zeros(size(app(i, j).membrane_potential, 1), 1);
                     app(i, j).resultant_inhibition = zeros(size(app(i, j).membrane_potential, 1), 1);
+                    app(i, j).estimated_membrane_potential = app(i, j).resting_potential(:, 1);
                 end
             end
         end
@@ -364,13 +368,15 @@ classdef WholeCellRecording
             Ii = [means.inhibitory_current];
             Iact = [means.activation_current];
             Im = [means.membrane_current];
-            mean_stats = [pps; pulses; sps; depol; hyperpol; ge; gi; net_ge; net_gi; Ie; Ii; Iact; Im];
+            Eth_cross = [app.threshold_crossing];
+            mean_stats = [pps; pulses; sps; depol; hyperpol; ge; gi; net_ge; net_gi; Ie; Ii; Iact; Im; Eth_cross];
         end
 
         function meta_stats = compute_meta_stats(app)
             paradigms = [app.paradigms];
-            row_names = ["rate"; "pulses"; "sps"; "depol"; "hyperpol"; "ge"; "gi"; "net_ge"; "net_gi"; "Ie"; "Ii"; "Iact"; "Im"];
-            meta_stats = array2table(app.compute_mean_stats(), "RowNames", row_names, "VariableNames",paradigms);
+            row_names = ["rate"; "pulses"; "sps"; "depol"; "hyperpol"; "ge"; "gi"; "net_ge"; "net_gi"; "Ie"; "Ii"; "Iact"; "Im"; "EthCross"];
+            computed_stats = app.compute_mean_stats();
+            meta_stats = array2table(computed_stats, "RowNames", row_names, "VariableNames",paradigms);
         end
 
     end
@@ -386,6 +392,76 @@ classdef WholeCellRecording
             app = app.compute_passive_currents();
             app = app.compute_resultants();
             app = app.compute_polarizations();
+            app = app.reverse_estimate_rk4th(1, 0);
+        end
+
+        function dvdt = scm(~, vm, cm, iinj, ge, ee, gi, ei, rin, er, a, et, b)
+            dvdt = (1/cm)*(a*(vm-et)*(vm-er) + b*(vm-er) + iinj - ge*(vm-ee) - gi*(vm-ei) - (1/rin)*(vm-er));
+        end
+        
+        function app = reverse_estimate_rk4th(app, excitation_multiplier, inhibition_multiplier)
+            if nargin < 2
+                excitation_multiplier = 1;
+                inhibition_multiplier = 0;
+            elseif nargin < 3
+                    inhibition_multiplier = 0;
+            end
+            [m, n] = size(app);
+            h = 1/82000;
+            for i = 1: m
+                for j = 1: n
+                    for k = 1: size(app(i, j).estimated_membrane_potential, 1)-1
+                        vm = app(i, j).estimated_membrane_potential(k, 1);
+                        cm = app(i, j).membrane_capacitance(k, 1);
+                        iinj = app(i, j).injected_current(k, 1);
+                        ge = app(i, j).excitatory_conductance(k, 1)*excitation_multiplier;
+                        ee = app(i, j).excitatory_reversal_potential(k, 1)*inhibition_multiplier;
+                        gi = app(i, j).inhibitory_conductance(k, 1);
+                        ei = app(i, j).inhibitory_reversal_potential(k, 1);
+                        rin = app(i, j).input_resistance(k, 1);
+                        er = app(i, j).resting_potential(k, 1);
+                        a = app(i, j).alpha(k, 1);
+                        et = app(i, j).threshold_potential(k, 1);
+                        b = app(i, j).beta(k, 1);
+                        k1 = app(i, j).scm(vm, cm, iinj, ge, ee, gi, ei, rin, er, a, et, b);
+                        k2 = app(i, j).scm(vm+0.5*h*k1, cm, iinj, ge, ee, gi, ei, rin, er, a, et, b);
+                        k3 = app(i, j).scm(vm+0.5*h*k2, cm, iinj, ge, ee, gi, ei, rin, er, a, et, b);
+                        k4 = app(i, j).scm(vm+k3*h, cm, iinj, ge, ee, gi, ei, rin, er, a, et, b);
+                        app(i, j).estimated_membrane_potential(k+1, 1) = app(i, j).estimated_membrane_potential(k, 1) + (1/6)*(k1 + 2*k2 + 2*k3+k4)*h;
+                    end
+                    ppp = find(app(i, j).estimated_membrane_potential > app(i, j).threshold_potential(1, 1), 1)/app(i, j).fs;
+                    if ~isempty(ppp)
+                        app(i, j).threshold_crossing = ppp;
+                    end
+                end
+            end
+        end
+
+        function app = reverse_estimate(app, excitation_multiplier, inhibition_multiplier)
+            if nargin < 2
+                excitation_multiplier = 1;
+                inhibition_multiplier = 0;
+            elseif nargin < 3
+                    inhibition_multiplier = 0;
+            end
+            [m, n] = size(app);
+            for i = 1: m
+                for j = 1: n
+                    for k = 2: 1: size(app(i, j).estimated_membrane_potential, 1)
+                        app(i, j).estimated_membrane_potential(k, 1) = app(i, j).estimated_membrane_potential(k-1, 1) +...
+                            (1./(app(i, j).fs*1e1)).*(1/app(i, j).membrane_capacitance(k-1, 1)).*(app(i, j).injected_current(k-1, 1) ...
+                            - excitation_multiplier.*app(i, j).excitatory_conductance(k-1, 1) .*(app(i, j).estimated_membrane_potential(k-1, 1) - app(i, j).excitatory_reversal_potential(k-1, 1))...
+                            - inhibition_multiplier.*app(i, j).excitatory_conductance(k-1, 1) .*(app(i, j).estimated_membrane_potential(k-1, 1) - app(i, j).inhibitory_reversal_potential(k-1, 1))...
+                            - (1./app(i, j).input_resistance(k-1, 1)).*(app(i, j).estimated_membrane_potential(k-1, 1) - app(i, j).resting_potential(k-1, 1)) ...
+                            + app(i, j).alpha(k-1, 1).*(app(i, j).estimated_membrane_potential(k-1, 1) - app(i, j).threshold_potential(k-1, 1)).*(app(i, j).estimated_membrane_potential(k-1, 1) - app(i, j).resting_potential(k-1, 1)) ...
+                            + app(i, j).beta(k-1, 1).*(app(i, j).estimated_membrane_potential(k-1, 1) - app(i, j).resting_potential(k-1, 1)));
+                    end
+                    ppp = find(app(i, j).estimated_membrane_potential > app(i, j).threshold_potential(1, 1), 1)/app(i, j).fs;
+                    if ~isempty(ppp)
+                        app(i, j).threshold_crossing = ppp;
+                    end
+                end
+            end
         end
     end
 
@@ -408,7 +484,7 @@ classdef WholeCellRecording
                         ax{j, k} = nexttile;
                         switch k
                             case 1
-                                plot(app(i, j).times, app(i, j).membrane_potential);
+                                plot(app(i, j).times, app(i, j).membrane_potential, app(i, j).times, app(i, j).estimated_membrane_potential, '--k');
                                 ax{j, k}.Title.String = app(i, j).paradigms;
                                 ax{j, k}.Subtitle.String = [strcat("Eact=", num2str(app(i, j).activation_potential(1, :))), strcat('Diff: O=', num2str(size(app(1, 1).lowpass.Coefficients, 1)-1), '; Band=(', num2str(app(1, 1).lowpass.PassbandFrequency), ', ', num2str(app(1, 1).lowpass.StopbandFrequency), ')')];
                                 if j == 1
