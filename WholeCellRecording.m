@@ -53,10 +53,12 @@ classdef WholeCellRecording
         estimated_membrane_potential
         estimated_time
         estimated_activation_current
+        estimated_activation
         estimated_excitatory_current
         estimated_inhibitory_current
-        estimated_leak_current
+        estimated_leakage_current
         threshold_crossing
+        estimated_membrane_current
 
         %% Filters
         lowpass
@@ -180,7 +182,9 @@ classdef WholeCellRecording
                     app(i, j).estimated_activation_current = app(i, j).activation_current.*0;
                     app(i, j).estimated_excitatory_current = app(i, j).activation_current.*0;
                     app(i, j).estimated_inhibitory_current = app(i, j).activation_current.*0;
-                    app(i, j).estimated_leak_current = app(i, j).activation_current.*0;
+                    app(i, j).estimated_leakage_current = app(i, j).activation_current.*0;
+                    app(i, j).estimated_membrane_current = app(i, j).membrane_potential.*0;
+                    app(i, j).estimated_activation = 0;
                 end
             end
         end
@@ -277,7 +281,6 @@ classdef WholeCellRecording
                for j = 1: 1: n
                   app(i, j).activation_current = (app(i, j).alpha.*(app(i, j).membrane_potential-app(i, j).threshold_potential).*(app(i, j).membrane_potential-app(i, j).resting_potential)) ...
                           + (app(i, j).beta.*(app(i, j).membrane_potential-app(i, j).resting_potential));
-                  app(i, j).activation_current = app(i, j).activation_current.*(app(i, j).membrane_potential > app(i, j).resting_potential);
                end
             end
         end
@@ -380,14 +383,34 @@ classdef WholeCellRecording
             Iact = [means.activation_current];
             Im = [means.membrane_current];
             Eth_cross = [app.threshold_crossing];
-            mean_stats = [pps; pulses; sps; depol; hyperpol; ge; gi; net_ge; net_gi; Ie; Ii; Iact; Im; Eth_cross];
+            Iact_est_mean = [app.estimated_activation];
+            mean_stats = [pps; pulses; sps; depol; hyperpol; ge; gi; net_ge; net_gi; Ie; Ii; Iact; Im; Eth_cross; Iact_est_mean];
         end
 
         function meta_stats = compute_meta_stats(app)
             paradigms = [app.paradigms];
-            row_names = ["rate"; "pulses"; "sps"; "depol"; "hyperpol"; "ge"; "gi"; "net_ge"; "net_gi"; "Ie"; "Ii"; "Iact"; "Im"; "EthCross"];
+            row_names = ["rate"; "pulses"; "sps"; "depol"; "hyperpol"; "ge"; "gi"; "net_ge"; "net_gi"; "Ie"; "Ii"; "Iact"; "Im"; "EthCross"; "IactEstMean"];
             computed_stats = app.compute_mean_stats();
             meta_stats = array2table(computed_stats, "RowNames", row_names, "VariableNames",paradigms);
+        end
+
+        function reverse_estimation_stats = compute_reverse_estimation_stats(app)
+            [m ,n] = size(app);
+            pps = zeros(m, n);
+            pulses = zeros(m, n);
+            depolarization = zeros(m, n);
+            hyperpolarization = zeros(m, n);
+            mean_ge = zeros(m, n);
+            mean_gi = zeros(m, n);
+            net_ge = zeros(m, n);
+            net_gi = zeros(m, n);
+            mean_Ie = zeros(m, n);
+            mean_Ii = zeros(m, n);
+            mean_Iact = zeros(m, n);
+            mean_Ileak = zeros(m, n);
+            mean_Im = zeros(m, n);
+            Eth_cross = zeros(m, n);
+            estimation_stats = [pps; pulses; depolarization; hyperpolarization; mean_ge; mean_gi; net_ge; net_gi; mean_Ie; mean_Ii; mean_Iact; mean_Ileak; mean_Im; Eth_cross];
         end
 
     end
@@ -421,11 +444,11 @@ classdef WholeCellRecording
                     ee = app(i, j).excitatory_reversal_potential(1, 1);
                     ei = app(i, j).inhibitory_reversal_potential(1, 1);
                     rin = app(i, j).input_resistance(1, 1);
-                    er = app(i, j).resting_potential(1, 1);
+                    er = app(i, j).steady_state_potential(1, 1);
                     a = app(i, j).alpha(1, 1);
                     et = app(i, j).threshold_potential(1, 1);
                     b = app(i, j).beta(1, 1);
-                    vm = app(i, j).estimated_membrane_potential(1, 1);
+                    vm = app(i, j).steady_state_potential(1, 1);
                     ge = excitation_multiplier.*(app(i, j).excitatory_conductance - app(i, j).excitatory_conductance(1, 1));
                     gi = inhibition_multiplier.*(app(i, j).inhibitory_conductance - app(i, j).inhibitory_conductance(1, 1));
                     for k = 2: 1: size(app(i, j).estimated_membrane_potential, 1)
@@ -436,20 +459,22 @@ classdef WholeCellRecording
                         else
                             Iactive = 0;
                         end
-%                         Iactive = app(i, j).activation_current(k, 1);
                         Ileak = (1./rin).*(vm - er);
                         vm = vm + (1./app(i, j).fs)*(1./cm)*(iinj - Ie - Ii - Ileak + Iactive);
                         app(i, j).estimated_membrane_potential(k, 1) = vm;
                         app(i, j).estimated_activation_current(k, 1) = Iactive;
                         app(i, j).estimated_excitatory_current(k, 1) = Ie;
                         app(i, j).estimated_inhibitory_current(k, 1) = Ii;
-                        app(i, j).estimated_leak_current(k, 1) = Ileak;
+                        app(i, j).estimated_leakage_current(k, 1) = Ileak;
                     end
                     app(i, j).estimated_time = app(i, j).times;
-                    ppp = find(app(i, j).estimated_membrane_potential > app(i, j).threshold_potential(1, 1), 1)/app(i, j).fs;
+                    ppp = find(app(i, j).estimated_membrane_potential > app(i, j).threshold_potential(1, 1), 1);
                     if ~isempty(ppp)
-                        app(i, j).threshold_crossing = ppp;
+                        app(i, j).threshold_crossing = ppp/app(i, j).fs;
+                        app(i, j).estimated_activation_current(ppp+1:end, :) = 0;
+                        app(i, j).estimated_activation = mean(app(i, j).estimated_activation_current(1:ppp, 1), 1); 
                     end
+                    app(i, j).estimated_membrane_current = cm.*[zeros(1, size(app(i, j).estimated_membrane_potential, 2)); diff(app(i, j).estimated_membrane_potential, 1, 1)];
                 end
             end
         end
@@ -484,19 +509,19 @@ classdef WholeCellRecording
                                     ax{j, k}.YLabel.String = 'Vm (V)';
                                 end
                             case 2
-                                plot(app(i, j).times, app(i, j).activation_current);
+                                plot(app(i, j).times, app(i, j).activation_current, app(i, j).estimated_time, app(i, j).estimated_activation_current, 'k');
                                 ax{j, k}.Subtitle.String = strcat('xalpha=', num2str(app(i, j).alpha_multiplier(1, :)), '; xbeta=', num2str(app(i, j).beta_multiplier(1, :)));
                                 if j == 1
                                     ax{j, k}.YLabel.String = 'Iact (A)';
                                 end
                             case 3
-                                plot(app(i, j).times, app(i, j).leakage_current);
+                                plot(app(i, j).times, app(i, j).leakage_current, app(i, j).estimated_time, app(i, j).estimated_leakage_current(:, 1), 'k');
                                 ax{j, k}.Subtitle.String = strcat('Rin=', num2str(app(i, j).input_resistance(1, 1)));
                                 if j == 1
                                     ax{j, k}.YLabel.String = 'Ileak (A)';
                                 end
                             case 4
-                                plot(app(i, j).times, app(i, j).membrane_current);
+                                plot(app(i, j).times, app(i, j).membrane_current, app(i, j).estimated_time, app(i, j).estimated_membrane_current(:, 1), 'k');
                                 ax{j, k}.Subtitle.String = strcat('Cm=', num2str(app(i, j).membrane_capacitance(1, 1)));
                                 if j == 1
                                     ax{j, k}.YLabel.String = 'Im (A)';
