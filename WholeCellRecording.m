@@ -53,7 +53,6 @@ classdef WholeCellRecording
         estimated_membrane_potential
         estimated_time
         estimated_activation_current
-        estimated_activation
         estimated_excitatory_current
         estimated_inhibitory_current
         estimated_leakage_current
@@ -184,7 +183,6 @@ classdef WholeCellRecording
                     app(i, j).estimated_inhibitory_current = app(i, j).activation_current.*0;
                     app(i, j).estimated_leakage_current = app(i, j).activation_current.*0;
                     app(i, j).estimated_membrane_current = app(i, j).membrane_potential.*0;
-                    app(i, j).estimated_activation = 0;
                 end
             end
         end
@@ -383,36 +381,15 @@ classdef WholeCellRecording
             Iact = [means.activation_current];
             Im = [means.membrane_current];
             Eth_cross = [app.threshold_crossing];
-            Iact_est_mean = [app.estimated_activation];
-            mean_stats = [pps; pulses; sps; depol; hyperpol; ge; gi; net_ge; net_gi; Ie; Ii; Iact; Im; Eth_cross; Iact_est_mean];
+            mean_stats = [pps; pulses; sps; depol; hyperpol; ge; gi; net_ge; net_gi; Ie; Ii; Iact; Im; Eth_cross];
         end
 
         function meta_stats = compute_meta_stats(app)
             paradigms = [app.paradigms];
-            row_names = ["rate"; "pulses"; "sps"; "depol"; "hyperpol"; "ge"; "gi"; "net_ge"; "net_gi"; "Ie"; "Ii"; "Iact"; "Im"; "EthCross"; "IactEstMean"];
+            row_names = ["rate"; "pulses"; "sps"; "depol"; "hyperpol"; "ge"; "gi"; "net_ge"; "net_gi"; "Ie"; "Ii"; "Iact"; "Im"; "EthCross"];
             computed_stats = app.compute_mean_stats();
             meta_stats = array2table(computed_stats, "RowNames", row_names, "VariableNames",paradigms);
         end
-
-        function reverse_estimation_stats = compute_reverse_estimation_stats(app)
-            [m ,n] = size(app);
-            pps = zeros(m, n);
-            pulses = zeros(m, n);
-            depolarization = zeros(m, n);
-            hyperpolarization = zeros(m, n);
-            mean_ge = zeros(m, n);
-            mean_gi = zeros(m, n);
-            net_ge = zeros(m, n);
-            net_gi = zeros(m, n);
-            mean_Ie = zeros(m, n);
-            mean_Ii = zeros(m, n);
-            mean_Iact = zeros(m, n);
-            mean_Ileak = zeros(m, n);
-            mean_Im = zeros(m, n);
-            Eth_cross = zeros(m, n);
-            estimation_stats = [pps; pulses; depolarization; hyperpolarization; mean_ge; mean_gi; net_ge; net_gi; mean_Ie; mean_Ii; mean_Iact; mean_Ileak; mean_Im; Eth_cross];
-        end
-
     end
     
     %% Call method for estimator
@@ -452,15 +429,14 @@ classdef WholeCellRecording
                     ge = excitation_multiplier.*(app(i, j).excitatory_conductance - app(i, j).excitatory_conductance(1, 1));
                     gi = inhibition_multiplier.*(app(i, j).inhibitory_conductance - app(i, j).inhibitory_conductance(1, 1));
                     for k = 2: 1: size(app(i, j).estimated_membrane_potential, 1)
-                        Ie = ge(k).*(vm - ee);
-                        Ii = gi(k).*(vm - ei);
-                        if vm < et
-                            Iactive = (a.*(vm - er).*(vm-et) + b.*(vm - er));
-                        else
-                            Iactive = 0;
-                        end
+                        Ie = ge(k).*(vm - ee).*(ge(k) > 0);
+                        Ii = gi(k).*(vm - ei).*(gi(k) > 0);
+                        Iactive = (a.*(vm - er).*(vm-et) + b.*(vm - er));
                         Ileak = (1./rin).*(vm - er);
                         vm = vm + (1./app(i, j).fs)*(1./cm)*(iinj - Ie - Ii - Ileak + Iactive);
+                        if vm > et
+                            vm = et;
+                        end
                         app(i, j).estimated_membrane_potential(k, 1) = vm;
                         app(i, j).estimated_activation_current(k, 1) = Iactive;
                         app(i, j).estimated_excitatory_current(k, 1) = Ie;
@@ -468,13 +444,11 @@ classdef WholeCellRecording
                         app(i, j).estimated_leakage_current(k, 1) = Ileak;
                     end
                     app(i, j).estimated_time = app(i, j).times;
-                    ppp = find(app(i, j).estimated_membrane_potential > app(i, j).threshold_potential(1, 1), 1);
+                    ppp = find(app(i, j).estimated_membrane_potential >= app(i, j).threshold_potential(1, 1), 1);
                     if ~isempty(ppp)
                         app(i, j).threshold_crossing = ppp/app(i, j).fs;
-                        app(i, j).estimated_activation_current(ppp+1:end, :) = 0;
-                        app(i, j).estimated_activation = mean(app(i, j).estimated_activation_current(1:ppp, 1), 1); 
                     end
-                    app(i, j).estimated_membrane_current = cm.*[zeros(1, size(app(i, j).estimated_membrane_potential, 2)); diff(app(i, j).estimated_membrane_potential, 1, 1)];
+                    app(i, j).estimated_membrane_current = app(i, j).fs.*cm.*[zeros(1, size(app(i, j).estimated_membrane_potential, 2)); diff(app(i, j).estimated_membrane_potential, 1, 1)];
                 end
             end
         end
@@ -483,8 +457,8 @@ classdef WholeCellRecording
     %% Plot methods
     methods
         function app = build_plots(app)
-            app(1, 1).estimations_figure = figure('Name', strcat('Estimations for ', app(1, 1).filename));
-            app(1, 1).stats_figure = figure('Name', strcat('Means for ', app(1, 1).filename));
+            app(1, 1).estimations_figure = figure('Name', strcat('Estimations for ', app(1, 1).filename), 'Position', [1200 100 900 900]);
+            app(1, 1).stats_figure = figure('Name', strcat('Means for ', app(1, 1).filename), 'Position', [1200 200 900 900]);
         end
 
         function app = plot_without_representative_response(app)
