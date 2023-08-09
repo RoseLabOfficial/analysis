@@ -233,6 +233,25 @@ classdef WholeCellRecording
                 end
             end
         end
+
+        function app = filter_membrane_current(app)
+            [m, n] = size(app);
+            lowpass_im = designfilt("lowpassiir", ...
+                "PassbandFrequency", 30, ...
+                "StopbandFrequency", 50, ...
+                "PassbandRipple", 0.01, ...
+                "StopbandAttenuation", 60, ...
+                "SampleRate", app(1, 1).fs);
+            for i = 1: m
+                for j = 1: n
+                    appender = zeros(size(app(i, j).membrane_current));
+                    im = cat(1, appender+app(i, j).membrane_current(1, :), app(i, j).membrane_current, appender+app(i, j).membrane_current(end, :));
+                    im = filtfilt(lowpass_im, im);
+                    im = filtfilt(app(1, 1).notch.num, app(1, 1).notch.den, im);
+                    app(i, j).membrane_current = im(size(app(i, j).membrane_current, 1)+1: end-size(app(i, j).membrane_current, 1), :);
+                end
+            end
+        end
     end
 
     %% Computing current methods
@@ -398,6 +417,7 @@ classdef WholeCellRecording
             app = app.filter_membrane_potential();
             app = app.adjust_membrane_potential_wrt_steady_state();
             app = app.compute_membrane_current();
+%             app = app.filter_membrane_current();
             app = app.compute_leakage_current();
             app = app.compute_activation_currents();
             app = app.compute_passive_currents();
@@ -625,11 +645,13 @@ classdef WholeCellRecording
             ylim([-1*max(max(meta_stats.ge), max(meta_stats.gi)),max(max(meta_stats.ge), max(meta_stats.gi))]);
             hold off;
             ylabel("syn conductances (S)");
+            ax{1, 1}.YAxis.MinorTick = 'on';
             xticklabels(x);
             yyaxis right;
             plot(meta_stats.sps, '-ok', 'MarkerFaceColor',[0, 0, 0], 'MarkerSize', 6);
             ylim([-1*(max(meta_stats.sps)+0.2), (max(meta_stats.sps)+0.2)]);
             ylabel("sps");
+            ax{1, 1}.YAxis(2).MinorTick = 'on';
         end
 
         function app = plot_meta_stats_analysis(app, meta_stats)
@@ -674,10 +696,12 @@ classdef WholeCellRecording
                         ylim([-1*max(meta_stats.Im),max(meta_stats.Im)]);
                         ylabel("mem currents (A)")
                 end
+                ax{k, 1}.YAxis.MinorTick = 'on';
                 xticklabels(x);
                 yyaxis right;
                 plot(meta_stats.sps, '-ok', 'MarkerFaceColor',[0, 0, 0], 'MarkerSize', 6);
                 ylim([-1*(max(meta_stats.sps)+0.2), (max(meta_stats.sps)+0.2)]);
+                ax{k, 1}.YAxis(2).MinorTick = 'on';
                 ylabel("sps");
             end
         end
