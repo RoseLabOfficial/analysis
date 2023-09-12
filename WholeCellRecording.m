@@ -225,11 +225,12 @@ classdef WholeCellRecording
             [m, n] = size(app);
             for i = 1: m
                 for j = 1: n
+                    vm = app(i, j).membrane_potential - app(i, j).membrane_potential(1, :);
                     appender = zeros(size(app(i, j).membrane_potential));
-                    vm = cat(1, appender+app(i, j).membrane_potential(1, :), app(i, j).membrane_potential, appender+app(i, j).membrane_potential(end, :));
+                    vm = cat(1, appender+vm(1, :), vm, appender+vm(end, :));
                     vm = filtfilt(app(1, 1).lowpass, vm);
                     vm = filtfilt(app(1, 1).notch.num, app(1, 1).notch.den, vm);
-                    app(i, j).membrane_potential = vm(size(app(i, j).membrane_potential, 1)+1: end-size(app(i, j).membrane_potential, 1), :);
+                    app(i, j).membrane_potential = vm(size(app(i, j).membrane_potential, 1)+1: end-size(app(i, j).membrane_potential, 1), :) + app(i, j).membrane_potential(1, :);
                 end
             end
         end
@@ -237,18 +238,21 @@ classdef WholeCellRecording
         function app = filter_membrane_current(app)
             [m, n] = size(app);
             lowpass_im = designfilt("lowpassiir", ...
-                "PassbandFrequency", 30, ...
-                "StopbandFrequency", 50, ...
-                "PassbandRipple", 0.01, ...
-                "StopbandAttenuation", 60, ...
+                "PassbandFrequency", app(1, 1).lowpass.PassbandFrequency/2, ...
+                "StopbandFrequency", app(1, 1).lowpass.StopbandFrequency, ...
+                "PassbandRipple", app(1, 1).lowpass.PassbandRipple, ...
+                "StopbandAttenuation", app(1, 1).lowpass.StopbandAttenuation, ...
                 "SampleRate", app(1, 1).fs);
             for i = 1: m
                 for j = 1: n
                     appender = zeros(size(app(i, j).membrane_current));
-                    im = cat(1, appender+app(i, j).membrane_current(1, :), app(i, j).membrane_current, appender+app(i, j).membrane_current(end, :));
+                    im = app(i, j).membrane_current - app(i, j).membrane_current(1, :);
+                    im = cat(1, appender+im(1, :), im, appender+im(end, :));
                     im = filtfilt(lowpass_im, im);
                     im = filtfilt(app(1, 1).notch.num, app(1, 1).notch.den, im);
-                    app(i, j).membrane_current = im(size(app(i, j).membrane_current, 1)+1: end-size(app(i, j).membrane_current, 1), :);
+                    im = im(size(appender, 1)+1: end-size(appender, 1), :);
+                    im = im - im(1, :);
+                    app(i, j).membrane_current = im; % + app(i, j).membrane_current(1, :);
                 end
             end
         end
@@ -261,11 +265,12 @@ classdef WholeCellRecording
             [m, n] = size(app);
             for i = 1: m
                 for j = 1: n
+                    vm = app(i, j).membrane_potential - app(i, j).membrane_potential(1, :);
                     appender = zeros(1, size(app(i, j).membrane_potential, 2));
-                      dvmdt = diff(cat(1, appender+app(i, j).membrane_potential(1, :), app(i, j).membrane_potential, appender+app(i, j).membrane_potential(end, :)), 1);
-                      dvmdt = dvmdt(2:end, :); 
-                      app(i, j).membrane_current = app(i, j).membrane_capacitance.*dvmdt.*app(i, j).fs;
-                      app(i, j).membrane_current = app(i, j).membrane_current - app(i, j).membrane_current(1, :);
+                    dvmdt = diff(cat(1, appender+vm(1, :), vm, appender+vm(end, :)), 1);
+                    dvmdt = dvmdt(2:end, :); 
+                    im = app(i, j).membrane_capacitance.*dvmdt.*app(i, j).fs;
+                    app(i, j).membrane_current = im - im(1, :);
                 end
             end
         end
@@ -417,13 +422,13 @@ classdef WholeCellRecording
             app = app.filter_membrane_potential();
             app = app.adjust_membrane_potential_wrt_steady_state();
             app = app.compute_membrane_current();
-%             app = app.filter_membrane_current();
+            app = app.filter_membrane_current();
             app = app.compute_leakage_current();
             app = app.compute_activation_currents();
             app = app.compute_passive_currents();
             app = app.compute_resultants();
             app = app.compute_polarizations();
-            app = app.reverse_estimate(1, 0);
+%             app = app.reverse_estimate(1, 0);
         end
 
         function app = reverse_estimate(app, excitation_multiplier, inhibition_multiplier)
@@ -551,6 +556,7 @@ classdef WholeCellRecording
                     end
                     linkaxes([ax{:, k}], 'y');
                 end
+                ylim('tight');
                 xlim('tight');
             end
         end
@@ -614,6 +620,7 @@ classdef WholeCellRecording
                 linkaxes([ax{:, 3}, ax{:, 4}], 'y');
                 linkaxes([ax{:, 5}], 'y');
                 xlim('tight');
+                ylim('tight');
             end
         end
 
