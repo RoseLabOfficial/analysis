@@ -382,8 +382,8 @@ classdef WholeCellRecording
                     app(i, j).means.resultant_inhibition = mean(app(i, j).resultant_inhibition(1:app(i, j).response_samples), 1);
                     app(i, j).means.activation_current = mean(app(i, j).activation_current(1:app(i, j).response_samples, idx), 1);
                     app(i, j).means.membrane_current = mean(app(i, j).membrane_current(1:app(i, j).response_samples, idx), 1);
-                    app(i, j).means.rates = app(i, j).rates(idx, 1);
-                    app(i, j).means.npulses = app(i, j).npulses(idx, 1);
+                    app(i, j).means.rates = app(i, j).rates(1, idx);
+                    app(i, j).means.npulses = app(i, j).npulses(1, idx);
                     app(i, j).means.spikes_per_stimulus = app(i, j).spikes_per_stimulus(idx, 1);
                 end
             end
@@ -695,12 +695,14 @@ classdef WholeCellRecording
                         hold off;
                         ylabel("syn currents (A)")
                     case 4
-                        bar(meta_stats.Iact, "BarWidth", 0.5, "FaceColor", [1, 0, 0]);                      
-                        ylim([-1*max(meta_stats.Iact),max(meta_stats.Iact)]);
+                        bar(meta_stats.Iact, "BarWidth", 0.5, "FaceColor", [1, 0, 0]);
+                        max_abs_Iact = abs(max(meta_stats.Iact));
+                        ylim([-1*max_abs_Iact,max_abs_Iact]);
                         ylabel("act current (A)")
                     case 5
-                        bar(meta_stats.Im, "BarWidth", 0.5, "FaceColor", [1, 0, 0]);                      
-                        ylim([-1*max(meta_stats.Im),max(meta_stats.Im)]);
+                        bar(meta_stats.Im, "BarWidth", 0.5, "FaceColor", [1, 0, 0]);  
+                        max_abs_Im = abs(max(meta_stats.Im));
+                        ylim([-1*max_abs_Im,max_abs_Im]);
                         ylabel("mem currents (A)")
                 end
                 ax{k, 1}.YAxis.MinorTick = 'on';
