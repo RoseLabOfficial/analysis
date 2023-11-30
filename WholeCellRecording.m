@@ -408,11 +408,17 @@ classdef WholeCellRecording
             mean_stats = [pps; pulses; sps; depol; hyperpol; ge; gi; net_ge; net_gi; Ie; Ii; Iact; Im; Eth_cross];
         end
 
-        function meta_stats = compute_meta_stats(app)
+        function meta_stats = compute_meta_stats(app, save)
+            if nargin < 2
+                save = 0;
+            end
             paradigms = [app.paradigms];
             row_names = ["rate"; "pulses"; "sps"; "depol"; "hyperpol"; "ge"; "gi"; "net_ge"; "net_gi"; "Ie"; "Ii"; "Iact"; "Im"; "EthCross"];
             computed_stats = app.compute_mean_stats();
             meta_stats = array2table(computed_stats, "RowNames", row_names, "VariableNames",paradigms);
+            if save == 1
+                writetable(meta_stats, app(1).filename, "Sheet", "stats", "WriteRowNames", true);
+            end
         end
     end
     
