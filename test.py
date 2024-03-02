@@ -6,5 +6,9 @@ if __name__ == "__main__":
     reader = XLReader(filename)
     data = WholeCellRecording(reader.get_paradigm_data("10pps"), 
                               reader.get_paradigm_parameters("10pps"))
-    print(data.scale_data())
-    print(data.parameters)
+    data.scale_data()
+    data.compute_polarizations()
+    data.compute_active_conductance_constants()
+    data.compute_active_currents()
+    data.compute_leakage_currents()
+    print(data.compute_membrane_currents())
