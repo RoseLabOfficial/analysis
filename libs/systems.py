@@ -52,7 +52,7 @@ class WholeCellRecording:
             self.data["Im_"+str(clamp)] = self.data["Im_"+str(clamp)] - self.data["Im_"+str(clamp)][0]
         return self.data
     
-    def filter_membrane_currents(self, cutoff: float = 200.0, stopband_attenuation: float = 80, passband_ripple: float = 0.01):
+    def filter_membrane_currents(self, cutoff: float = 80.0, stopband_attenuation: float = 80, passband_ripple: float = 0.01):
         sampling_rate = 1/(self.data["times"][1] - self.data["times"][0])
         filter = LowPassFilter(sampling_rate)
         for idx, inj in enumerate(self.parameters["Iinj"]):
@@ -67,12 +67,15 @@ class WholeCellRecording:
         Im = self.data[["filtered_Im_"+str(x) for x in self.parameters["Iinj"]]].to_numpy()
         Iact = self.data[["Iactive_"+str(x) for x in self.parameters["Iinj"]]].to_numpy()
         Ileak = self.data[["Ileak_"+str(x) for x in self.parameters["Iinj"]]].to_numpy()
-        A[:, 0, 0] = np.sum(np.square(Vm - self.parameters["Ee"].to_numpy()), axis=1)
-        A[:, 0, 1] = np.sum((Vm - self.parameters["Ee"].to_numpy()) * (Vm- self.parameters["Ei"].to_numpy()), axis=1)
+        Ee = self.parameters["Ee"].to_numpy()
+        Ei = self.parameters["Ei"].to_numpy()
+        Iinj = self.parameters["Iinj"].to_numpy()
+        A[:, 0, 0] = np.sum(np.square(Vm - Ee), axis=1)
+        A[:, 0, 1] = np.sum((Vm - Ee) * (Vm- Ei), axis=1)
         A[:, 1, 0] = A[:, 0, 1]
-        A[:, 1, 1] = np.sum(np.square(Vm - self.parameters["Ei"].to_numpy()), axis=1)
-        B[:, 0, 0] = np.sum((Im - (Iact - self.parameters["Iinj"].to_numpy()) + Ileak)*(Vm - self.parameters["Ee"].to_numpy()), axis=1)
-        B[:, 1, 0] = np.sum((Im - (Iact - self.parameters["Iinj"].to_numpy()) + Ileak)*(Vm - self.parameters["Ei"].to_numpy()), axis=1)
+        A[:, 1, 1] = np.sum(np.square(Vm - Ei), axis=1)
+        B[:, 0, 0] = -1.0*np.sum((Im - Iact - Iinj + Ileak)*(Vm - Ee), axis=1)
+        B[:, 1, 0] = -1.0*np.sum((Im - Iact - Iinj + Ileak)*(Vm - Ei), axis=1)
         G = np.linalg.pinv(A) @ B
         self.data["excitation"] = G[:, 0, 0]
         self.data["inhibition"] = G[:, 1, 0]
