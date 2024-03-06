@@ -47,8 +47,9 @@ class WholeCellRecording:
     
     def compute_membrane_currents(self):
         for idx, clamp in enumerate(self.parameters["Iinj"]):
-            self.data["Im_"+str(clamp)] = self.parameters["Cm"][idx]*self.data[clamp].diff()
+            self.data["Im_"+str(clamp)] = self.parameters["Cm"][idx]*(self.data[clamp].diff()/self.data["times"].diff())
             self.data.at[0, "Im_"+str(clamp)] = 0.0
+            self.data["Im_"+str(clamp)] = self.data["Im_"+str(clamp)] - self.data["Im_"+str(clamp)][0]
         return self.data
     
     def filter_membrane_currents(self, cutoff: float = 200.0, stopband_attenuation: float = 80, passband_ripple: float = 0.01):
@@ -62,8 +63,6 @@ class WholeCellRecording:
         ntimesteps = self.data.shape[0]
         A = np.zeros((ntimesteps, 2, 2))
         B = np.zeros((ntimesteps, 2, 1))
-        # self.data["excitation"] = self.data["times"]*0.0
-        # self.data["inhibition"] = self.data["times"]*0.0
         Vm = self.data[[x for x in self.parameters["Iinj"]]].to_numpy()
         Im = self.data[["filtered_Im_"+str(x) for x in self.parameters["Iinj"]]].to_numpy()
         Iact = self.data[["Iactive_"+str(x) for x in self.parameters["Iinj"]]].to_numpy()
@@ -75,20 +74,8 @@ class WholeCellRecording:
         B[:, 0, 0] = np.sum((Im - (Iact - self.parameters["Iinj"].to_numpy()) + Ileak)*(Vm - self.parameters["Ee"].to_numpy()), axis=1)
         B[:, 1, 0] = np.sum((Im - (Iact - self.parameters["Iinj"].to_numpy()) + Ileak)*(Vm - self.parameters["Ei"].to_numpy()), axis=1)
         G = np.linalg.pinv(A) @ B
-        # G = np.array([np.linalg.pinv(A[i]) @ B[i] for i in range(len(A))])
         self.data["excitation"] = G[:, 0, 0]
         self.data["inhibition"] = G[:, 1, 0]
-        # for idx, clamp in enumerate(self.parameters["Iinj"]):
-        #     A[:, 0, 0] = A[:, 0, 0] + np.square(self.data[clamp] - self.parameters["Ee"][idx])
-        #     A[:, 0, 1] = A[:, 0, 1] + (self.data[clamp] - self.parameters["Ee"][idx]) * (self.data[clamp] - self.parameters["Ei"][idx])
-        #     A[:, 1, 1] = A[:, 1, 1] + np.square(self.data[clamp] - self.parameters["Ei"][idx])
-        #     B[:, 0, 0] = B[:, 0, 0] + (self.data["filtered_Im_"+str(clamp)] - self.data["Iactive_"+str(clamp)] - clamp + self.data["Ileak_"+str(clamp)])*(self.data[clamp] - self.parameters["Ee"][idx])
-        #     B[:, 1, 0] = B[:, 1, 0] + (self.data["filtered_Im_"+str(clamp)] - self.data["Iactive_"+str(clamp)] - clamp + self.data["Ileak_"+str(clamp)])*(self.data[clamp] - self.parameters["Ei"][idx])
-        # A[:, 1, 0] = A[:, 0, 1]
-        # for tdx in range(ntimesteps):
-        #     G = np.linalg.pinv(A[tdx, ...]) @ B[tdx, ...]
-        #     self.data.at[tdx, "excitation"] = G[0, :]
-        #     self.data.at[tdx, "inhibition"] = G[1, :]
         return self.data
 
     def estimate(self):
