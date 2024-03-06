@@ -1,4 +1,4 @@
-from . import *
+import pandas as pd
 
 class XLReader:
     def __init__(self, filename: str):
