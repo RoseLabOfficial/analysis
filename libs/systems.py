@@ -2,6 +2,39 @@ import numpy as np
 import pandas as pd
 import scipy.signal as filters
 import matplotlib.pyplot as plt
+import libs.signals as sigs
+
+class NonLinearModel:
+    def __init__(self, parameters: pd.DataFrame, tstart: float, tend: float, sampling_rate: float, dtype: np.dtype = np.float64):
+        self.parameters = parameters
+        self.timeseries = sigs.TimeSeries(tstart, tend, sampling_rate, dtype)
+        self.times = self.timeseries.make_time()
+        pass
+
+    def make_voltage_grid(self):
+        nsteps = self.timeseries.get_total_samples()
+        membrane_potential = np.zeros((nsteps, self.parameters["Iinj"].shape[0]), dtype=self.timeseries.dtype)
+        for idx, clamp in enumerate(self.parameters["Iinj"]):
+            membrane_potential[:, idx] = np.linspace(self.parameters["Er"][idx], self.parameters["Et"][idx], nsteps, dtype=self.timeseries.dtype)
+        return membrane_potential
+    
+    def compute_active_conductance_constants(self):
+        self.parameters["alpha"] = (1.0/self.parameters["Rin"])/(2.0*(self.parameters["Eact"] - self.parameters["Ess"]))
+        self.parameters["beta"] = self.parameters["alpha"]*(self.parameters["Et"] - self.parameters["Ess"])
+        self.parameters["alpha"] = self.parameters["alpha"]*self.parameters["xalpha"]
+        self.parameters["beta"] = self.parameters["beta"]*self.parameters["xbeta"]
+        return self.parameters
+    
+    def compute_current(self, membrane_potential: np.ndarray):
+        self.compute_active_conductance_constants()
+        alpha = self.parameters["alpha"].to_numpy()
+        beta = self.parameters["beta"].to_numpy()
+        resting_potential = self.parameters["Er"].to_numpy()
+        threshold_potential = self.parameters["Et"].to_numpy()
+        input_resistance = self.parameters["Rin"].to_numpy()
+        return -alpha*(membrane_potential - resting_potential)*(membrane_potential - threshold_potential) - \
+                    beta*(membrane_potential - resting_potential) + (1.0/input_resistance)*(membrane_potential - resting_potential)
+
 
 class WholeCellRecording:
     def __init__(self, data: pd.DataFrame, parameters: pd.DataFrame):
