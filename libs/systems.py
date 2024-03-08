@@ -73,10 +73,39 @@ class WholeCellRecording:
         return self.data
     
     def compute_active_currents(self):
+        self.compute_active_conductance_constants()
         for idx, clamp in enumerate(self.parameters["Iinj"]):
-            self.data["Iactive_"+str(clamp)] = self.parameters["alpha"][idx]*(self.data[clamp] - self.parameters["Er"][idx])*(self.data[clamp] - self.parameters["Et"][idx]) + \
+            Iact = self.parameters["alpha"][idx]*(self.data[clamp] - self.parameters["Er"][idx])*(self.data[clamp] - self.parameters["Et"][idx]) + \
                                             self.parameters["beta"][idx]*(self.data[clamp] - self.parameters["Er"][idx])
+            Iact[self.data[clamp] < self.parameters["Ess"][idx]] = 0.0
+            Iact[self.data[clamp] > self.parameters["Et"][idx]] = 0.0
+            Iact[Iact < 0.0] = 0.0
+            self.data["Iactive_"+str(clamp)] = Iact
         return self.data
+    
+    def filter_active_currents(self, cutoff: float = 40.0, stopband_attenuation: float = 80, passband_ripple: float = 0.01):
+        sampling_rate = 1/(self.data["times"][1] - self.data["times"][0])
+        filter = LowPassFilter(sampling_rate)
+        for idx, inj in enumerate(self.parameters["Iinj"]):
+            self.data["filtered_Iactive_"+str(inj)] = filter.filter(self.data["Iactive_"+str(inj)], cutoff, stopband_attenuation, passband_ripple)
+        return self.data
+    
+    def compute_active_linear_currents(self):
+        for idx, clamp in enumerate(self.parameters["Iinj"]):
+            membrane_potential = np.asarray(self.data[clamp])
+            # self.parameters.at[idx, "Eact"] = np.amax(membrane_potential)
+            current = np.zeros(membrane_potential.shape)
+            indices = membrane_potential < self.parameters["Eact"][idx]
+            current[indices] = (self.parameters["Eact"][idx]-self.parameters["Er"][idx])/(self.parameters["Rin"][idx]*(self.parameters["Eact"][idx] - self.parameters["Er"][idx]))*(membrane_potential[indices] - self.parameters["Eact"][idx])
+            indices = membrane_potential >= self.parameters["Eact"][idx]
+            current[indices] = -1*(self.parameters["Eact"][idx]-self.parameters["Er"][idx])/(self.parameters["Rin"][idx]*(self.parameters["Et"][idx] - self.parameters["Eact"][idx]))*(membrane_potential[indices] - self.parameters["Et"][idx])
+            # indices = membrane_potential < self.parameters["Er"][idx]
+            # current[indices] = 0.0
+            # indices = membrane_potential > self.parameters["Et"][idx]
+            # current[indices] = 0.0
+            self.data["Iactive_"+str(clamp)] = current
+        return self.data
+
     
     def compute_membrane_currents(self):
         for idx, clamp in enumerate(self.parameters["Iinj"]):
@@ -85,7 +114,7 @@ class WholeCellRecording:
             self.data["Im_"+str(clamp)] = self.data["Im_"+str(clamp)] - self.data["Im_"+str(clamp)][0]
         return self.data
     
-    def filter_membrane_currents(self, cutoff: float = 80.0, stopband_attenuation: float = 80, passband_ripple: float = 0.01):
+    def filter_membrane_currents(self, cutoff: float = 40.0, stopband_attenuation: float = 80, passband_ripple: float = 0.01):
         sampling_rate = 1/(self.data["times"][1] - self.data["times"][0])
         filter = LowPassFilter(sampling_rate)
         for idx, inj in enumerate(self.parameters["Iinj"]):
@@ -98,7 +127,7 @@ class WholeCellRecording:
         B = np.zeros((ntimesteps, 2, 1))
         Vm = self.data[[x for x in self.parameters["Iinj"]]].to_numpy()
         Im = self.data[["filtered_Im_"+str(x) for x in self.parameters["Iinj"]]].to_numpy()
-        Iact = self.data[["Iactive_"+str(x) for x in self.parameters["Iinj"]]].to_numpy()
+        Iact = self.data[["filtered_Iactive_"+str(x) for x in self.parameters["Iinj"]]].to_numpy()
         Ileak = self.data[["Ileak_"+str(x) for x in self.parameters["Iinj"]]].to_numpy()
         Ee = self.parameters["Ee"].to_numpy()
         Ei = self.parameters["Ei"].to_numpy()
@@ -118,8 +147,8 @@ class WholeCellRecording:
         self.scale_data()
         self.filter_data()
         self.compute_polarizations()
-        self.compute_active_conductance_constants()
         self.compute_active_currents()
+        self.filter_active_currents()
         self.compute_leakage_currents()
         self.compute_membrane_currents()
         self.filter_membrane_currents()
@@ -133,7 +162,7 @@ class WholeCellRecording:
             ax[0].plot(self.data["times"], self.data[clamp])
             ax[1].plot(self.data["times"], self.data["Ileak_"+str(clamp)])
             ax[2].plot(self.data["times"], self.data["filtered_Im_"+str(clamp)])
-            ax[3].plot(self.data["times"], self.data["Iactive_"+str(clamp)])
+            ax[3].plot(self.data["times"], self.data["filtered_Iactive_"+str(clamp)])
         ax[4].plot(self.data["times"], self.data["excitation"], c="r")
         ax[4].plot(self.data["times"], self.data["inhibition"], c="b")
         ax[4].set_xlabel("times(sec)")
@@ -142,7 +171,7 @@ class WholeCellRecording:
         ax[2].set_ylabel("Im(A)")
         ax[3].set_ylabel("Iactive(A)")
         ax[4].set_ylabel("G(s)")
-        plt.show()
+        plt.savefig("plot1.png")
         pass
 
 class LowPassFilter:
@@ -152,7 +181,7 @@ class LowPassFilter:
 
     def compute_minimum_order(self, cutoff: float, stopband_attenuation: float, passband_ripple: float):
         passband_edge_frequency = cutoff/(self.sampling_rate/2)
-        stopband_edge_frequency = 1.5*passband_edge_frequency
+        stopband_edge_frequency = 5*passband_edge_frequency
         order, normalized_cutoff_frequency = filters.buttord(passband_edge_frequency, stopband_edge_frequency, 
                                                             passband_ripple, stopband_attenuation)
         return order, normalized_cutoff_frequency
