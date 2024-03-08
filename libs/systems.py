@@ -87,7 +87,9 @@ class WholeCellRecording:
         sampling_rate = 1/(self.data["times"][1] - self.data["times"][0])
         filter = LowPassFilter(sampling_rate)
         for idx, inj in enumerate(self.parameters["Iinj"]):
-            self.data["filtered_Iactive_"+str(inj)] = filter.filter(self.data["Iactive_"+str(inj)], cutoff, stopband_attenuation, passband_ripple)
+            Iact = filter.filter(self.data["Iactive_"+str(inj)], cutoff, stopband_attenuation, passband_ripple)
+            # Iact[Iact < 0] = 0.0
+            self.data["filtered_Iactive_"+str(inj)] = Iact
         return self.data
     
     def compute_active_linear_currents(self):
@@ -99,14 +101,13 @@ class WholeCellRecording:
             current[indices] = (self.parameters["Eact"][idx]-self.parameters["Er"][idx])/(self.parameters["Rin"][idx]*(self.parameters["Eact"][idx] - self.parameters["Er"][idx]))*(membrane_potential[indices] - self.parameters["Eact"][idx])
             indices = membrane_potential >= self.parameters["Eact"][idx]
             current[indices] = -1*(self.parameters["Eact"][idx]-self.parameters["Er"][idx])/(self.parameters["Rin"][idx]*(self.parameters["Et"][idx] - self.parameters["Eact"][idx]))*(membrane_potential[indices] - self.parameters["Et"][idx])
-            # indices = membrane_potential < self.parameters["Er"][idx]
-            # current[indices] = 0.0
-            # indices = membrane_potential > self.parameters["Et"][idx]
-            # current[indices] = 0.0
+            indices = membrane_potential < self.parameters["Er"][idx]
+            current[indices] = 0.0
+            indices = membrane_potential > self.parameters["Et"][idx]
+            current[indices] = 0.0
             self.data["Iactive_"+str(clamp)] = current
         return self.data
 
-    
     def compute_membrane_currents(self):
         for idx, clamp in enumerate(self.parameters["Iinj"]):
             self.data["Im_"+str(clamp)] = self.parameters["Cm"][idx]*(self.data[clamp].diff()/self.data["times"].diff())
@@ -143,19 +144,19 @@ class WholeCellRecording:
         self.data["inhibition"] = G[:, 1, 0]
         return self.data
 
-    def estimate(self):
+    def estimate_conductances(self, membrane_voltage_filter_cutoff: float = 200, active_currents_filter_cutoff: float = 100, membrane_currents_filter_cuoff: float=100):
         self.scale_data()
-        self.filter_data()
+        self.filter_data(cutoff=membrane_voltage_filter_cutoff)
         self.compute_polarizations()
         self.compute_active_currents()
-        self.filter_active_currents()
+        self.filter_active_currents(cutoff=active_currents_filter_cutoff)
         self.compute_leakage_currents()
         self.compute_membrane_currents()
-        self.filter_membrane_currents()
+        self.filter_membrane_currents(cutoff=membrane_currents_filter_cuoff)
         self.compute_passive_conductances()
         return self.data
 
-    def plot(self):
+    def plot(self, plot_save_path: str = "./plot.png"):
         fig, ax = plt.subplots(5, 1, sharex=True)
         print(self.data)
         for idx, clamp in enumerate(self.parameters["Iinj"]):
@@ -171,7 +172,7 @@ class WholeCellRecording:
         ax[2].set_ylabel("Im(A)")
         ax[3].set_ylabel("Iactive(A)")
         ax[4].set_ylabel("G(s)")
-        plt.savefig("plot1.png")
+        plt.savefig(plot_save_path)
         pass
 
 class LowPassFilter:
