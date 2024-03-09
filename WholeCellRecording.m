@@ -249,13 +249,36 @@ classdef WholeCellRecording
                     im = app(i, j).membrane_current - app(i, j).membrane_current(1, :);
                     im = cat(1, appender+im(1, :), im, appender+im(end, :));
                     im = filtfilt(lowpass_im, im);
-                    im = filtfilt(app(1, 1).notch.num, app(1, 1).notch.den, im);
                     im = im(size(appender, 1)+1: end-size(appender, 1), :);
                     im = im - im(1, :);
                     app(i, j).membrane_current = im; % + app(i, j).membrane_current(1, :);
                 end
             end
         end
+
+        function app = filter_activation_currents(app)
+            [m, n] = size(app);
+            lowpass_iact = designfilt("lowpassiir", ...
+                "PassbandFrequency", app(1, 1).lowpass.PassbandFrequency/2, ...
+                "StopbandFrequency", app(1, 1).lowpass.StopbandFrequency, ...
+                "PassbandRipple", app(1, 1).lowpass.PassbandRipple, ...
+                "StopbandAttenuation", app(1, 1).lowpass.StopbandAttenuation, ...
+                "SampleRate", app(1, 1).fs);
+            for i = 1: m
+                for j = 1: n
+                    appender = zeros(size(app(i, j).activation_current));
+                    iact = app(i, j).activation_current - app(i, j).activation_current(1, :);
+                    iact = cat(1, appender+iact(1, :), iact, appender+iact(end, :));
+                    iact = filtfilt(lowpass_iact, iact);
+%                     iact = filtfilt(app(1, 1).notch.num, app(1, 1).notch.den, iact);
+                    iact = iact(size(appender, 1)+1: end-size(appender, 1), :);
+                    iact = iact - iact(1, :);
+                    app(i, j).activation_current = iact; % + app(i, j).membrane_current(1, :);
+                    % app(i, j).activation_current(app(i, j).activation_current < 0) = 0;
+                end
+            end
+        end
+
     end
 
     %% Computing current methods
@@ -303,6 +326,8 @@ classdef WholeCellRecording
                for j = 1: 1: n
                   app(i, j).activation_current = (app(i, j).alpha.*(app(i, j).membrane_potential-app(i, j).threshold_potential).*(app(i, j).membrane_potential-app(i, j).resting_potential)) ...
                           + (app(i, j).beta.*(app(i, j).membrane_potential-app(i, j).resting_potential));
+                  app(i, j).activation_current(app(i, j).membrane_potential > app(i, j).activation_potential) = 0;
+                  app(i, j).activation_current(app(i, j).membrane_potential < app(i, j).steady_state_potential) = 0;
                end
             end
         end
@@ -431,6 +456,7 @@ classdef WholeCellRecording
             app = app.filter_membrane_current();
             app = app.compute_leakage_current();
             app = app.compute_activation_currents();
+            app = app.filter_activation_currents();
             app = app.compute_passive_currents();
             app = app.compute_resultants();
             app = app.compute_polarizations();
