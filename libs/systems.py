@@ -3,6 +3,9 @@ import pandas as pd
 import scipy.signal as filters
 import matplotlib.pyplot as plt
 import libs.signals as sigs
+from pathlib import Path
+from libs.sysops import SystemOperations
+from libs.readers import XLReader
 
 class NonLinearModel:
     def __init__(self, parameters: pd.DataFrame, tstart: float, tend: float, sampling_rate: float, dtype: np.dtype = np.float64):
@@ -145,12 +148,12 @@ class WholeCellRecording:
         self.data["inhibition"] = G[:, 1, 0]
         return self.data
 
-    def estimate_conductances(self, membrane_voltage_filter_cutoff: float = 200, active_currents_filter_cutoff: float = 100, membrane_currents_filter_cuoff: float=100):
+    def estimate_conductances(self, membrane_voltage_filter_cutoff: float = 200, activation_currents_filter_cutoff: float = 100, membrane_currents_filter_cuoff: float=100):
         self.scale_data()
         self.filter_data(cutoff=membrane_voltage_filter_cutoff)
         self.compute_polarizations()
         self.compute_activation_currents()
-        self.filter_activation_currents(cutoff=active_currents_filter_cutoff)
+        self.filter_activation_currents(cutoff=activation_currents_filter_cutoff)
         self.compute_leakage_currents()
         self.compute_membrane_currents()
         self.filter_membrane_currents(cutoff=membrane_currents_filter_cuoff)
@@ -176,3 +179,31 @@ class WholeCellRecording:
         plt.savefig(plot_save_path)
         pass
 
+class Analyzer:
+    def __init__(self, filepaths: Path, output_path: Path):
+        self.sysops = SystemOperations()
+        self.filepaths = self.sysops.split_file_address(filepaths)
+        self.output_path = output_path
+
+    def analyze(self, filepath):
+        print(f"Reading: {filepath[1]}")
+        reader = XLReader(Path(filepath[0]) / (filepath[1] + filepath[2]))
+        store_path = self.sysops.make_timed_directory(self.output_path, filepath[1])
+        recordings = {}
+        for paradigm in reader.get_paradigms():
+            recordings[paradigm] = WholeCellRecording(
+                reader.get_paradigm_data(paradigm), 
+                reader.get_paradigm_parameters(paradigm)
+            )
+            recordings[paradigm].estimate_conductances()
+            self.sysops.make_directory(store_path / paradigm)
+            recordings[paradigm].data.to_csv(store_path / (paradigm+"/analysis.csv"), index=False)
+            recordings[paradigm].data.to_csv(store_path / (paradigm+"/parameters.csv"), index=False)
+            print(f"{paradigm} done")
+        print(f"{filepath[1]} done")
+        pass
+
+    def run(self):
+        for filepath in self.filepaths:
+            self.analyze(filepath)
+        pass
