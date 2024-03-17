@@ -185,10 +185,13 @@ class Analyzer:
         self.filepaths = self.sysops.split_file_address(filepaths)
         self.output_path = output_path
 
-    def analyze(self, filepath):
-        print(f"Reading: {filepath[1]}")
-        reader = XLReader(Path(filepath[0]) / (filepath[1] + filepath[2]))
-        store_path = self.sysops.make_timed_directory(self.output_path, filepath[1])
+    def analyze(self, fileaddress):
+        filepath = fileaddress[0]
+        filename = fileaddress[1]
+        fileformat = fileaddress[2]
+        print(f"Reading: {filename}")
+        reader = XLReader(Path(filepath) / (filename + fileformat))
+        store_path = self.sysops.make_timed_directory(self.output_path, filename)
         recordings = {}
         for paradigm in reader.get_paradigms():
             recordings[paradigm] = WholeCellRecording(
@@ -198,12 +201,77 @@ class Analyzer:
             recordings[paradigm].estimate_conductances()
             self.sysops.make_directory(store_path / paradigm)
             recordings[paradigm].data.to_csv(store_path / (paradigm+"/analysis.csv"), index=False)
-            recordings[paradigm].data.to_csv(store_path / (paradigm+"/parameters.csv"), index=False)
+            recordings[paradigm].parameters.to_csv(store_path / (paradigm+"/parameters.csv"), index=False)
             print(f"{paradigm} done")
-        print(f"{filepath[1]} done")
+        print(f"{filename} done")
+        return recordings
+
+    def plot_dev(self, recordings):
+        fig, axs = plt.subplots(nrows = 5, ncols = len(recordings), sharex="all", sharey="row", figsize=(15, 10), constrained_layout=True)
+        for idx, paradigm in enumerate(recordings):
+            Vm = recordings[paradigm].data[[x for x in recordings[paradigm].parameters["Iinj"]]].to_numpy()
+            Im = recordings[paradigm].data[["filtered_Im_"+str(x) for x in recordings[paradigm].parameters["Iinj"]]].to_numpy()
+            Ileak = recordings[paradigm].data[["Ileak_"+str(x) for x in recordings[paradigm].parameters["Iinj"]]].to_numpy()
+            Iact = recordings[paradigm].data[["filtered_Iactive_"+str(x) for x in recordings[paradigm].parameters["Iinj"]]].to_numpy()
+            G = recordings[paradigm].data[["excitation", "inhibition"]].to_numpy()
+            times = recordings[paradigm].data["times"].to_numpy()
+            Er = times*0 + recordings[paradigm].parameters["Er"][0]
+            axs[0, idx].plot(times, Vm)
+            axs[0, idx].plot(times, Er, '--k')
+            axs[0, idx].set_ylabel("Vm (V)")
+            axs[0, idx].grid(True)
+            axs[1, idx].plot(times, Im)
+            axs[1, idx].set_ylabel("Im (A)")
+            axs[1, idx].grid(True)
+            axs[2, idx].plot(times, Ileak)
+            axs[2, idx].set_ylabel("Ileak (A)")
+            axs[2, idx].grid(True)
+            axs[3, idx].plot(times, Iact)
+            axs[3, idx].set_ylabel("Iact (A)")
+            axs[3, idx].grid(True)
+            axs[4, idx].plot(times, G[:, 0], c='r')
+            axs[4, idx].plot(times, G[:, 1], c='b')
+            axs[4, idx].plot(times, times*0, '--k')
+            axs[4, idx].set_ylabel("G (S)")
+            axs[4, idx].set_xlabel("times(sec)")
+            axs[4, idx].grid(True)
+        plt.show()
+        pass
+
+    def plot_prod(self, recordings):
+        fig, axs = plt.subplots(nrows = 5, ncols = len(recordings), sharex="all", sharey="row", figsize=(15, 10), constrained_layout=True)
+        for idx, paradigm in enumerate(recordings):
+            Vm = recordings[paradigm].data[[x for x in recordings[paradigm].parameters["Iinj"]]].to_numpy()
+            Im = recordings[paradigm].data[["filtered_Im_"+str(x) for x in recordings[paradigm].parameters["Iinj"]]].to_numpy()
+            Ileak = recordings[paradigm].data[["Ileak_"+str(x) for x in recordings[paradigm].parameters["Iinj"]]].to_numpy()
+            Iact = recordings[paradigm].data[["filtered_Iactive_"+str(x) for x in recordings[paradigm].parameters["Iinj"]]].to_numpy()
+            G = recordings[paradigm].data[["excitation", "inhibition"]].to_numpy()
+            times = recordings[paradigm].data["times"].to_numpy()
+            Er = times*0 + recordings[paradigm].parameters["Er"][0]
+            axs[0, idx].plot(times, Vm)
+            axs[0, idx].plot(times, Er, '--k')
+            axs[0, idx].set_ylabel("Vm (V)")
+            axs[0, idx].grid(True)
+            axs[1, idx].plot(times, Im)
+            axs[1, idx].set_ylabel("Im (A)")
+            axs[1, idx].grid(True)
+            axs[2, idx].plot(times, Ileak)
+            axs[2, idx].set_ylabel("Ileak (A)")
+            axs[2, idx].grid(True)
+            axs[3, idx].plot(times, Iact)
+            axs[3, idx].set_ylabel("Iact (A)")
+            axs[3, idx].grid(True)
+            axs[4, idx].plot(times, G[:, 0], c='r')
+            axs[4, idx].plot(times, G[:, 1], c='b')
+            axs[4, idx].plot(times, times*0, '--k')
+            axs[4, idx].set_ylabel("G (S)")
+            axs[4, idx].set_xlabel("times(sec)")
+            axs[4, idx].grid(True)
+        plt.show()
         pass
 
     def run(self):
         for filepath in self.filepaths:
-            self.analyze(filepath)
+            recordings = self.analyze(filepath)
+            self.plot_dev(recordings)
         pass
