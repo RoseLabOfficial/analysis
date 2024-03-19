@@ -123,7 +123,7 @@ class WholeCellRecording:
             Iact = filter.filter(self.data["Iactive_"+str(inj)], cutoff, stopband_attenuation, passband_ripple)
             # Iact = Iact - Iact[0]
             # Iact[Iact<0] = 0.0
-            self.data["filtered_Iactive_"+str(inj)] = Iact
+            self.data["filtered_Iact_"+str(inj)] = Iact
         return self.data
     
     def compute_passive_conductances(self):
@@ -132,7 +132,7 @@ class WholeCellRecording:
         B = np.zeros((ntimesteps, 2, 1))
         Vm = self.data[[x for x in self.parameters["Iinj"]]].to_numpy()
         Im = self.data[["filtered_Im_"+str(x) for x in self.parameters["Iinj"]]].to_numpy()
-        Iact = self.data[["filtered_Iactive_"+str(x) for x in self.parameters["Iinj"]]].to_numpy()
+        Iact = self.data[["filtered_Iact_"+str(x) for x in self.parameters["Iinj"]]].to_numpy()
         Ileak = self.data[["Ileak_"+str(x) for x in self.parameters["Iinj"]]].to_numpy()
         Ee = self.parameters["Ee"].to_numpy()
         Ei = self.parameters["Ei"].to_numpy()
@@ -146,7 +146,19 @@ class WholeCellRecording:
         G = np.linalg.pinv(A) @ B
         self.data["excitation"] = G[:, 0, 0]
         self.data["inhibition"] = G[:, 1, 0]
+        self.data["positive_excitation"] = self.data["excitation"]
+        self.data["positive_inhibition"] = self.data["inhibition"]
+        self.data.loc[self.data["positive_excitation"] < 0, "positive_excitation"] = 0.0
+        self.data.loc[self.data["positive_inhibition"] < 0, "positive_inhibition"] = 0.0
+        self.data["resultant_excitation"] = self.data["positive_excitation"] - self.data["positive_inhibition"]
+        self.data["resultant_inhibition"] = self.data["positive_inhibition"] - self.data["positive_excitation"]
+        self.data.loc[self.data["resultant_excitation"] < 0, "resultant_excitation"] = 0.0
+        self.data.loc[self.data["resultant_inhibition"] < 0, "resultant_inhibition"] = 0.0
         return self.data
+    
+    def compute_stats(self):
+        self.stats = self.data.mean(numeric_only=True).to_frame().T
+        return self.stats
 
     def estimate_conductances(self, membrane_voltage_filter_cutoff: float = 200, activation_currents_filter_cutoff: float = 100, membrane_currents_filter_cuoff: float=100):
         self.scale_data()
@@ -158,6 +170,7 @@ class WholeCellRecording:
         self.compute_membrane_currents()
         self.filter_membrane_currents(cutoff=membrane_currents_filter_cuoff)
         self.compute_passive_conductances()
+        self.compute_stats()
         return self.data
 
     def plot(self, plot_save_path: str = "./plot.png"):
@@ -166,7 +179,7 @@ class WholeCellRecording:
             ax[0].plot(self.data["times"], self.data[clamp])
             ax[1].plot(self.data["times"], self.data["Ileak_"+str(clamp)])
             ax[2].plot(self.data["times"], self.data["filtered_Im_"+str(clamp)])
-            ax[3].plot(self.data["times"], self.data["filtered_Iactive_"+str(clamp)])
+            ax[3].plot(self.data["times"], self.data["filtered_Iact_"+str(clamp)])
         ax[4].plot(self.data["times"], self.data["excitation"], c="r")
         ax[4].plot(self.data["times"], self.data["inhibition"], c="b")
         ax[4].plot(self.data["times"], self.data["times"]*0.0, "--k")
@@ -212,7 +225,7 @@ class Analyzer:
             Vm = recordings[paradigm].data[[x for x in recordings[paradigm].parameters["Iinj"]]].to_numpy()
             Im = recordings[paradigm].data[["filtered_Im_"+str(x) for x in recordings[paradigm].parameters["Iinj"]]].to_numpy()
             Ileak = recordings[paradigm].data[["Ileak_"+str(x) for x in recordings[paradigm].parameters["Iinj"]]].to_numpy()
-            Iact = recordings[paradigm].data[["filtered_Iactive_"+str(x) for x in recordings[paradigm].parameters["Iinj"]]].to_numpy()
+            Iact = recordings[paradigm].data[["filtered_Iact_"+str(x) for x in recordings[paradigm].parameters["Iinj"]]].to_numpy()
             G = recordings[paradigm].data[["excitation", "inhibition"]].to_numpy()
             times = recordings[paradigm].data["times"].to_numpy()
             Er = times*0 + recordings[paradigm].parameters["Er"][0]
@@ -238,40 +251,40 @@ class Analyzer:
         plt.show()
         pass
 
-    def plot_prod(self, recordings):
-        fig, axs = plt.subplots(nrows = 5, ncols = len(recordings), sharex="all", sharey="row", figsize=(15, 10), constrained_layout=True)
-        for idx, paradigm in enumerate(recordings):
-            Vm = recordings[paradigm].data[[x for x in recordings[paradigm].parameters["Iinj"]]].to_numpy()
-            Im = recordings[paradigm].data[["filtered_Im_"+str(x) for x in recordings[paradigm].parameters["Iinj"]]].to_numpy()
-            Ileak = recordings[paradigm].data[["Ileak_"+str(x) for x in recordings[paradigm].parameters["Iinj"]]].to_numpy()
-            Iact = recordings[paradigm].data[["filtered_Iactive_"+str(x) for x in recordings[paradigm].parameters["Iinj"]]].to_numpy()
-            G = recordings[paradigm].data[["excitation", "inhibition"]].to_numpy()
-            times = recordings[paradigm].data["times"].to_numpy()
-            Er = times*0 + recordings[paradigm].parameters["Er"][0]
-            axs[0, idx].plot(times, Vm)
-            axs[0, idx].plot(times, Er, '--k')
-            axs[0, idx].set_ylabel("Vm (V)")
-            axs[0, idx].grid(True)
-            axs[1, idx].plot(times, Im)
-            axs[1, idx].set_ylabel("Im (A)")
-            axs[1, idx].grid(True)
-            axs[2, idx].plot(times, Ileak)
-            axs[2, idx].set_ylabel("Ileak (A)")
-            axs[2, idx].grid(True)
-            axs[3, idx].plot(times, Iact)
-            axs[3, idx].set_ylabel("Iact (A)")
-            axs[3, idx].grid(True)
-            axs[4, idx].plot(times, G[:, 0], c='r')
-            axs[4, idx].plot(times, G[:, 1], c='b')
-            axs[4, idx].plot(times, times*0, '--k')
-            axs[4, idx].set_ylabel("G (S)")
-            axs[4, idx].set_xlabel("times(sec)")
-            axs[4, idx].grid(True)
+    def plot_stats_dev(self, recordings, reference_clamp_idx = 0):
+        fig, axs = plt.subplots(nrows = 5, ncols = 1, sharex="all", figsize=(15, 10), constrained_layout=True)
+        mean_depolarizations = []
+        mean_hyperpolarizations = []
+        mean_Im = []
+        mean_Ileak = []
+        mean_Iactivation = []
+        mean_excitation = []
+        mean_inhibition = []
+        net_excitation = []
+        net_inhibition = []
+        paradigms = [paradigm for paradigm in recordings]
+        xlocations = np.arange(len(paradigms))
+        for paradigm in paradigms:
+            reference_clamp = recordings[paradigm].parameters["Iinj"][reference_clamp_idx]
+            mean_depolarizations.append(recordings[paradigm].stats["depolarization_"+str(reference_clamp)])
+            mean_hyperpolarizations.append(recordings[paradigm].stats["hyperpolarization_"+str(reference_clamp)])
+            mean_Im.append(recordings[paradigm].stats["filtered_Im_"+str(reference_clamp)])
+            mean_Iactivation.append(recordings[paradigm].stats["filtered_Iact_"+str(reference_clamp)])
+            mean_excitation.append(recordings[paradigm].stats["positive_excitation"])
+            mean_inhibition.append(recordings[paradigm].stats["positive_inhibition"])
+            net_excitation.append(recordings[paradigm].stats["resultant_excitation"])
+            net_inhibition.append(recordings[paradigm].stats["resultant_inhibition"])
+        print(mean_depolarizations)
+        axs[0].bar(xlocations, mean_depolarizations, align='center')
+        axs[0].bar(xlocations, mean_hyperpolarizations, align='center')
+        # axs[0].axhline(0, color='grey', linewidth=0.8)
         plt.show()
         pass
+    
 
     def run(self):
         for filepath in self.filepaths:
             recordings = self.analyze(filepath)
             self.plot_dev(recordings)
+            self.plot_stats_dev(recordings)
         pass
