@@ -157,7 +157,7 @@ class WholeCellRecording:
         return self.data
     
     def compute_stats(self):
-        self.stats = self.data.mean(numeric_only=True).to_frame().T
+        self.stats = self.data.mean(numeric_only=True)
         return self.stats
 
     def estimate_conductances(self, membrane_voltage_filter_cutoff: float = 200, activation_currents_filter_cutoff: float = 100, membrane_currents_filter_cuoff: float=100):
@@ -251,6 +251,11 @@ class Analyzer:
         plt.show()
         pass
 
+    def set_stats_scale(self, ax, scale_max, margin=0.1):
+        scale_max = scale_max + margin*scale_max
+        ax.set_ylim([-1*scale_max, scale_max])
+        pass
+
     def plot_stats_dev(self, recordings, reference_clamp_idx = 0):
         fig, axs = plt.subplots(nrows = 5, ncols = 1, sharex="all", figsize=(15, 10), constrained_layout=True)
         mean_depolarizations = []
@@ -262,6 +267,7 @@ class Analyzer:
         mean_inhibition = []
         net_excitation = []
         net_inhibition = []
+        sps = []
         paradigms = [paradigm for paradigm in recordings]
         xlocations = np.arange(len(paradigms))
         for paradigm in paradigms:
@@ -270,17 +276,54 @@ class Analyzer:
             mean_hyperpolarizations.append(recordings[paradigm].stats["hyperpolarization_"+str(reference_clamp)])
             mean_Im.append(recordings[paradigm].stats["filtered_Im_"+str(reference_clamp)])
             mean_Iactivation.append(recordings[paradigm].stats["filtered_Iact_"+str(reference_clamp)])
+            mean_Ileak.append(recordings[paradigm].stats["Ileak_"+str(reference_clamp)])
             mean_excitation.append(recordings[paradigm].stats["positive_excitation"])
             mean_inhibition.append(recordings[paradigm].stats["positive_inhibition"])
             net_excitation.append(recordings[paradigm].stats["resultant_excitation"])
             net_inhibition.append(recordings[paradigm].stats["resultant_inhibition"])
+            sps.append(recordings[paradigm].parameters["sps"][reference_clamp_idx])
+        mean_depolarizations = np.asarray(mean_depolarizations)
+        mean_hyperpolarizations = np.asarray(mean_hyperpolarizations)
+        mean_Im = np.asarray(mean_Im)
+        mean_Iactivation = np.asarray(mean_Iactivation)
+        mean_Ileak = np.asarray(mean_Ileak)
+        mean_excitation = np.asarray(mean_excitation)
+        mean_inhibition = np.asarray(mean_inhibition)
+        sps = np.asarray(sps)
         print(mean_depolarizations)
-        axs[0].bar(xlocations, mean_depolarizations, align='center')
-        axs[0].bar(xlocations, mean_hyperpolarizations, align='center')
-        # axs[0].axhline(0, color='grey', linewidth=0.8)
+        axs[0].bar(xlocations, mean_depolarizations, align='center', color="red")
+        axs[0].bar(xlocations, mean_hyperpolarizations, align='center', color="blue")
+        axs[0].axhline(0, color='grey', linewidth=0.8)
+        axs[0].set_ylabel("polarizations (V)")
+        scale_max = np.amax([np.amax(mean_depolarizations), np.amax(mean_hyperpolarizations)])
+        self.set_stats_scale(axs[0], scale_max, 0.1)
+        axs[1].bar(xlocations, mean_Im, align='center', color="black")
+        axs[1].axhline(0, color='grey', linewidth=0.8)
+        axs[1].set_ylabel("Im (A)")
+        scale_max = np.amax(mean_Im)
+        self.set_stats_scale(axs[1], scale_max, 0.1)
+        axs[2].bar(xlocations, mean_Iactivation, align='center', color="black")
+        axs[2].axhline(0, color='grey', linewidth=0.8)
+        axs[2].set_ylabel("Iact (A)")
+        scale_max = np.amax(mean_Iactivation)
+        self.set_stats_scale(axs[2], scale_max, 0.1)
+        axs[3].bar(xlocations, mean_Ileak, align='center', color="black")
+        axs[3].axhline(0, color='grey', linewidth=0.8)
+        axs[3].set_ylabel("Ileak (A)")
+        scale_max = np.amax(mean_Ileak)
+        self.set_stats_scale(axs[3], scale_max, 0.1)
+        axs[4].bar(xlocations, mean_excitation, align='center', color="red")
+        axs[4].bar(xlocations, -1*mean_inhibition, align='center', color="blue")
+        axs[4].axhline(0, color='grey', linewidth=0.8)
+        scale_max = np.amax([np.amax(mean_excitation), np.amax(mean_inhibition)])
+        self.set_stats_scale(axs[4], scale_max, 0.1)
+        ax = axs[4].twinx()
+        ax.plot(xlocations, sps, color='k', marker = 'o')
+        scale_max = np.amax(sps)
+        self.set_stats_scale(ax, scale_max, 0.1)
+        axs[4].set_ylabel("G (S)")
         plt.show()
         pass
-    
 
     def run(self):
         for filepath in self.filepaths:
