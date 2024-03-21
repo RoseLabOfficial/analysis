@@ -229,8 +229,10 @@ class Analyzer:
             G = recordings[paradigm].data[["excitation", "inhibition"]].to_numpy()
             times = recordings[paradigm].data["times"].to_numpy()
             Er = times*0 + recordings[paradigm].parameters["Er"][0]
+            Et = times*0 + recordings[paradigm].parameters["Et"][0]
             axs[0, idx].plot(times, Vm)
             axs[0, idx].plot(times, Er, '--k')
+            axs[0, idx].plot(times, Et, linestyle='--', color=(0.5, 0.5, 0.5))
             axs[0, idx].set_ylabel("Vm (V)")
             axs[0, idx].grid(True)
             axs[1, idx].plot(times, Im)
