@@ -15,7 +15,6 @@ def init_logging():
 def load_configurations():
     configurations_json: Path = "./settings/configurations.json"
     return Configurations(configurations_json)
-    
 
 def main():
     configs = load_configurations()
@@ -58,23 +57,5 @@ def main():
         else:
             BufferError(f"{filepath} doesn't exist!")
 
-    
 if __name__ == "__main__":
     main()
-    # parser = argparse.ArgumentParser(description="Passing named arguments to analyzer.")
-    # parser.add_argument("--show_configs", "-sc", action="store_file", help="show configurations")
-    # parser.add_argument("--show_inputs", "-si", action="store_file
-    # parser.add_argument("--configs", "-c", type=str, default="./settings/batch_processing.json", help="json file specifying inputdir and outputdir")
-    # parser.add_argument("--list", "-l", type=str, default=None, help="list of all the files in input directory")
-    # parser.add_argument("--test", "-t", type=str, default=None, help="perform a test run to verify analysis.")
-    # args = parser.parse_args()
-    # if args.configs is not None:
-    #     configs = Configurations(args.configs)
-    #     files = configs.get_files_to_analyze()
-    #     for file_id in files:
-    #         print(configs.get_input_directory()+"/"+file_id)
-            # reader = XLReader(file_id)
-            # for paradigm in reader.get_paradigms():
-            #     data = WholeCellRecording(reader.get_paradigm_data(paradigm), 
-            #                     reader.get_paradigm_parameters(paradigm))
-            #     data.estimate_conductances(membrane_voltage_filter_cutoff=200, active_currents_filter_cutoff=100, membrane_currents_filter_cuoff=60)

@@ -50,7 +50,7 @@ class LowPassFilter:
                                                             passband_ripple, stopband_attenuation)
         return order, normalized_cutoff_frequency
     
-    def filter(self, input: float, cutoff: float, stopband_attenuation: float, passband_ripple: float):
+    def propagate(self, input: float, cutoff: float, stopband_attenuation: float, passband_ripple: float):
         order, normalized_frequency = self.compute_minimum_order(cutoff, stopband_attenuation, passband_ripple)
         second_order_sections = filters.butter(order, normalized_frequency, output="sos")
         return filters.sosfiltfilt(second_order_sections, input)
@@ -70,7 +70,7 @@ class WholeCellRecording:
         sampling_rate = 1/(self.data["times"][1] - self.data["times"][0])
         filter = LowPassFilter(sampling_rate)
         for idx, inj in enumerate(self.parameters["Iinj"]):
-            self.data[inj] = filter.filter(self.data[inj], cutoff, stopband_attenuation, passband_ripple)
+            self.data[inj] = filter.propagate(self.data[inj], cutoff, stopband_attenuation, passband_ripple)
         return self.data
     
     def compute_activation_conductance_constants(self):
@@ -113,14 +113,14 @@ class WholeCellRecording:
         sampling_rate = 1/(self.data["times"][1] - self.data["times"][0])
         filter = LowPassFilter(sampling_rate)
         for idx, inj in enumerate(self.parameters["Iinj"]):
-            self.data["filtered_Im_"+str(inj)] = filter.filter(self.data["Im_"+str(inj)], cutoff, stopband_attenuation, passband_ripple)
+            self.data["filtered_Im_"+str(inj)] = filter.propagate(self.data["Im_"+str(inj)], cutoff, stopband_attenuation, passband_ripple)
         return self.data
     
     def filter_activation_currents(self, cutoff: float = 40.0, stopband_attenuation: float = 80, passband_ripple: float = 0.01):
         sampling_rate = 1/(self.data["times"][1] - self.data["times"][0])
         filter = LowPassFilter(sampling_rate)
         for idx, inj in enumerate(self.parameters["Iinj"]):
-            Iact = filter.filter(self.data["Iactive_"+str(inj)], cutoff, stopband_attenuation, passband_ripple)
+            Iact = filter.propagate(self.data["Iactive_"+str(inj)], cutoff, stopband_attenuation, passband_ripple)
             # Iact = Iact - Iact[0]
             # Iact[Iact<0] = 0.0
             self.data["filtered_Iact_"+str(inj)] = Iact
@@ -204,7 +204,7 @@ class Analyzer:
         fileformat = fileaddress[2]
         print(f"Reading: {filename}")
         reader = XLReader(Path(filepath) / (filename + fileformat))
-        store_path = self.sysops.make_timed_directory(self.output_path, filename)
+        # store_path = self.sysops.make_timed_directory(self.output_path, filename)
         recordings = {}
         for paradigm in reader.get_paradigms():
             recordings[paradigm] = WholeCellRecording(
@@ -212,14 +212,14 @@ class Analyzer:
                 reader.get_paradigm_parameters(paradigm)
             )
             recordings[paradigm].estimate_conductances()
-            self.sysops.make_directory(store_path / paradigm)
-            recordings[paradigm].data.to_csv(store_path / (paradigm+"/analysis.csv"), index=False)
-            recordings[paradigm].parameters.to_csv(store_path / (paradigm+"/parameters.csv"), index=False)
+            # self.sysops.make_directory(store_path / paradigm)
+            # recordings[paradigm].data.to_csv(store_path / (paradigm+"/analysis.csv"), index=False)
+            # recordings[paradigm].parameters.to_csv(store_path / (paradigm+"/parameters.csv"), index=False)
             print(f"{paradigm} done")
         print(f"{filename} done")
         return recordings
 
-    def plot_dev(self, recordings):
+    def plot_dev(self, recordings, save_address):
         fig, axs = plt.subplots(nrows = 5, ncols = len(recordings), sharex="all", sharey="row", figsize=(15, 10), constrained_layout=True)
         for idx, paradigm in enumerate(recordings):
             Vm = recordings[paradigm].data[[x for x in recordings[paradigm].parameters["Iinj"]]].to_numpy()
@@ -230,6 +230,7 @@ class Analyzer:
             times = recordings[paradigm].data["times"].to_numpy()
             Er = times*0 + recordings[paradigm].parameters["Er"][0]
             Et = times*0 + recordings[paradigm].parameters["Et"][0]
+            axs[0, idx].set_title(paradigm)
             axs[0, idx].plot(times, Vm)
             axs[0, idx].plot(times, Er, '--k')
             axs[0, idx].plot(times, Et, linestyle='--', color=(0.5, 0.5, 0.5))
@@ -244,13 +245,15 @@ class Analyzer:
             axs[3, idx].plot(times, Iact)
             axs[3, idx].set_ylabel("Iact (A)")
             axs[3, idx].grid(True)
+            axs[3, idx].set_title(", ".join([f"{val:.3f}" for val in recordings[paradigm].parameters["Eact"]]))
             axs[4, idx].plot(times, G[:, 0], c='r')
             axs[4, idx].plot(times, G[:, 1], c='b')
             axs[4, idx].plot(times, times*0, '--k')
             axs[4, idx].set_ylabel("G (S)")
             axs[4, idx].set_xlabel("times(sec)")
             axs[4, idx].grid(True)
-        plt.show()
+        # plt.show()
+        plt.savefig(save_address+f"/test.png")
         pass
 
     def set_stats_scale(self, ax, scale_max, margin=0.1):
@@ -330,6 +333,6 @@ class Analyzer:
     def run(self):
         for filepath in self.filepaths:
             recordings = self.analyze(filepath)
-            self.plot_dev(recordings)
-            self.plot_stats_dev(recordings)
+            self.plot_dev(recordings, "./outputs")
+            # self.plot_stats_dev(recordings)
         pass

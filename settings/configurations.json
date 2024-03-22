@@ -1,5 +1,25 @@
 {
     "inputdir": "inputs",
     "outputdir": "./outputs",
-    "skipfiles": []
+    "skipfiles": [],
+    "filters": {
+        "membrane_potential": {
+            "passband": 200,
+            "passband_ripple": 0.01,
+            "stopband": 400,
+            "stopband_attenuation": 80
+        },
+        "membrane_current": {
+            "passband": 200,
+            "passband_ripple": 0.01,
+            "stopband": 400,
+            "stopband_attenuation": 80
+        },
+        "activation_current": {
+            "passband": 200,
+            "passband_ripple": 0.01,
+            "stopband": 400,
+            "stopband_attenuation": 80
+        }
+    }
 }
