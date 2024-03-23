@@ -44,16 +44,30 @@ class LowPassFilter:
         pass
 
     def compute_minimum_order(self, cutoff: float, stopband_attenuation: float, passband_ripple: float):
-        passband_edge_frequency = cutoff/(self.sampling_rate/2)
-        stopband_edge_frequency = 5*passband_edge_frequency
-        order, normalized_cutoff_frequency = filters.buttord(passband_edge_frequency, stopband_edge_frequency, 
+        normalized_frequency = self.sampling_rate/2
+        # normalized_passband_edge = passband_edge / normalized_frequency
+        # normalized_stopband_edge = stopband_edge/normalized_frequency
+        normalized_passband_edge = cutoff/(self.sampling_rate/2)
+        normalized_stopband_edge = 5*normalized_passband_edge
+        order, normalized_cutoff_frequency = filters.buttord(normalized_passband_edge, normalized_stopband_edge, 
                                                             passband_ripple, stopband_attenuation)
         return order, normalized_cutoff_frequency
+    
+    def append_samples(self, signal):
+        nsamples = signal.shape[0]
+        nappend = int(nsamples/2)
+        append_samples = np.zeros((nappend,), dtype=signal.dtype)+signal[0]
+        return np.concatenate([append_samples, signal, append_samples], axis=0), nappend
+    
+    def deppend_samples(self, signal, nappend):
+        return signal[nappend:-nappend, ...]
     
     def propagate(self, input: float, cutoff: float, stopband_attenuation: float, passband_ripple: float):
         order, normalized_frequency = self.compute_minimum_order(cutoff, stopband_attenuation, passband_ripple)
         second_order_sections = filters.butter(order, normalized_frequency, output="sos")
-        return filters.sosfiltfilt(second_order_sections, input)
+        input_signal, nappend = self.append_samples(input)
+        output_signal = filters.sosfiltfilt(second_order_sections, input_signal)
+        return self.deppend_samples(output_signal, nappend)
 
 class WholeCellRecording:
     def __init__(self, data: pd.DataFrame, parameters: pd.DataFrame):
@@ -193,10 +207,12 @@ class WholeCellRecording:
         pass
 
 class Analyzer:
-    def __init__(self, filepaths: Path, output_path: Path):
+    def __init__(self, filepaths: Path, output_path: Path, filter_configurations: dict):
         self.sysops = SystemOperations()
         self.filepaths = self.sysops.split_file_address(filepaths)
         self.output_path = output_path
+        self.filter_configurations = filter_configurations
+        self.filter = LowPassFilter()
 
     def analyze(self, fileaddress):
         filepath = fileaddress[0]

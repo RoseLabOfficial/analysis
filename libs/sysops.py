@@ -52,8 +52,6 @@ class Configurations:
         self.settings = self.sysops.read_json(configs_json)
         pass
 
-    
-
     def set_input_directory(self, inputdir: Path):
         self.settings["inputdir"] = str(inputdir)
         self.sysops.write_json(self.configs_json, self.settings)
@@ -78,5 +76,6 @@ class Configurations:
     
     def get_files_to_analyze(self):
         return [filename for filename in self.get_input_files() if filename not in self.get_files_to_skip()]
-
-
+    
+    def get_filters(self):
+        return self.settings["filters"]
