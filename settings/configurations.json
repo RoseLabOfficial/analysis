@@ -3,23 +3,23 @@
     "outputdir": "./outputs",
     "skipfiles": [],
     "filters": {
-        "membrane_potential": {
+        "membrane_potentials": {
             "passband": 200,
-            "passband_ripple": 0.01,
+            "ripple": 0.01,
             "stopband": 400,
-            "stopband_attenuation": 80
+            "attenuation": 80
         },
-        "membrane_current": {
-            "passband": 200,
-            "passband_ripple": 0.01,
-            "stopband": 400,
-            "stopband_attenuation": 80
+        "membrane_currents": {
+            "passband": 40,
+            "ripple": 0.01,
+            "stopband": 60,
+            "attenuation": 80
         },
-        "activation_current": {
-            "passband": 200,
-            "passband_ripple": 0.01,
-            "stopband": 400,
-            "stopband_attenuation": 80
+        "activation_currents": {
+            "passband": 100,
+            "ripple": 0.01,
+            "stopband": 150,
+            "attenuation": 80
         }
     }
 }

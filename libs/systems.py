@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import scipy.signal as filters
+from scipy.optimize import linprog, minimize, Bounds
 import matplotlib.pyplot as plt
 import libs.signals as sigs
 from pathlib import Path
@@ -39,18 +40,21 @@ class NonLinearModel:
                     beta*(membrane_potential - resting_potential) + (1.0/input_resistance)*(membrane_potential - resting_potential)
 
 class LowPassFilter:
-    def __init__(self, sampling_rate: float):
-        self.sampling_rate = sampling_rate
+    def __init__(self, parameters):
+        self.passband = parameters["passband"]
+        self.stopband = parameters["stopband"]
+        self.attenuation = parameters["attenuation"]
+        self.ripple = parameters["ripple"]
         pass
 
-    def compute_minimum_order(self, cutoff: float, stopband_attenuation: float, passband_ripple: float):
-        normalized_frequency = self.sampling_rate/2
-        # normalized_passband_edge = passband_edge / normalized_frequency
-        # normalized_stopband_edge = stopband_edge/normalized_frequency
-        normalized_passband_edge = cutoff/(self.sampling_rate/2)
-        normalized_stopband_edge = 5*normalized_passband_edge
-        order, normalized_cutoff_frequency = filters.buttord(normalized_passband_edge, normalized_stopband_edge, 
-                                                            passband_ripple, stopband_attenuation)
+    def compute_minimum_order(self, sampling_rate: float):
+        normalizing_frequency = sampling_rate/2
+        normalized_passband = self.passband/normalizing_frequency
+        normalized_stopband = self.stopband/normalizing_frequency
+        order, normalized_cutoff_frequency = filters.buttord(normalized_passband, 
+                                                            normalized_stopband, 
+                                                            self.ripple, 
+                                                            self.attenuation)
         return order, normalized_cutoff_frequency
     
     def append_samples(self, signal):
@@ -62,17 +66,21 @@ class LowPassFilter:
     def deppend_samples(self, signal, nappend):
         return signal[nappend:-nappend, ...]
     
-    def propagate(self, input: float, cutoff: float, stopband_attenuation: float, passband_ripple: float):
-        order, normalized_frequency = self.compute_minimum_order(cutoff, stopband_attenuation, passband_ripple)
+    def propagate(self, input: float, sampling_rate: float):
+        order, normalized_frequency = self.compute_minimum_order(sampling_rate)
         second_order_sections = filters.butter(order, normalized_frequency, output="sos")
         input_signal, nappend = self.append_samples(input)
         output_signal = filters.sosfiltfilt(second_order_sections, input_signal)
         return self.deppend_samples(output_signal, nappend)
 
 class WholeCellRecording:
-    def __init__(self, data: pd.DataFrame, parameters: pd.DataFrame):
+    def __init__(self, data: pd.DataFrame, parameters: pd.DataFrame, filter_parameters):
         self.data = data
         self.parameters = parameters
+        self.filters = {}
+        self.filters["membrane_potentials"] = LowPassFilter(filter_parameters["membrane_potentials"])
+        self.filters["membrane_currents"] = LowPassFilter(filter_parameters["membrane_currents"])
+        self.filters["activation_currents"] = LowPassFilter(filter_parameters["activation_currents"])
         pass
 
     def scale_data(self):
@@ -80,11 +88,10 @@ class WholeCellRecording:
             self.data[clamp] = ((self.data[clamp] - self.data[clamp][0])*1e-3)+self.parameters["Ess"][idx]
         return self.data
     
-    def filter_data(self, cutoff: float = 200.0, stopband_attenuation: float = 80, passband_ripple: float = 0.01):
+    def filter_membrane_potentials(self):
         sampling_rate = 1/(self.data["times"][1] - self.data["times"][0])
-        filter = LowPassFilter(sampling_rate)
-        for idx, inj in enumerate(self.parameters["Iinj"]):
-            self.data[inj] = filter.propagate(self.data[inj], cutoff, stopband_attenuation, passband_ripple)
+        for inj in self.parameters["Iinj"]:
+            self.data[inj] = self.filters["membrane_potentials"].propagate(self.data[inj], sampling_rate)
         return self.data
     
     def compute_activation_conductance_constants(self):
@@ -123,22 +130,52 @@ class WholeCellRecording:
             self.data["Im_"+str(clamp)] = self.data["Im_"+str(clamp)] - self.data["Im_"+str(clamp)][0]
         return self.data
     
-    def filter_membrane_currents(self, cutoff: float = 40.0, stopband_attenuation: float = 80, passband_ripple: float = 0.01):
+    def filter_membrane_currents(self):
         sampling_rate = 1/(self.data["times"][1] - self.data["times"][0])
-        filter = LowPassFilter(sampling_rate)
-        for idx, inj in enumerate(self.parameters["Iinj"]):
-            self.data["filtered_Im_"+str(inj)] = filter.propagate(self.data["Im_"+str(inj)], cutoff, stopband_attenuation, passband_ripple)
+        for inj in self.parameters["Iinj"]:
+            self.data["filtered_Im_"+str(inj)] = self.filters["membrane_currents"].propagate(self.data["Im_"+str(inj)], sampling_rate)
         return self.data
     
-    def filter_activation_currents(self, cutoff: float = 40.0, stopband_attenuation: float = 80, passband_ripple: float = 0.01):
+    def filter_activation_currents(self):
         sampling_rate = 1/(self.data["times"][1] - self.data["times"][0])
-        filter = LowPassFilter(sampling_rate)
-        for idx, inj in enumerate(self.parameters["Iinj"]):
-            Iact = filter.propagate(self.data["Iactive_"+str(inj)], cutoff, stopband_attenuation, passband_ripple)
-            # Iact = Iact - Iact[0]
-            # Iact[Iact<0] = 0.0
+        for inj in self.parameters["Iinj"]:
+            Iact = self.filters["activation_currents"].propagate(self.data["Iactive_"+str(inj)], sampling_rate)
             self.data["filtered_Iact_"+str(inj)] = Iact
         return self.data
+
+    def objective(self, solution):
+        self.parameters["Eact"] = solution
+        self.compute_activation_currents()
+        self.filter_activation_currents()
+        self.compute_passive_conductances()
+        self.compute_stats()
+        neg_excitation = self.data["excitation"][self.data["excitation"] < 0]
+        neg_excitation = neg_excitation/np.amin(neg_excitation)
+        neg_inhibition = self.data["inhibition"][self.data["inhibition"] < 0]
+        neg_inhibition = neg_inhibition/np.amin(neg_inhibition)
+        print(neg_excitation.shape)
+        return np.mean(neg_excitation) + np.mean(neg_inhibition)
+    
+    def optimize(self):
+        self.estimate_conductances()
+        # Wrapper function for the optimizer
+        def obj_wrapper(solution):
+            return self.objective(solution)
+        
+        Emax = [max_val for max_val in self.data[[x for x in self.parameters["Iinj"]]].max()]
+        
+        # Specify bounds for the solution: assuming all parameters >= 0
+        Ess = np.asarray([x for x in self.parameters["Ess"]])
+        # Emax = np.asarray([x for x in self.parameters["Et"]])
+        initial_guess = (Ess + Emax)/2
+        bounds = Bounds(Ess, Emax)
+
+        # Optimize
+        result = minimize(obj_wrapper, initial_guess, method='trust-constr', bounds=bounds)
+        print(result)
+        self.parameters["Eact"] = result.x
+        return result
+
     
     def compute_passive_conductances(self):
         ntimesteps = self.data.shape[0]
@@ -174,15 +211,15 @@ class WholeCellRecording:
         self.stats = self.data.mean(numeric_only=True)
         return self.stats
 
-    def estimate_conductances(self, membrane_voltage_filter_cutoff: float = 200, activation_currents_filter_cutoff: float = 100, membrane_currents_filter_cuoff: float=100):
+    def estimate_conductances(self):
         self.scale_data()
-        self.filter_data(cutoff=membrane_voltage_filter_cutoff)
+        self.filter_membrane_potentials()
         self.compute_polarizations()
         self.compute_activation_currents()
-        self.filter_activation_currents(cutoff=activation_currents_filter_cutoff)
+        self.filter_activation_currents()
         self.compute_leakage_currents()
         self.compute_membrane_currents()
-        self.filter_membrane_currents(cutoff=membrane_currents_filter_cuoff)
+        self.filter_membrane_currents()
         self.compute_passive_conductances()
         self.compute_stats()
         return self.data
@@ -212,7 +249,6 @@ class Analyzer:
         self.filepaths = self.sysops.split_file_address(filepaths)
         self.output_path = output_path
         self.filter_configurations = filter_configurations
-        self.filter = LowPassFilter()
 
     def analyze(self, fileaddress):
         filepath = fileaddress[0]
@@ -222,12 +258,18 @@ class Analyzer:
         reader = XLReader(Path(filepath) / (filename + fileformat))
         # store_path = self.sysops.make_timed_directory(self.output_path, filename)
         recordings = {}
-        for paradigm in reader.get_paradigms():
+        for idx, paradigm in enumerate(reversed(reader.get_paradigms())):
             recordings[paradigm] = WholeCellRecording(
                 reader.get_paradigm_data(paradigm), 
-                reader.get_paradigm_parameters(paradigm)
+                reader.get_paradigm_parameters(paradigm),
+                self.filter_configurations
             )
-            recordings[paradigm].estimate_conductances()
+            if idx == 0:
+                recordings[paradigm].optimize()
+                Eact = recordings[paradigm].parameters["Eact"]
+            else:
+                recordings[paradigm].parameters["Eact"] = Eact
+                recordings[paradigm].estimate_conductances()
             # self.sysops.make_directory(store_path / paradigm)
             # recordings[paradigm].data.to_csv(store_path / (paradigm+"/analysis.csv"), index=False)
             # recordings[paradigm].parameters.to_csv(store_path / (paradigm+"/parameters.csv"), index=False)

@@ -46,7 +46,7 @@ def main():
         inputdir = configs.get_input_directory()
         inputfiles = configs.get_files_to_analyze()
         files = [inputdir / filename for filename in inputfiles]
-        analyzer = Analyzer(files, configs.get_output_directory())
+        analyzer = Analyzer(files, configs.get_output_directory(), configs.get_filters())
         analyzer.run()
     if args.run_file is not None:
         inputdir = configs.get_input_directory()
