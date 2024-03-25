@@ -16,9 +16,9 @@
             "attenuation": 80
         },
         "activation_currents": {
-            "passband": 100,
+            "passband": 40,
             "ripple": 0.01,
-            "stopband": 150,
+            "stopband": 60,
             "attenuation": 80
         }
     }

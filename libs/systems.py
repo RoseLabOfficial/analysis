@@ -81,6 +81,7 @@ class WholeCellRecording:
         self.filters["membrane_potentials"] = LowPassFilter(filter_parameters["membrane_potentials"])
         self.filters["membrane_currents"] = LowPassFilter(filter_parameters["membrane_currents"])
         self.filters["activation_currents"] = LowPassFilter(filter_parameters["activation_currents"])
+        self.scale_data()
         pass
 
     def scale_data(self):
@@ -153,26 +154,19 @@ class WholeCellRecording:
         neg_excitation = neg_excitation/np.amin(neg_excitation)
         neg_inhibition = self.data["inhibition"][self.data["inhibition"] < 0]
         neg_inhibition = neg_inhibition/np.amin(neg_inhibition)
-        print(neg_excitation.shape)
-        return np.mean(neg_excitation) + np.mean(neg_inhibition)
+        return np.square(np.sum(neg_excitation) + np.sum(neg_inhibition))
     
     def optimize(self):
         self.estimate_conductances()
-        # Wrapper function for the optimizer
         def obj_wrapper(solution):
             return self.objective(solution)
         
         Emax = [max_val for max_val in self.data[[x for x in self.parameters["Iinj"]]].max()]
-        
-        # Specify bounds for the solution: assuming all parameters >= 0
         Ess = np.asarray([x for x in self.parameters["Ess"]])
         # Emax = np.asarray([x for x in self.parameters["Et"]])
-        initial_guess = (Ess + Emax)/2
+        # initial_guess = (Ess + Emax)/2
         bounds = Bounds(Ess, Emax)
-
-        # Optimize
-        result = minimize(obj_wrapper, initial_guess, method='trust-constr', bounds=bounds)
-        print(result)
+        result = minimize(obj_wrapper, Emax, method='trust-constr', bounds=bounds)
         self.parameters["Eact"] = result.x
         return result
 
@@ -212,7 +206,6 @@ class WholeCellRecording:
         return self.stats
 
     def estimate_conductances(self):
-        self.scale_data()
         self.filter_membrane_potentials()
         self.compute_polarizations()
         self.compute_activation_currents()
@@ -258,16 +251,27 @@ class Analyzer:
         reader = XLReader(Path(filepath) / (filename + fileformat))
         # store_path = self.sysops.make_timed_directory(self.output_path, filename)
         recordings = {}
-        for idx, paradigm in enumerate(reversed(reader.get_paradigms())):
+        for idx, paradigm in enumerate(reader.get_paradigms()):
             recordings[paradigm] = WholeCellRecording(
                 reader.get_paradigm_data(paradigm), 
                 reader.get_paradigm_parameters(paradigm),
                 self.filter_configurations
             )
-            if idx == 0:
-                recordings[paradigm].optimize()
-                Eact = recordings[paradigm].parameters["Eact"]
-            else:
+        max_depols = np.zeros(len(recordings))
+        for idx, paradigm in enumerate(recordings):
+            pinj = recordings[paradigm].parameters["Iinj"].abs()
+            min_Iinj, min_idx_Iinj = pinj.min(), pinj.argmin()
+            vms = recordings[paradigm].data[min_Iinj]
+            depols = vms - recordings[paradigm].parameters["Ess"][min_idx_Iinj]
+            max_depols[idx] = np.max(depols)
+        max_index = np.argmax(max_depols)
+        max_paradigm = list(recordings.keys())[max_index]
+        print(f"Optimizing Eact for {max_paradigm}")
+        recordings[max_paradigm].optimize()
+        Eact = recordings[max_paradigm].parameters["Eact"]
+        print(f"New Eacts: {Eact}")
+        for idx, paradigm in enumerate(recordings):
+            if not paradigm == max_paradigm:
                 recordings[paradigm].parameters["Eact"] = Eact
                 recordings[paradigm].estimate_conductances()
             # self.sysops.make_directory(store_path / paradigm)
