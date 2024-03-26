@@ -202,7 +202,7 @@ class WholeCellRecording:
         return self.data
     
     def compute_stats(self):
-        self.stats = self.data.mean(numeric_only=True)
+        self.stats = self.data.mean(numeric_only=True).to_frame().T
         return self.stats
 
     def estimate_conductances(self):
@@ -249,7 +249,7 @@ class Analyzer:
         fileformat = fileaddress[2]
         print(f"Reading: {filename}")
         reader = XLReader(Path(filepath) / (filename + fileformat))
-        # store_path = self.sysops.make_timed_directory(self.output_path, filename)
+        store_path = self.sysops.make_timed_directory(self.output_path, filename)
         recordings = {}
         for idx, paradigm in enumerate(reader.get_paradigms()):
             recordings[paradigm] = WholeCellRecording(
@@ -269,19 +269,26 @@ class Analyzer:
         print(f"Optimizing Eact for {max_paradigm}")
         recordings[max_paradigm].optimize()
         Eact = recordings[max_paradigm].parameters["Eact"]
-        print(f"New Eacts: {Eact}")
+        print(f"New Eacts: {Eact.to_numpy().tolist()}")
+        recordings[max_paradigm].stats["paradigm"] = [max_paradigm]
+        stats = recordings[max_paradigm].stats.copy()
         for idx, paradigm in enumerate(recordings):
             if not paradigm == max_paradigm:
                 recordings[paradigm].parameters["Eact"] = Eact
                 recordings[paradigm].estimate_conductances()
+                recordings[paradigm].stats["paradigm"] = paradigm
+                stats = pd.concat([stats, recordings[paradigm].stats], axis=0)
+            recordings[paradigm].data.to_csv(store_path / f"{paradigm}_data.csv")
+            recordings[paradigm].parameters.to_csv(store_path / f"{paradigm}_parameters.csv")
             # self.sysops.make_directory(store_path / paradigm)
             # recordings[paradigm].data.to_csv(store_path / (paradigm+"/analysis.csv"), index=False)
             # recordings[paradigm].parameters.to_csv(store_path / (paradigm+"/parameters.csv"), index=False)
             print(f"{paradigm} done")
-        print(f"{filename} done")
-        return recordings
+        print(f"{filename} done \n")
+        (stats.sort_values(by="paradigm", ascending=True)).to_csv(store_path / "stats.csv")
+        return recordings, store_path
 
-    def plot_dev(self, recordings, save_address):
+    def plot_dev(self, recordings, save_address: Path):
         fig, axs = plt.subplots(nrows = 5, ncols = len(recordings), sharex="all", sharey="row", figsize=(15, 10), constrained_layout=True)
         for idx, paradigm in enumerate(recordings):
             Vm = recordings[paradigm].data[[x for x in recordings[paradigm].parameters["Iinj"]]].to_numpy()
@@ -315,7 +322,7 @@ class Analyzer:
             axs[4, idx].set_xlabel("times(sec)")
             axs[4, idx].grid(True)
         # plt.show()
-        plt.savefig(save_address+f"/test.png")
+        plt.savefig(save_address / f"dev_traces.png")
         pass
 
     def set_stats_scale(self, ax, scale_max, margin=0.1):
@@ -323,7 +330,7 @@ class Analyzer:
         ax.set_ylim([-1*scale_max, scale_max])
         pass
 
-    def plot_stats_dev(self, recordings, reference_clamp_idx = 0):
+    def plot_stats_dev(self, recordings, save_address: Path):
         fig, axs = plt.subplots(nrows = 5, ncols = 1, sharex="all", figsize=(15, 10), constrained_layout=True)
         mean_depolarizations = []
         mean_hyperpolarizations = []
@@ -338,6 +345,7 @@ class Analyzer:
         paradigms = [paradigm for paradigm in recordings]
         xlocations = np.arange(len(paradigms))
         for paradigm in paradigms:
+            reference_clamp_idx = recordings[paradigm].parameters["Iinj"].abs().argmin()
             reference_clamp = recordings[paradigm].parameters["Iinj"][reference_clamp_idx]
             mean_depolarizations.append(recordings[paradigm].stats["depolarization_"+str(reference_clamp)])
             mean_hyperpolarizations.append(recordings[paradigm].stats["hyperpolarization_"+str(reference_clamp)])
@@ -357,7 +365,6 @@ class Analyzer:
         mean_excitation = np.asarray(mean_excitation)
         mean_inhibition = np.asarray(mean_inhibition)
         sps = np.asarray(sps)
-        print(mean_depolarizations)
         axs[0].bar(xlocations, mean_depolarizations, align='center', color="red")
         axs[0].bar(xlocations, mean_hyperpolarizations, align='center', color="blue")
         axs[0].axhline(0, color='grey', linewidth=0.8)
@@ -389,12 +396,12 @@ class Analyzer:
         scale_max = np.amax(sps)
         self.set_stats_scale(ax, scale_max, 0.1)
         axs[4].set_ylabel("G (S)")
-        plt.show()
+        plt.savefig(save_address / f"dev_traces.png")
         pass
 
     def run(self):
         for filepath in self.filepaths:
-            recordings = self.analyze(filepath)
-            self.plot_dev(recordings, "./outputs")
+            recordings, store_path = self.analyze(filepath)
+            self.plot_dev(recordings, store_path)
             # self.plot_stats_dev(recordings)
         pass
