@@ -7,6 +7,10 @@ class SystemOperations:
     def make_directory(self, directory):
         if not os.path.exists(directory):
             os.makedirs(directory)
+
+    def get_time_as_string(self):
+        now = datetime.now()
+        return now.strftime("_%Y_%m_%d_%H_%M_%S")
     
     def make_timed_directory(self, dir: Path, prefix: str) -> Path:
         now = datetime.now()

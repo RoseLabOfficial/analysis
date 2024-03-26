@@ -201,9 +201,26 @@ class WholeCellRecording:
         self.data.loc[self.data["resultant_inhibition"] < 0, "resultant_inhibition"] = 0.0
         return self.data
     
+    def get_clamp_near_0(self):
+        min_Iinj_index = self.parameters["Iinj"].abs().argmin()
+        min_Iinj = self.parameters["Iinj"][min_Iinj_index]
+        return min_Iinj_index, min_Iinj
+    
     def compute_stats(self):
-        self.stats = self.data.mean(numeric_only=True).to_frame().T
-        return self.stats
+        min_Iinj_index, min_Iinj = self.get_clamp_near_0()
+        stats = pd.DataFrame()
+        paradigm_all_var_stats = self.data.mean(numeric_only=True).to_frame().T
+        stats["depolarization"] = paradigm_all_var_stats[f"depolarization_{min_Iinj}"]
+        stats["hyperpolarization"] = paradigm_all_var_stats[f"hyperpolarization_{min_Iinj}"]
+        stats["Im"] = paradigm_all_var_stats[f"filtered_Im_{min_Iinj}"]
+        stats["Ileak"] = paradigm_all_var_stats[f"Ileak_{min_Iinj}"]
+        stats["Iact"] = paradigm_all_var_stats[f"filtered_Iact_{min_Iinj}"]
+        stats["mean_excitation"] = paradigm_all_var_stats["positive_excitation"]
+        stats["mean_inhibition"] = paradigm_all_var_stats["positive_inhibition"]
+        stats["net_excitation"] = paradigm_all_var_stats["resultant_excitation"]
+        stats["net_inhibition"] = paradigm_all_var_stats["resultant_inhibition"]
+        stats["sps"] = self.parameters["sps"][min_Iinj_index]
+        return stats
 
     def estimate_conductances(self):
         self.filter_membrane_potentials()
@@ -214,7 +231,7 @@ class WholeCellRecording:
         self.compute_membrane_currents()
         self.filter_membrane_currents()
         self.compute_passive_conductances()
-        self.compute_stats()
+        self.stats = self.compute_stats()
         return self.data
 
     def plot(self, plot_save_path: str = "./plot.png"):
@@ -249,7 +266,6 @@ class Analyzer:
         fileformat = fileaddress[2]
         print(f"Reading: {filename}")
         reader = XLReader(Path(filepath) / (filename + fileformat))
-        store_path = self.sysops.make_timed_directory(self.output_path, filename)
         recordings = {}
         for idx, paradigm in enumerate(reader.get_paradigms()):
             recordings[paradigm] = WholeCellRecording(
@@ -259,8 +275,7 @@ class Analyzer:
             )
         max_depols = np.zeros(len(recordings))
         for idx, paradigm in enumerate(recordings):
-            pinj = recordings[paradigm].parameters["Iinj"].abs()
-            min_Iinj, min_idx_Iinj = pinj.min(), pinj.argmin()
+            min_idx_Iinj, min_Iinj = recordings[paradigm].get_clamp_near_0()
             vms = recordings[paradigm].data[min_Iinj]
             depols = vms - recordings[paradigm].parameters["Ess"][min_idx_Iinj]
             max_depols[idx] = np.max(depols)
@@ -270,27 +285,45 @@ class Analyzer:
         recordings[max_paradigm].optimize()
         Eact = recordings[max_paradigm].parameters["Eact"]
         print(f"New Eacts: {Eact.to_numpy().tolist()}")
-        recordings[max_paradigm].stats["paradigm"] = [max_paradigm]
-        stats = recordings[max_paradigm].stats.copy()
+        recordings[max_paradigm].stats.insert(0, "paradigm", max_paradigm)
+        overall_stats = recordings[max_paradigm].stats.copy()
         for idx, paradigm in enumerate(recordings):
             if not paradigm == max_paradigm:
                 recordings[paradigm].parameters["Eact"] = Eact
                 recordings[paradigm].estimate_conductances()
-                recordings[paradigm].stats["paradigm"] = paradigm
-                stats = pd.concat([stats, recordings[paradigm].stats], axis=0)
-            recordings[paradigm].data.to_csv(store_path / f"{paradigm}_data.csv")
-            recordings[paradigm].parameters.to_csv(store_path / f"{paradigm}_parameters.csv")
-            # self.sysops.make_directory(store_path / paradigm)
-            # recordings[paradigm].data.to_csv(store_path / (paradigm+"/analysis.csv"), index=False)
-            # recordings[paradigm].parameters.to_csv(store_path / (paradigm+"/parameters.csv"), index=False)
+                recordings[paradigm].stats.insert(0, "paradigm", paradigm)
+                overall_stats = pd.concat([overall_stats, recordings[paradigm].stats], axis=0)
             print(f"{paradigm} done")
+        overall_stats = overall_stats.sort_values(by="paradigm", ascending=True)
+        result_filename = self.output_path / f"{filename}_analyzed{self.sysops.get_time_as_string()}"
+        # self.write_to_excel(f"{result_filename}.xlsx", recordings, overall_stats)
         print(f"{filename} done \n")
-        (stats.sort_values(by="paradigm", ascending=True)).to_csv(store_path / "stats.csv")
-        return recordings, store_path
+        return recordings, overall_stats, result_filename
+    
+    def write_to_excel(self, filepath: Path, recordings, stats):
+        if not self.sysops.check_directory(filepath):
+            pd.DataFrame().to_excel(filepath)
+        with pd.ExcelWriter(filepath, mode='a', engine='openpyxl', if_sheet_exists='new') as writer:
+            for paradigm in recordings:
+                recordings[paradigm].data.to_excel(writer, sheet_name=paradigm, index=False)
+                recordings[paradigm].parameters.to_excel(writer, sheet_name="parameters_"+paradigm, index = False)
+            stats.to_excel(writer, sheet_name="stats", index=False)
+        pass
 
-    def plot_dev(self, recordings, save_address: Path):
-        fig, axs = plt.subplots(nrows = 5, ncols = len(recordings), sharex="all", sharey="row", figsize=(15, 10), constrained_layout=True)
+    def write_analysis_to_excel(self, filepath: Path, paradigm: str, paradigm_data: pd.DataFrame):
+        if self.sysops.check_directory(filepath):
+            with pd.ExcelWriter(filepath, mode='a', engine='openpyxl', if_sheet_exists='replace') as writer:
+                paradigm_data.to_excel(writer, sheet_name=paradigm, index=False)
+        else:
+            # File does not exist, create a new file
+            paradigm_data.to_excel(filepath, sheet_name=paradigm, index=False)
+        pass
+
+    def plot_dev(self, recordings, filename: Path):
+        fig, axs = plt.subplots(nrows = 7, ncols = len(recordings), sharex="all", sharey="row", figsize=(15, 10), constrained_layout=True)
         for idx, paradigm in enumerate(recordings):
+            if "representative" in recordings[paradigm].data:
+                rep = recordings[paradigm].data["representative"].to_numpy()
             Vm = recordings[paradigm].data[[x for x in recordings[paradigm].parameters["Iinj"]]].to_numpy()
             Im = recordings[paradigm].data[["filtered_Im_"+str(x) for x in recordings[paradigm].parameters["Iinj"]]].to_numpy()
             Ileak = recordings[paradigm].data[["Ileak_"+str(x) for x in recordings[paradigm].parameters["Iinj"]]].to_numpy()
@@ -299,30 +332,44 @@ class Analyzer:
             times = recordings[paradigm].data["times"].to_numpy()
             Er = times*0 + recordings[paradigm].parameters["Er"][0]
             Et = times*0 + recordings[paradigm].parameters["Et"][0]
+            Eact = Vm*0 + recordings[paradigm].parameters["Eact"].to_numpy()
+            if "stimulus" in recordings[paradigm].data:
+                stim = recordings[paradigm].data["stimulus"].to_numpy()
             axs[0, idx].set_title(paradigm)
-            axs[0, idx].plot(times, Vm)
-            axs[0, idx].plot(times, Er, '--k')
-            axs[0, idx].plot(times, Et, linestyle='--', color=(0.5, 0.5, 0.5))
-            axs[0, idx].set_ylabel("Vm (V)")
-            axs[0, idx].grid(True)
-            axs[1, idx].plot(times, Im)
-            axs[1, idx].set_ylabel("Im (A)")
+            if "representative" in recordings[paradigm].data:
+                axs[0, idx].plot(times, rep)
+                axs[0, idx].plot(times, Er, '--k')
+            axs[0, idx].set_ylabel("Rep. Vm (V)")
+            axs[0, idx].set_title(paradigm)
+            curves = axs[1, idx].plot(times, Vm)
+            colors = [x.get_color() for x in curves]
+            axs[1, idx].plot(times, Er, '--k')
+            axs[1, idx].plot(times, Et, linestyle='--', color=(0.5, 0.5, 0.5))
+            for i in range(Eact.shape[-1]):
+                axs[1, idx].plot(times, Eact[:, i], linestyle='--', color=colors[i])
+            axs[1, idx].set_ylabel("Vm (V)")
             axs[1, idx].grid(True)
-            axs[2, idx].plot(times, Ileak)
-            axs[2, idx].set_ylabel("Ileak (A)")
+            axs[2, idx].plot(times, Im)
+            axs[2, idx].set_ylabel("Im (A)")
             axs[2, idx].grid(True)
-            axs[3, idx].plot(times, Iact)
-            axs[3, idx].set_ylabel("Iact (A)")
+            axs[3, idx].plot(times, Ileak)
+            axs[3, idx].set_ylabel("Ileak (A)")
             axs[3, idx].grid(True)
-            axs[3, idx].set_title(", ".join([f"{val:.3f}" for val in recordings[paradigm].parameters["Eact"]]))
-            axs[4, idx].plot(times, G[:, 0], c='r')
-            axs[4, idx].plot(times, G[:, 1], c='b')
-            axs[4, idx].plot(times, times*0, '--k')
-            axs[4, idx].set_ylabel("G (S)")
-            axs[4, idx].set_xlabel("times(sec)")
+            axs[4, idx].plot(times, Iact)
+            axs[4, idx].set_ylabel("Iact (A)")
             axs[4, idx].grid(True)
-        # plt.show()
-        plt.savefig(save_address / f"dev_traces.png")
+            # axs[4, idx].set_title(", ".join([f"{val:.3f}" for val in recordings[paradigm].parameters["Eact"]]))
+            axs[5, idx].plot(times, G[:, 0], c='r')
+            axs[5, idx].plot(times, G[:, 1], c='b')
+            axs[5, idx].plot(times, times*0, '--k')
+            axs[5, idx].set_ylabel("G (S)")
+            axs[5, idx].grid(True)
+            if "stimulus" in recordings[paradigm].data:
+                axs[6, idx].plot(times, stim)
+            axs[6, idx].set_ylabel("Stimulus")
+            axs[6, idx].set_xlabel("times(sec)")
+            axs[6, idx].grid(True)
+        plt.savefig(str(filename)+f"_dev_traces.png")
         pass
 
     def set_stats_scale(self, ax, scale_max, margin=0.1):
@@ -330,41 +377,39 @@ class Analyzer:
         ax.set_ylim([-1*scale_max, scale_max])
         pass
 
-    def plot_stats_dev(self, recordings, save_address: Path):
+    def plot_stats_dev(self, recordings, filename: Path):
         fig, axs = plt.subplots(nrows = 5, ncols = 1, sharex="all", figsize=(15, 10), constrained_layout=True)
-        mean_depolarizations = []
-        mean_hyperpolarizations = []
-        mean_Im = []
-        mean_Ileak = []
-        mean_Iactivation = []
-        mean_excitation = []
-        mean_inhibition = []
-        net_excitation = []
-        net_inhibition = []
-        sps = []
+        mean_depolarizations = [recordings[paradigm].stats["depolarization"] for paradigm in recordings]
+        mean_hyperpolarizations = [recordings[paradigm].stats["hyperpolarization"] for paradigm in recordings]
+        mean_Im = [recordings[paradigm].stats["Im"] for paradigm in recordings]
+        mean_Ileak = [recordings[paradigm].stats["Ileak"] for paradigm in recordings]
+        mean_Iactivation = [recordings[paradigm].stats["Iact"] for paradigm in recordings]
+        mean_excitation = [recordings[paradigm].stats["mean_excitation"] for paradigm in recordings]
+        mean_inhibition = [recordings[paradigm].stats["mean_inhibition"] for paradigm in recordings]
+        net_excitation = [recordings[paradigm].stats["net_excitation"] for paradigm in recordings]
+        net_inhibition = [recordings[paradigm].stats["net_inhibition"] for paradigm in recordings]
+        sps = [recordings[paradigm].stats["sps"] for paradigm in recordings]
         paradigms = [paradigm for paradigm in recordings]
         xlocations = np.arange(len(paradigms))
-        for paradigm in paradigms:
-            reference_clamp_idx = recordings[paradigm].parameters["Iinj"].abs().argmin()
-            reference_clamp = recordings[paradigm].parameters["Iinj"][reference_clamp_idx]
-            mean_depolarizations.append(recordings[paradigm].stats["depolarization_"+str(reference_clamp)])
-            mean_hyperpolarizations.append(recordings[paradigm].stats["hyperpolarization_"+str(reference_clamp)])
-            mean_Im.append(recordings[paradigm].stats["filtered_Im_"+str(reference_clamp)])
-            mean_Iactivation.append(recordings[paradigm].stats["filtered_Iact_"+str(reference_clamp)])
-            mean_Ileak.append(recordings[paradigm].stats["Ileak_"+str(reference_clamp)])
-            mean_excitation.append(recordings[paradigm].stats["positive_excitation"])
-            mean_inhibition.append(recordings[paradigm].stats["positive_inhibition"])
-            net_excitation.append(recordings[paradigm].stats["resultant_excitation"])
-            net_inhibition.append(recordings[paradigm].stats["resultant_inhibition"])
-            sps.append(recordings[paradigm].parameters["sps"][reference_clamp_idx])
-        mean_depolarizations = np.asarray(mean_depolarizations)
-        mean_hyperpolarizations = np.asarray(mean_hyperpolarizations)
-        mean_Im = np.asarray(mean_Im)
-        mean_Iactivation = np.asarray(mean_Iactivation)
-        mean_Ileak = np.asarray(mean_Ileak)
-        mean_excitation = np.asarray(mean_excitation)
-        mean_inhibition = np.asarray(mean_inhibition)
-        sps = np.asarray(sps)
+        # for paradigm in paradigms:
+        #     mean_depolarizations.append(recordings[paradigm].stats["depolarization"])
+        #     mean_hyperpolarizations.append(recordings[paradigm].stats["hyperpolarization"])
+        #     mean_Im.append(recordings[paradigm].stats["Im"])
+        #     mean_Iactivation.append(recordings[paradigm].stats["Iact"])
+        #     mean_Ileak.append(recordings[paradigm].stats["Ileak"])
+        #     mean_excitation.append(recordings[paradigm].stats["mean_excitation"])
+        #     mean_inhibition.append(recordings[paradigm].stats["mean_inhibition"])
+        #     net_excitation.append(recordings[paradigm].stats["net_excitation"])
+        #     net_inhibition.append(recordings[paradigm].stats["net_inhibition"])
+        #     sps.append(recordings[paradigm].parameters["sps"])
+        # mean_depolarizations = np.asarray(mean_depolarizations)
+        # mean_hyperpolarizations = np.asarray(mean_hyperpolarizations)
+        # mean_Im = np.asarray(mean_Im)
+        # mean_Iactivation = np.asarray(mean_Iactivation)
+        # mean_Ileak = np.asarray(mean_Ileak)
+        # mean_excitation = np.asarray(mean_excitation)
+        # mean_inhibition = np.asarray(mean_inhibition)
+        # sps = np.asarray(sps)
         axs[0].bar(xlocations, mean_depolarizations, align='center', color="red")
         axs[0].bar(xlocations, mean_hyperpolarizations, align='center', color="blue")
         axs[0].axhline(0, color='grey', linewidth=0.8)
@@ -396,12 +441,13 @@ class Analyzer:
         scale_max = np.amax(sps)
         self.set_stats_scale(ax, scale_max, 0.1)
         axs[4].set_ylabel("G (S)")
-        plt.savefig(save_address / f"dev_traces.png")
+        plt.savefig(str(filename)+f"_dev_stats.png")
         pass
 
     def run(self):
         for filepath in self.filepaths:
-            recordings, store_path = self.analyze(filepath)
-            self.plot_dev(recordings, store_path)
-            # self.plot_stats_dev(recordings)
+            recordings, stats, result_filename = self.analyze(filepath)
+            # self.write_to_excel(f"{result_filename}.xlsx", recordings, stats)
+            self.plot_dev(recordings, result_filename)
+            self.plot_stats_dev(recordings, result_filename)
         pass
