@@ -53,7 +53,7 @@ def main():
         filepath = inputdir / args.run_file
         if filepath.exists():
             analyzer = Analyzer([filepath], configs.get_output_directory())
-            analyzer.run()
+            analyzer.run(configs.get_optimization()["level"])
         else:
             BufferError(f"{filepath} doesn't exist!")
 

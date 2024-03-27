@@ -75,6 +75,9 @@ class Configurations:
     def get_input_files(self):
         return self.sysops.list_files(self.get_input_directory())
     
+    def get_user_specified_files(self):
+        return self.settings["userfiles"]
+    
     def get_files_to_skip(self):
         return self.settings["skipfiles"]
     
@@ -83,3 +86,6 @@ class Configurations:
     
     def get_filters(self):
         return self.settings["filters"]
+    
+    def get_optimization(self):
+        return self.settings["optimization"]

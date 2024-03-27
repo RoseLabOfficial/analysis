@@ -169,7 +169,6 @@ class WholeCellRecording:
         result = minimize(obj_wrapper, Emax, method='trust-constr', bounds=bounds)
         self.parameters["Eact"] = result.x
         return result
-
     
     def compute_passive_conductances(self):
         ntimesteps = self.data.shape[0]
@@ -260,7 +259,61 @@ class Analyzer:
         self.output_path = output_path
         self.filter_configurations = filter_configurations
 
-    def analyze(self, fileaddress):
+    def get_paradigm_to_optimize(self, recordings):
+        max_depols = np.zeros(len(recordings))
+        for idx, paradigm in enumerate(recordings):
+            min_idx_Iinj, min_Iinj = recordings[paradigm].get_clamp_near_0()
+            vms = recordings[paradigm].data[min_Iinj]
+            depols = vms - recordings[paradigm].parameters["Ess"][min_idx_Iinj]
+            max_depols[idx] = np.max(depols)
+        max_index = np.argmax(max_depols)
+        return list(recordings.keys())[max_index]
+    
+    def estimate_optimum_activation_potential(self, recordings):
+        optim_paradigm = self.get_paradigm_to_optimize(recordings)
+        print(f"Optimizing Eact for {optim_paradigm}")
+        recordings[optim_paradigm].optimize()
+        Eact = recordings[optim_paradigm].parameters["Eact"]
+        # print(f"New Eacts: {Eact.to_numpy().tolist()}")
+        recordings[optim_paradigm].stats.insert(0, "paradigm", optim_paradigm)
+        overall_stats = recordings[optim_paradigm].stats.copy()
+        for idx, paradigm in enumerate(recordings):
+            if not paradigm == optim_paradigm:
+                recordings[paradigm].parameters["Eact"] = Eact
+                recordings[paradigm].estimate_conductances()
+                recordings[paradigm].stats.insert(0, "paradigm", paradigm)
+                overall_stats = pd.concat([overall_stats, recordings[paradigm].stats], axis=0)
+            print(f"{paradigm} done")
+        overall_stats = overall_stats.sort_values(by="paradigm", ascending=True)
+        return recordings, overall_stats
+    
+    def estimate_optimum_activation_potential_each_paradigm(self, recordings):
+        for idx, paradigm in enumerate(recordings):
+            recordings[paradigm].optimize()
+            print(f"Optimizing Eact for {paradigm}")
+            recordings[paradigm].stats.insert(0, "paradigm", paradigm)
+            if idx == 0:
+                overall_stats = recordings[paradigm].stats.copy()
+            else:
+                overall_stats = pd.concat([overall_stats, recordings[paradigm].stats], axis=0)
+            print(f"{paradigm} done")
+        overall_stats = overall_stats.sort_values(by="paradigm", ascending=True)
+        return recordings, overall_stats
+    
+    def estimation_without_optim_activation_potential(self, recordings):
+        for idx, paradigm in enumerate(recordings):
+            recordings[paradigm].estimate_conductances()
+            recordings[paradigm].stats.insert(0, "paradigm", paradigm)
+            if idx == 0:
+                overall_stats = recordings[paradigm].stats.copy()
+            else:
+                overall_stats = pd.concat([overall_stats, recordings[paradigm].stats], axis=0)
+            print(f"{paradigm} done")
+        overall_stats = overall_stats.sort_values(by="paradigm", ascending=True)
+        return recordings, overall_stats
+
+
+    def analyze(self, fileaddress, optimize=1):
         filepath = fileaddress[0]
         filename = fileaddress[1]
         fileformat = fileaddress[2]
@@ -273,30 +326,13 @@ class Analyzer:
                 reader.get_paradigm_parameters(paradigm),
                 self.filter_configurations
             )
-        max_depols = np.zeros(len(recordings))
-        for idx, paradigm in enumerate(recordings):
-            min_idx_Iinj, min_Iinj = recordings[paradigm].get_clamp_near_0()
-            vms = recordings[paradigm].data[min_Iinj]
-            depols = vms - recordings[paradigm].parameters["Ess"][min_idx_Iinj]
-            max_depols[idx] = np.max(depols)
-        max_index = np.argmax(max_depols)
-        max_paradigm = list(recordings.keys())[max_index]
-        print(f"Optimizing Eact for {max_paradigm}")
-        recordings[max_paradigm].optimize()
-        Eact = recordings[max_paradigm].parameters["Eact"]
-        print(f"New Eacts: {Eact.to_numpy().tolist()}")
-        recordings[max_paradigm].stats.insert(0, "paradigm", max_paradigm)
-        overall_stats = recordings[max_paradigm].stats.copy()
-        for idx, paradigm in enumerate(recordings):
-            if not paradigm == max_paradigm:
-                recordings[paradigm].parameters["Eact"] = Eact
-                recordings[paradigm].estimate_conductances()
-                recordings[paradigm].stats.insert(0, "paradigm", paradigm)
-                overall_stats = pd.concat([overall_stats, recordings[paradigm].stats], axis=0)
-            print(f"{paradigm} done")
-        overall_stats = overall_stats.sort_values(by="paradigm", ascending=True)
+        if optimize == 0:
+            recordings, overall_stats = self.estimation_without_optim_activation_potential(recordings)
+        elif optimize == 1:
+            recordings, overall_stats = self.estimate_optimum_activation_potential(recordings)
+        elif optimize == 2:
+            recordings, overall_stats = self.estimate_optimum_activation_potential_each_paradigm(recordings)
         result_filename = self.output_path / f"{filename}_analyzed{self.sysops.get_time_as_string()}"
-        # self.write_to_excel(f"{result_filename}.xlsx", recordings, overall_stats)
         print(f"{filename} done \n")
         return recordings, overall_stats, result_filename
     
@@ -341,6 +377,7 @@ class Analyzer:
                 axs[0, idx].plot(times, Er, '--k')
             axs[0, idx].set_ylabel("Rep. Vm (V)")
             axs[0, idx].set_title(paradigm)
+            axs[0, idx].grid(True)
             curves = axs[1, idx].plot(times, Vm)
             colors = [x.get_color() for x in curves]
             axs[1, idx].plot(times, Er, '--k')
@@ -425,9 +462,9 @@ class Analyzer:
         plt.savefig(str(filename)+f"_dev_stats.png")
         pass
 
-    def run(self):
+    def run(self, optimization_level=1):
         for filepath in self.filepaths:
-            recordings, stats, result_filename = self.analyze(filepath)
+            recordings, stats, result_filename = self.analyze(filepath, optimize=optimization_level)
             # self.write_to_excel(f"{result_filename}.xlsx", recordings, stats)
             self.plot_dev(recordings, result_filename)
             self.plot_stats_dev(recordings, result_filename)

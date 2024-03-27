@@ -1,7 +1,8 @@
 {
-    "inputdir": "inputs",
+    "inputdir": "./inputs",
     "outputdir": "./outputs",
     "skipfiles": [],
+    "userfiles": [],
     "filters": {
         "membrane_potentials": {
             "passband": 200,
@@ -21,5 +22,8 @@
             "stopband": 60,
             "attenuation": 80
         }
+    },
+    "optimization": {
+        "level": 1
     }
 }
