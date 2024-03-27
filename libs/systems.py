@@ -379,37 +379,18 @@ class Analyzer:
 
     def plot_stats_dev(self, recordings, filename: Path):
         fig, axs = plt.subplots(nrows = 5, ncols = 1, sharex="all", figsize=(15, 10), constrained_layout=True)
-        mean_depolarizations = [recordings[paradigm].stats["depolarization"] for paradigm in recordings]
-        mean_hyperpolarizations = [recordings[paradigm].stats["hyperpolarization"] for paradigm in recordings]
-        mean_Im = [recordings[paradigm].stats["Im"] for paradigm in recordings]
-        mean_Ileak = [recordings[paradigm].stats["Ileak"] for paradigm in recordings]
-        mean_Iactivation = [recordings[paradigm].stats["Iact"] for paradigm in recordings]
-        mean_excitation = [recordings[paradigm].stats["mean_excitation"] for paradigm in recordings]
-        mean_inhibition = [recordings[paradigm].stats["mean_inhibition"] for paradigm in recordings]
-        net_excitation = [recordings[paradigm].stats["net_excitation"] for paradigm in recordings]
-        net_inhibition = [recordings[paradigm].stats["net_inhibition"] for paradigm in recordings]
-        sps = [recordings[paradigm].stats["sps"] for paradigm in recordings]
+        mean_depolarizations = np.asarray([recordings[paradigm].stats["depolarization"][0] for paradigm in recordings])
+        mean_hyperpolarizations = np.asarray([recordings[paradigm].stats["hyperpolarization"][0] for paradigm in recordings])
+        mean_Im = np.asarray([recordings[paradigm].stats["Im"][0] for paradigm in recordings])
+        mean_Ileak = np.asarray([recordings[paradigm].stats["Ileak"][0] for paradigm in recordings])
+        mean_Iactivation = np.asarray([recordings[paradigm].stats["Iact"][0] for paradigm in recordings])
+        mean_excitation = np.asarray([recordings[paradigm].stats["mean_excitation"][0] for paradigm in recordings])
+        mean_inhibition = np.asarray([recordings[paradigm].stats["mean_inhibition"][0] for paradigm in recordings])
+        net_excitation = np.asarray([recordings[paradigm].stats["net_excitation"][0] for paradigm in recordings])
+        net_inhibition = np.asarray([recordings[paradigm].stats["net_inhibition"][0] for paradigm in recordings])
+        sps = np.asarray([recordings[paradigm].stats["sps"][0] for paradigm in recordings])
         paradigms = [paradigm for paradigm in recordings]
-        xlocations = np.arange(len(paradigms))
-        # for paradigm in paradigms:
-        #     mean_depolarizations.append(recordings[paradigm].stats["depolarization"])
-        #     mean_hyperpolarizations.append(recordings[paradigm].stats["hyperpolarization"])
-        #     mean_Im.append(recordings[paradigm].stats["Im"])
-        #     mean_Iactivation.append(recordings[paradigm].stats["Iact"])
-        #     mean_Ileak.append(recordings[paradigm].stats["Ileak"])
-        #     mean_excitation.append(recordings[paradigm].stats["mean_excitation"])
-        #     mean_inhibition.append(recordings[paradigm].stats["mean_inhibition"])
-        #     net_excitation.append(recordings[paradigm].stats["net_excitation"])
-        #     net_inhibition.append(recordings[paradigm].stats["net_inhibition"])
-        #     sps.append(recordings[paradigm].parameters["sps"])
-        # mean_depolarizations = np.asarray(mean_depolarizations)
-        # mean_hyperpolarizations = np.asarray(mean_hyperpolarizations)
-        # mean_Im = np.asarray(mean_Im)
-        # mean_Iactivation = np.asarray(mean_Iactivation)
-        # mean_Ileak = np.asarray(mean_Ileak)
-        # mean_excitation = np.asarray(mean_excitation)
-        # mean_inhibition = np.asarray(mean_inhibition)
-        # sps = np.asarray(sps)
+        xlocations = np.asarray([x for x in range(len(paradigms))])
         axs[0].bar(xlocations, mean_depolarizations, align='center', color="red")
         axs[0].bar(xlocations, mean_hyperpolarizations, align='center', color="blue")
         axs[0].axhline(0, color='grey', linewidth=0.8)
