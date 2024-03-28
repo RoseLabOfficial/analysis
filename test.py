@@ -27,6 +27,7 @@ def main():
     parser.add_argument("--set_outputdir", "-so", type=Path, default = None, help="set output directory in configurations")
     parser.add_argument("--run", "-r", action="store_true", help="Run all the files in a dictory and put the results in outputs")
     parser.add_argument("--run-file", "-rf", type=Path, default = None, help="run a single file")
+    parser.add_argument("--run-user-files", "-ru", action="store_true", help="run user files from configuration")
     args = parser.parse_args()
     if args.show_configs:
         print(configs.settings)
@@ -52,10 +53,19 @@ def main():
         inputdir = configs.get_input_directory()
         filepath = inputdir / args.run_file
         if filepath.exists():
-            analyzer = Analyzer([filepath], configs.get_output_directory())
+            analyzer = Analyzer([filepath], configs.get_output_directory(), configs.get_filters())
             analyzer.run(configs.get_optimization()["level"])
         else:
             BufferError(f"{filepath} doesn't exist!")
+    if args.run_user_files is not None:
+        inputdir = configs.get_input_directory()
+        filepaths = [inputdir / x for x in configs.get_user_specified_files()]
+        for filepath in filepaths:
+            if filepath.exists():
+                analyzer = Analyzer([filepath], configs.get_output_directory(), configs.get_filters())
+                analyzer.run(configs.get_optimization()["level"])
+            else:
+                Warning(f"{filepath} does not exist. Skipping!")
 
 if __name__ == "__main__":
     main()

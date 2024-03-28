@@ -2,7 +2,9 @@
     "inputdir": "./inputs",
     "outputdir": "./outputs",
     "skipfiles": [],
-    "userfiles": [],
+    "userfiles": [
+        "13-Mar-2013_2_PR.xlsx"
+    ],
     "filters": {
         "membrane_potentials": {
             "passband": 200,
