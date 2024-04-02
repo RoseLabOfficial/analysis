@@ -7,10 +7,10 @@ import argparse
 import logging
 import os
 from pathlib import Path
+import logging.config
 
-def init_logging():
-    current_file = os.path.splitext(os.path.basename(__file__))[0]
-    logging.basicConfig(filename=current_file+".log", level=logging.DEBUG, format="%(asctime)s - %(levelname)s - %(message)s")
+def init_logging(logger_configurations):
+    logging.config.dictConfig(logger_configurations)
 
 def load_configurations():
     configurations_json: Path = "./settings/configurations.json"
@@ -44,10 +44,12 @@ def main():
         configs.set_output_directory(args.set_outputdir)
         print(configs.settings)
     if args.run:
+        init_logging(configs.get_loggers())
         inputdir = configs.get_input_directory()
         inputfiles = configs.get_files_to_analyze()
         files = [inputdir / filename for filename in inputfiles]
-        analyzer = Analyzer(files, configs.get_output_directory(), configs.get_filters())
+        logger = logging.getLogger('Analyzer')
+        analyzer = Analyzer(files, configs.get_output_directory(), configs.get_filters(), logger)
         analyzer.run()
     if args.run_file is not None:
         inputdir = configs.get_input_directory()

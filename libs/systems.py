@@ -45,7 +45,7 @@ class LowPassFilter:
         self.stopband = parameters["stopband"]
         self.attenuation = parameters["attenuation"]
         self.ripple = parameters["ripple"]
-        pass
+        pass        
 
     def compute_minimum_order(self, sampling_rate: float):
         normalizing_frequency = sampling_rate/2
@@ -110,7 +110,7 @@ class WholeCellRecording:
     
     def compute_leakage_currents(self):
         for idx, clamp in enumerate(self.parameters["Iinj"]):
-            self.data["Ileak_"+str(clamp)] = (1/self.parameters["Rin"][idx])*(self.data[clamp] - self.parameters["Er"][idx])
+            self.data["Ileakage_"+str(clamp)] = (1/self.parameters["Rin"][idx])*(self.data[clamp] - self.parameters["Er"][idx])
         return self.data
     
     def compute_activation_currents(self):
@@ -118,55 +118,52 @@ class WholeCellRecording:
         for idx, clamp in enumerate(self.parameters["Iinj"]):
             alpha_current = self.parameters["alpha"][idx]*(self.data[clamp] - self.parameters["Er"][idx])*(self.data[clamp] - self.parameters["Et"][idx])
             beta_current = self.parameters["beta"][idx]*(self.data[clamp] - self.parameters["Er"][idx])
-            Iact = alpha_current + beta_current
-            Iact[self.data[clamp] < self.parameters["Ess"][idx]] = 0.0
-            Iact[self.data[clamp] > self.parameters["Eact"][idx]] = 0.0
-            self.data["Iactive_"+str(clamp)] = Iact
+            activation_current = alpha_current + beta_current
+            activation_current[self.data[clamp] < self.parameters["Ess"][idx]] = 0.0
+            activation_current[self.data[clamp] > self.parameters["Eact"][idx]] = 0.0
+            self.data["Iactivation_"+str(clamp)] = activation_current
         return self.data
     
     def compute_membrane_currents(self):
         for idx, clamp in enumerate(self.parameters["Iinj"]):
-            self.data["Im_"+str(clamp)] = self.parameters["Cm"][idx]*(self.data[clamp].diff()/self.data["times"].diff())
-            self.data.at[0, "Im_"+str(clamp)] = 0.0
-            self.data["Im_"+str(clamp)] = self.data["Im_"+str(clamp)] - self.data["Im_"+str(clamp)][0]
+            self.data["Imembrane_"+str(clamp)] = self.parameters["Cm"][idx]*(self.data[clamp].diff()/self.data["times"].diff())
+            self.data.at[0, "Imembrane_"+str(clamp)] = 0.0
+            self.data["Imembrane_"+str(clamp)] = self.data["Imembrane_"+str(clamp)] - self.data["Imembrane_"+str(clamp)][0]
         return self.data
     
     def filter_membrane_currents(self):
         sampling_rate = 1/(self.data["times"][1] - self.data["times"][0])
         for inj in self.parameters["Iinj"]:
-            self.data["filtered_Im_"+str(inj)] = self.filters["membrane_currents"].propagate(self.data["Im_"+str(inj)], sampling_rate)
+            self.data["filtered_Imembrane_"+str(inj)] = self.filters["membrane_currents"].propagate(self.data["Imembrane_"+str(inj)], sampling_rate)
         return self.data
     
     def filter_activation_currents(self):
         sampling_rate = 1/(self.data["times"][1] - self.data["times"][0])
         for inj in self.parameters["Iinj"]:
-            Iact = self.filters["activation_currents"].propagate(self.data["Iactive_"+str(inj)], sampling_rate)
-            self.data["filtered_Iact_"+str(inj)] = Iact
+            activation_current = self.filters["activation_currents"].propagate(self.data["Iactivation_"+str(inj)], sampling_rate)
+            self.data["filtered_Iactivation_"+str(inj)] = activation_current
         return self.data
 
-    def objective(self, solution):
+    def squared_sum_of_negative_conductances(self, solution):
         self.parameters["Eact"] = solution
         self.compute_activation_currents()
         self.filter_activation_currents()
         self.compute_passive_conductances()
         self.compute_stats()
-        neg_excitation = self.data["excitation"][self.data["excitation"] < 0]
-        neg_excitation = neg_excitation/np.amin(neg_excitation)
-        neg_inhibition = self.data["inhibition"][self.data["inhibition"] < 0]
-        neg_inhibition = neg_inhibition/np.amin(neg_inhibition)
-        return np.square(np.sum(neg_excitation) + np.sum(neg_inhibition))
+        negative_going_excitation = self.data["excitation"][self.data["excitation"] < 0]
+        negative_going_excitation = negative_going_excitation/np.amin(negative_going_excitation)
+        negative_going_inhibition = self.data["inhibition"][self.data["inhibition"] < 0]
+        negative_going_inhibition = negative_going_inhibition/np.amin(negative_going_inhibition)
+        return np.square(np.sum(negative_going_excitation) + np.sum(negative_going_inhibition))
     
     def optimize(self):
         self.estimate_conductances()
         def obj_wrapper(solution):
-            return self.objective(solution)
-        
-        Emax = [max_val for max_val in self.data[[x for x in self.parameters["Iinj"]]].max()]
-        Ess = np.asarray([x for x in self.parameters["Ess"]])
-        # Emax = np.asarray([x for x in self.parameters["Et"]])
-        # initial_guess = (Ess + Emax)/2
-        bounds = Bounds(Ess, Emax)
-        result = minimize(obj_wrapper, Emax, method='trust-constr', bounds=bounds)
+            return self.squared_sum_of_negative_conductances(solution)
+        maximum_recorded_membrane_voltage = [max_val for max_val in self.data[[x for x in self.parameters["Iinj"]]].max()]
+        steady_state_potential = np.asarray([x for x in self.parameters["Ess"]])
+        activation_potential_bounds = Bounds(steady_state_potential, maximum_recorded_membrane_voltage)
+        result = minimize(obj_wrapper, maximum_recorded_membrane_voltage, method='trust-constr', bounds=activation_potential_bounds)
         self.parameters["Eact"] = result.x
         return result
     
@@ -174,22 +171,22 @@ class WholeCellRecording:
         ntimesteps = self.data.shape[0]
         A = np.zeros((ntimesteps, 2, 2))
         B = np.zeros((ntimesteps, 2, 1))
-        Vm = self.data[[x for x in self.parameters["Iinj"]]].to_numpy()
-        Im = self.data[["filtered_Im_"+str(x) for x in self.parameters["Iinj"]]].to_numpy()
-        Iact = self.data[["filtered_Iact_"+str(x) for x in self.parameters["Iinj"]]].to_numpy()
-        Ileak = self.data[["Ileak_"+str(x) for x in self.parameters["Iinj"]]].to_numpy()
-        Ee = self.parameters["Ee"].to_numpy()
-        Ei = self.parameters["Ei"].to_numpy()
-        Iinj = self.parameters["Iinj"].to_numpy()
-        A[:, 0, 0] = np.sum(np.square(Vm - Ee), axis=1)
-        A[:, 0, 1] = np.sum((Vm - Ee) * (Vm- Ei), axis=1)
+        membrane_potential = self.data[[x for x in self.parameters["Iinj"]]].to_numpy()
+        membrane_current = self.data[["filtered_Imembrane_"+str(x) for x in self.parameters["Iinj"]]].to_numpy()
+        activation_current = self.data[["filtered_Iactivation_"+str(x) for x in self.parameters["Iinj"]]].to_numpy()
+        leakage_current = self.data[["Ileakage_"+str(x) for x in self.parameters["Iinj"]]].to_numpy()
+        excitatory_reversal_potential = self.parameters["Ee"].to_numpy()
+        inhibitory_reversal_potentail = self.parameters["Ei"].to_numpy()
+        injected_current = self.parameters["Iinj"].to_numpy()
+        A[:, 0, 0] = np.sum(np.square(membrane_potential - excitatory_reversal_potential), axis=1)
+        A[:, 0, 1] = np.sum((membrane_potential - excitatory_reversal_potential) * (membrane_potential- inhibitory_reversal_potentail), axis=1)
         A[:, 1, 0] = A[:, 0, 1]
-        A[:, 1, 1] = np.sum(np.square(Vm - Ei), axis=1)
-        B[:, 0, 0] = -1.0*np.sum((Im - Iact - Iinj + Ileak)*(Vm - Ee), axis=1)
-        B[:, 1, 0] = -1.0*np.sum((Im - Iact - Iinj + Ileak)*(Vm - Ei), axis=1)
-        G = np.linalg.pinv(A) @ B
-        self.data["excitation"] = G[:, 0, 0]
-        self.data["inhibition"] = G[:, 1, 0]
+        A[:, 1, 1] = np.sum(np.square(membrane_potential - inhibitory_reversal_potentail), axis=1)
+        B[:, 0, 0] = -1.0*np.sum((membrane_current - activation_current - injected_current + leakage_current)*(membrane_potential - excitatory_reversal_potential), axis=1)
+        B[:, 1, 0] = -1.0*np.sum((membrane_current - activation_current - injected_current + leakage_current)*(membrane_potential - inhibitory_reversal_potentail), axis=1)
+        conductances = np.linalg.pinv(A) @ B
+        self.data["excitation"] = conductances[:, 0, 0]
+        self.data["inhibition"] = conductances[:, 1, 0]
         self.data["positive_excitation"] = self.data["excitation"]
         self.data["positive_inhibition"] = self.data["inhibition"]
         self.data.loc[self.data["positive_excitation"] < 0, "positive_excitation"] = 0.0
@@ -201,24 +198,24 @@ class WholeCellRecording:
         return self.data
     
     def get_clamp_near_0(self):
-        min_Iinj_index = self.parameters["Iinj"].abs().argmin()
-        min_Iinj = self.parameters["Iinj"][min_Iinj_index]
-        return min_Iinj_index, min_Iinj
+        index_of_minimum_injected_current = self.parameters["Iinj"].abs().argmin()
+        minimum_injected_current = self.parameters["Iinj"][index_of_minimum_injected_current]
+        return index_of_minimum_injected_current, minimum_injected_current
     
     def compute_stats(self):
-        min_Iinj_index, min_Iinj = self.get_clamp_near_0()
+        index_of_minimum_injected_current, minimum_injected_current = self.get_clamp_near_0()
         stats = pd.DataFrame()
         paradigm_all_var_stats = self.data.mean(numeric_only=True).to_frame().T
-        stats["depolarization"] = paradigm_all_var_stats[f"depolarization_{min_Iinj}"]
-        stats["hyperpolarization"] = paradigm_all_var_stats[f"hyperpolarization_{min_Iinj}"]
-        stats["Im"] = paradigm_all_var_stats[f"filtered_Im_{min_Iinj}"]
-        stats["Ileak"] = paradigm_all_var_stats[f"Ileak_{min_Iinj}"]
-        stats["Iact"] = paradigm_all_var_stats[f"filtered_Iact_{min_Iinj}"]
+        stats["depolarization"] = paradigm_all_var_stats[f"depolarization_{minimum_injected_current}"]
+        stats["hyperpolarization"] = paradigm_all_var_stats[f"hyperpolarization_{minimum_injected_current}"]
+        stats["Imembrane"] = paradigm_all_var_stats[f"filtered_Imembrane_{minimum_injected_current}"]
+        stats["Ileakage"] = paradigm_all_var_stats[f"Ileakage_{minimum_injected_current}"]
+        stats["Iactivation"] = paradigm_all_var_stats[f"filtered_Iactivation_{minimum_injected_current}"]
         stats["mean_excitation"] = paradigm_all_var_stats["positive_excitation"]
         stats["mean_inhibition"] = paradigm_all_var_stats["positive_inhibition"]
         stats["net_excitation"] = paradigm_all_var_stats["resultant_excitation"]
         stats["net_inhibition"] = paradigm_all_var_stats["resultant_inhibition"]
-        stats["sps"] = self.parameters["sps"][min_Iinj_index]
+        stats["spikes_per_stimulus_repetition"] = self.parameters["sps"][index_of_minimum_injected_current]
         return stats
 
     def estimate_conductances(self):
@@ -233,64 +230,50 @@ class WholeCellRecording:
         self.stats = self.compute_stats()
         return self.data
 
-    def plot(self, plot_save_path: str = "./plot.png"):
-        fig, ax = plt.subplots(5, 1, sharex=True)
-        for idx, clamp in enumerate(self.parameters["Iinj"]):
-            ax[0].plot(self.data["times"], self.data[clamp])
-            ax[1].plot(self.data["times"], self.data["Ileak_"+str(clamp)])
-            ax[2].plot(self.data["times"], self.data["filtered_Im_"+str(clamp)])
-            ax[3].plot(self.data["times"], self.data["filtered_Iact_"+str(clamp)])
-        ax[4].plot(self.data["times"], self.data["excitation"], c="r")
-        ax[4].plot(self.data["times"], self.data["inhibition"], c="b")
-        ax[4].plot(self.data["times"], self.data["times"]*0.0, "--k")
-        ax[4].set_xlabel("times(sec)")
-        ax[0].set_ylabel("Vm(V)")
-        ax[1].set_ylabel("Ileak(A)")
-        ax[2].set_ylabel("Im(A)")
-        ax[3].set_ylabel("Iactive(A)")
-        ax[4].set_ylabel("G(s)")
-        plt.savefig(plot_save_path)
-        pass
-
 class Analyzer:
-    def __init__(self, filepaths: Path, output_path: Path, filter_configurations: dict):
+    def __init__(self, filepaths: Path, output_path: Path, filter_configurations: dict, logger):
         self.sysops = SystemOperations()
         self.filepaths = self.sysops.split_file_address(filepaths)
         self.output_path = output_path
         self.filter_configurations = filter_configurations
+        self.logger = logger
 
     def get_paradigm_to_optimize(self, recordings):
-        max_depols = np.zeros(len(recordings))
+        maximum_depolarizations = np.zeros(len(recordings))
         for idx, paradigm in enumerate(recordings):
-            min_idx_Iinj, min_Iinj = recordings[paradigm].get_clamp_near_0()
-            vms = recordings[paradigm].data[min_Iinj]
-            depols = vms - recordings[paradigm].parameters["Ess"][min_idx_Iinj]
-            max_depols[idx] = np.max(depols)
-        max_index = np.argmax(max_depols)
+            index_of_minimum_injected_current, minimum_injected_current = recordings[paradigm].get_clamp_near_0()
+            membrane_potential_at_minimum_injected_current = recordings[paradigm].data[minimum_injected_current]
+            depols = membrane_potential_at_minimum_injected_current - recordings[paradigm].parameters["Ess"][index_of_minimum_injected_current]
+            maximum_depolarizations[idx] = np.max(depols)
+        max_index = np.argmax(maximum_depolarizations)
         return list(recordings.keys())[max_index]
     
     def estimate_optimum_activation_potential(self, recordings):
         optim_paradigm = self.get_paradigm_to_optimize(recordings)
-        print(f"Optimizing Eact for {optim_paradigm}")
-        recordings[optim_paradigm].optimize()
-        Eact = recordings[optim_paradigm].parameters["Eact"]
-        # print(f"New Eacts: {Eact.to_numpy().tolist()}")
+        self.logger.info(f"Optimizing activation potentials for current clamps in {optim_paradigm}")
+        try:
+            result = recordings[optim_paradigm].optimize()
+        except Exception as e:
+            self.logger.debug(f"{e}")
+        dEact = recordings[optim_paradigm].parameters["Eact"] - recordings[optim_paradigm].parameters["Ess"]
         recordings[optim_paradigm].stats.insert(0, "paradigm", optim_paradigm)
+        self.logger.info(f"Optimization results: convergence = {result.success}, iterations = {result.niter}")
+        self.logger.info(f"Optimum activation potentials: {recordings[optim_paradigm].parameters["Eact"].to_numpy().tolist()}")
         overall_stats = recordings[optim_paradigm].stats.copy()
         for idx, paradigm in enumerate(recordings):
             if not paradigm == optim_paradigm:
-                recordings[paradigm].parameters["Eact"] = Eact
+                recordings[paradigm].parameters["Eact"] = recordings[paradigm].parameters["Ess"] + dEact
                 recordings[paradigm].estimate_conductances()
                 recordings[paradigm].stats.insert(0, "paradigm", paradigm)
                 overall_stats = pd.concat([overall_stats, recordings[paradigm].stats], axis=0)
-            print(f"{paradigm} done")
+            self.logger.info(f"estimated conductances for {paradigm}")
         overall_stats = overall_stats.sort_values(by="paradigm", ascending=True)
         return recordings, overall_stats
     
     def estimate_optimum_activation_potential_each_paradigm(self, recordings):
         for idx, paradigm in enumerate(recordings):
-            recordings[paradigm].optimize()
             print(f"Optimizing Eact for {paradigm}")
+            recordings[paradigm].optimize()
             recordings[paradigm].stats.insert(0, "paradigm", paradigm)
             if idx == 0:
                 overall_stats = recordings[paradigm].stats.copy()
@@ -312,28 +295,33 @@ class Analyzer:
         overall_stats = overall_stats.sort_values(by="paradigm", ascending=True)
         return recordings, overall_stats
 
-
     def analyze(self, fileaddress, optimize=1):
         filepath = fileaddress[0]
         filename = fileaddress[1]
         fileformat = fileaddress[2]
-        print(f"Reading: {filename}")
+        self.logger.info(f"Reading: {filename}")
         reader = XLReader(Path(filepath) / (filename + fileformat))
         recordings = {}
-        for idx, paradigm in enumerate(reader.get_paradigms()):
+        for _, paradigm in enumerate(reader.get_paradigms()):
             recordings[paradigm] = WholeCellRecording(
                 reader.get_paradigm_data(paradigm), 
                 reader.get_paradigm_parameters(paradigm),
                 self.filter_configurations
             )
         if optimize == 0:
+            self.logger.info(f"Level 0 optimization: No optimizing using user provided values.")
             recordings, overall_stats = self.estimation_without_optim_activation_potential(recordings)
+            self.logger.info(f"Level 0 optimization: Completed.")
         elif optimize == 1:
+            self.logger.info(f"Level 1 optimization: Activation potentials optimized using paradigm with maximum depolarization.")
             recordings, overall_stats = self.estimate_optimum_activation_potential(recordings)
+            self.logger.info(f"Level 1 optimization: Completed.")
         elif optimize == 2:
+            self.logger.info(f"Level 3 optimization: Activation potentials optimized for every paradigm.")
             recordings, overall_stats = self.estimate_optimum_activation_potential_each_paradigm(recordings)
-        result_filename = self.output_path / f"{filename}_analyzed{self.sysops.get_time_as_string()}"
-        print(f"{filename} done \n")
+            self.logger.info(f"Level 3 optimization: Complete.")
+        result_filename = self.output_path / f"{filename}_analyzed"
+        self.logger.info(f"Analysis of {filename} completed.")
         return recordings, overall_stats, result_filename
     
     def write_to_excel(self, filepath: Path, recordings, stats):
@@ -356,48 +344,49 @@ class Analyzer:
         pass
 
     def plot_dev(self, recordings, filename: Path):
+        self.logger.info(f"Verbose plotting of conductance estimations for {self.filepaths[1]}")
         fig, axs = plt.subplots(nrows = 7, ncols = len(recordings), sharex="all", sharey="row", figsize=(15, 10), constrained_layout=True)
         for idx, paradigm in enumerate(recordings):
             if "representative" in recordings[paradigm].data:
                 rep = recordings[paradigm].data["representative"].to_numpy()
-            Vm = recordings[paradigm].data[[x for x in recordings[paradigm].parameters["Iinj"]]].to_numpy()
-            Im = recordings[paradigm].data[["filtered_Im_"+str(x) for x in recordings[paradigm].parameters["Iinj"]]].to_numpy()
-            Ileak = recordings[paradigm].data[["Ileak_"+str(x) for x in recordings[paradigm].parameters["Iinj"]]].to_numpy()
-            Iact = recordings[paradigm].data[["filtered_Iact_"+str(x) for x in recordings[paradigm].parameters["Iinj"]]].to_numpy()
-            G = recordings[paradigm].data[["excitation", "inhibition"]].to_numpy()
+            membrane_potential = recordings[paradigm].data[[x for x in recordings[paradigm].parameters["Iinj"]]].to_numpy()
+            membrane_current = recordings[paradigm].data[["filtered_Imembrane_"+str(x) for x in recordings[paradigm].parameters["Iinj"]]].to_numpy()
+            leakage_current = recordings[paradigm].data[["Ileakage_"+str(x) for x in recordings[paradigm].parameters["Iinj"]]].to_numpy()
+            activation_current = recordings[paradigm].data[["filtered_Iactivation_"+str(x) for x in recordings[paradigm].parameters["Iinj"]]].to_numpy()
+            conductances = recordings[paradigm].data[["excitation", "inhibition"]].to_numpy()
             times = recordings[paradigm].data["times"].to_numpy()
-            Er = times*0 + recordings[paradigm].parameters["Er"][0]
-            Et = times*0 + recordings[paradigm].parameters["Et"][0]
-            Eact = Vm*0 + recordings[paradigm].parameters["Eact"].to_numpy()
+            resting_potential = times*0 + recordings[paradigm].parameters["Er"][0]
+            threshold_potential = times*0 + recordings[paradigm].parameters["Et"][0]
+            activation_potential = membrane_potential*0 + recordings[paradigm].parameters["Eact"].to_numpy()
             if "stimulus" in recordings[paradigm].data:
                 stim = recordings[paradigm].data["stimulus"].to_numpy()
             axs[0, idx].set_title(paradigm)
             if "representative" in recordings[paradigm].data:
                 axs[0, idx].plot(times, rep)
-                axs[0, idx].plot(times, Er, '--k')
+                axs[0, idx].plot(times, resting_potential, '--k')
             axs[0, idx].set_ylabel("Rep. Vm (V)")
             axs[0, idx].set_title(paradigm)
             axs[0, idx].grid(True)
-            curves = axs[1, idx].plot(times, Vm)
+            curves = axs[1, idx].plot(times, membrane_potential)
             colors = [x.get_color() for x in curves]
-            axs[1, idx].plot(times, Er, '--k')
-            axs[1, idx].plot(times, Et, linestyle='--', color=(0.5, 0.5, 0.5))
-            for i in range(Eact.shape[-1]):
-                axs[1, idx].plot(times, Eact[:, i], linestyle='--', color=colors[i])
+            axs[1, idx].plot(times, resting_potential, '--k')
+            axs[1, idx].plot(times, threshold_potential, linestyle='--', color=(0.5, 0.5, 0.5))
+            for i in range(activation_potential.shape[-1]):
+                axs[1, idx].plot(times, activation_potential[:, i], linestyle='--', color=colors[i])
             axs[1, idx].set_ylabel("Vm (V)")
             axs[1, idx].grid(True)
-            axs[2, idx].plot(times, Im)
+            axs[2, idx].plot(times, membrane_current)
             axs[2, idx].set_ylabel("Im (A)")
             axs[2, idx].grid(True)
-            axs[3, idx].plot(times, Ileak)
+            axs[3, idx].plot(times, leakage_current)
             axs[3, idx].set_ylabel("Ileak (A)")
             axs[3, idx].grid(True)
-            axs[4, idx].plot(times, Iact)
+            axs[4, idx].plot(times, activation_current)
             axs[4, idx].set_ylabel("Iact (A)")
             axs[4, idx].grid(True)
             # axs[4, idx].set_title(", ".join([f"{val:.3f}" for val in recordings[paradigm].parameters["Eact"]]))
-            axs[5, idx].plot(times, G[:, 0], c='r')
-            axs[5, idx].plot(times, G[:, 1], c='b')
+            axs[5, idx].plot(times, conductances[:, 0], c='r')
+            axs[5, idx].plot(times, conductances[:, 1], c='b')
             axs[5, idx].plot(times, times*0, '--k')
             axs[5, idx].set_ylabel("G (S)")
             axs[5, idx].grid(True)
@@ -406,26 +395,37 @@ class Analyzer:
             axs[6, idx].set_ylabel("Stimulus")
             axs[6, idx].set_xlabel("times(sec)")
             axs[6, idx].grid(True)
+        self.logger.info(f"Verbose plotting of conductance estimations for {self.filepaths[1]} completed.")
+        self.logger.info(f"Saving verbose plotting of conductance estimations for {self.filepaths[1]}")
         plt.savefig(str(filename)+f"_dev_traces.png")
+        self.logger.info(f"Saving verbose plotting of conductance estimations for {self.filepaths[1]} completed.")
         pass
 
     def set_stats_scale(self, ax, scale_max, margin=0.1):
         scale_max = scale_max + margin*scale_max
-        ax.set_ylim([-1*scale_max, scale_max])
+        try:
+            ax.set_ylim([-1*scale_max, scale_max])
+        except Exception as e:
+            self.logger.debug(f"{e}")
+        # if np.isnan(scale_max) or np.isinf(scale_max):
+        #     self.logger.info(f"Scaling failed, the limits are {scale_max}")
+        # else:
+        #     ax.set_ylim([-1*scale_max, scale_max])
         pass
 
     def plot_stats_dev(self, recordings, filename: Path):
+        self.logger.info(f"Verbose plotting of stats for {self.filepaths[1]}")
         fig, axs = plt.subplots(nrows = 5, ncols = 1, sharex="all", figsize=(15, 10), constrained_layout=True)
         mean_depolarizations = np.asarray([recordings[paradigm].stats["depolarization"][0] for paradigm in recordings])
         mean_hyperpolarizations = np.asarray([recordings[paradigm].stats["hyperpolarization"][0] for paradigm in recordings])
-        mean_Im = np.asarray([recordings[paradigm].stats["Im"][0] for paradigm in recordings])
-        mean_Ileak = np.asarray([recordings[paradigm].stats["Ileak"][0] for paradigm in recordings])
-        mean_Iactivation = np.asarray([recordings[paradigm].stats["Iact"][0] for paradigm in recordings])
+        mean_Im = np.asarray([recordings[paradigm].stats["Imembrane"][0] for paradigm in recordings])
+        mean_Ileak = np.asarray([recordings[paradigm].stats["Ileakage"][0] for paradigm in recordings])
+        mean_Iactivation = np.asarray([recordings[paradigm].stats["Iactivation"][0] for paradigm in recordings])
         mean_excitation = np.asarray([recordings[paradigm].stats["mean_excitation"][0] for paradigm in recordings])
         mean_inhibition = np.asarray([recordings[paradigm].stats["mean_inhibition"][0] for paradigm in recordings])
         net_excitation = np.asarray([recordings[paradigm].stats["net_excitation"][0] for paradigm in recordings])
         net_inhibition = np.asarray([recordings[paradigm].stats["net_inhibition"][0] for paradigm in recordings])
-        sps = np.asarray([recordings[paradigm].stats["sps"][0] for paradigm in recordings])
+        spikes_per_stimulus_repetition = np.asarray([recordings[paradigm].stats["spikes_per_stimulus_repetition"][0] for paradigm in recordings])
         paradigms = [paradigm for paradigm in recordings]
         xlocations = np.asarray([x for x in range(len(paradigms))])
         axs[0].bar(xlocations, mean_depolarizations, align='center', color="red")
@@ -455,11 +455,14 @@ class Analyzer:
         scale_max = np.amax([np.amax(mean_excitation), np.amax(mean_inhibition)])
         self.set_stats_scale(axs[4], scale_max, 0.1)
         ax = axs[4].twinx()
-        ax.plot(xlocations, sps, color='k', marker = 'o')
-        scale_max = np.amax(sps)
+        ax.plot(xlocations, spikes_per_stimulus_repetition, color='k', marker = 'o')
+        scale_max = np.amax(spikes_per_stimulus_repetition)
         self.set_stats_scale(ax, scale_max, 0.1)
         axs[4].set_ylabel("G (S)")
+        self.logger.info(f"Verbose plotting of stats for {self.filepaths[1]} completed.")
+        self.logger.info(f"Saving verbose plotting of stats for {self.filepaths[1]}")
         plt.savefig(str(filename)+f"_dev_stats.png")
+        self.logger.info(f"Saving verbose plotting of stats for {self.filepaths[1]} completed.")
         pass
 
     def run(self, optimization_level=1):

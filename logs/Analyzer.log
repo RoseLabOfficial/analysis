@@ -1,0 +1,282 @@
+2024-04-01 17:38:17,729 - Analyzer - INFO - Reading: 2012-05-03_2_baseline_prr_v4
+2024-04-01 17:38:22,179 - Analyzer - INFO - Level 1 optimization: Activation potentials optimized using paradigm with maximum depolarization.
+2024-04-01 17:38:22,182 - Analyzer - INFO - Optimizing activation potentials for current clamps in 80pps
+2024-04-01 17:38:25,236 - Analyzer - INFO - Optimization results: convergence = True, iterations = 12
+2024-04-01 17:38:25,237 - Analyzer - INFO - Optimum activation potentials: [-0.06754812381390438, -0.07607439682905064, -0.08622543710837145]
+2024-04-01 17:38:25,344 - Analyzer - INFO - estimated conductances for 10pps
+2024-04-01 17:38:25,450 - Analyzer - INFO - estimated conductances for 20pps
+2024-04-01 17:38:25,561 - Analyzer - INFO - estimated conductances for 40pps
+2024-04-01 17:38:25,670 - Analyzer - INFO - estimated conductances for 60pps
+2024-04-01 17:38:25,671 - Analyzer - INFO - estimated conductances for 80pps
+2024-04-01 17:38:25,672 - Analyzer - INFO - Level 1 optimization: Completed.
+2024-04-01 17:38:25,673 - Analyzer - INFO - Analysis of 2012-05-03_2_baseline_prr_v4 completed.
+2024-04-01 17:38:25,673 - Analyzer - INFO - Verbose plotting of conductance estimations for [WindowsPath('inputs'), '2015-05-28_2_-42dB_10ms_baseline_prr_v2', '.xlsx']
+2024-04-01 17:38:26,439 - Analyzer - INFO - Verbose plotting of conductance estimations for [WindowsPath('inputs'), '2015-05-28_2_-42dB_10ms_baseline_prr_v2', '.xlsx'] completed.
+2024-04-01 17:38:26,440 - Analyzer - INFO - Saving verbose plotting of conductance estimations for [WindowsPath('inputs'), '2015-05-28_2_-42dB_10ms_baseline_prr_v2', '.xlsx']
+2024-04-01 17:38:29,695 - Analyzer - INFO - Saving verbose plotting of conductance estimations for [WindowsPath('inputs'), '2015-05-28_2_-42dB_10ms_baseline_prr_v2', '.xlsx'] completed.
+2024-04-01 17:38:29,696 - Analyzer - INFO - Verbose plotting of stats for [WindowsPath('inputs'), '2015-05-28_2_-42dB_10ms_baseline_prr_v2', '.xlsx']
+2024-04-01 17:38:29,906 - Analyzer - INFO - Verbose plotting of stats for [WindowsPath('inputs'), '2015-05-28_2_-42dB_10ms_baseline_prr_v2', '.xlsx'] completed.
+2024-04-01 17:38:29,907 - Analyzer - INFO - Saving verbose plotting of stats for [WindowsPath('inputs'), '2015-05-28_2_-42dB_10ms_baseline_prr_v2', '.xlsx']
+2024-04-01 17:38:30,508 - Analyzer - INFO - Saving verbose plotting of stats for [WindowsPath('inputs'), '2015-05-28_2_-42dB_10ms_baseline_prr_v2', '.xlsx'] completed.
+2024-04-01 17:38:30,508 - Analyzer - INFO - Reading: 2015-05-28_2_-42dB_10ms_baseline_prr_v2
+2024-04-01 17:38:34,939 - Analyzer - INFO - Level 1 optimization: Activation potentials optimized using paradigm with maximum depolarization.
+2024-04-01 17:38:34,942 - Analyzer - INFO - Optimizing activation potentials for current clamps in 20pps
+2024-04-01 17:38:36,442 - Analyzer - INFO - Optimization results: convergence = True, iterations = 9
+2024-04-01 17:38:36,443 - Analyzer - INFO - Optimum activation potentials: [-0.0835215232100172, -0.07668093214004473]
+2024-04-01 17:38:36,558 - Analyzer - INFO - estimated conductances for 5pps
+2024-04-01 17:38:36,641 - Analyzer - INFO - estimated conductances for 10pps
+2024-04-01 17:38:36,641 - Analyzer - INFO - estimated conductances for 20pps
+2024-04-01 17:38:36,723 - Analyzer - INFO - estimated conductances for 30pps
+2024-04-01 17:38:36,807 - Analyzer - INFO - estimated conductances for 40pps
+2024-04-01 17:38:36,889 - Analyzer - INFO - estimated conductances for 60pps
+2024-04-01 17:38:36,890 - Analyzer - INFO - Level 1 optimization: Completed.
+2024-04-01 17:38:36,891 - Analyzer - INFO - Analysis of 2015-05-28_2_-42dB_10ms_baseline_prr_v2 completed.
+2024-04-01 17:38:36,894 - Analyzer - INFO - Verbose plotting of conductance estimations for [WindowsPath('inputs'), '2015-05-28_2_-42dB_10ms_baseline_prr_v2', '.xlsx']
+2024-04-01 17:38:37,673 - Analyzer - INFO - Verbose plotting of conductance estimations for [WindowsPath('inputs'), '2015-05-28_2_-42dB_10ms_baseline_prr_v2', '.xlsx'] completed.
+2024-04-01 17:38:37,674 - Analyzer - INFO - Saving verbose plotting of conductance estimations for [WindowsPath('inputs'), '2015-05-28_2_-42dB_10ms_baseline_prr_v2', '.xlsx']
+2024-04-01 17:38:41,387 - Analyzer - INFO - Saving verbose plotting of conductance estimations for [WindowsPath('inputs'), '2015-05-28_2_-42dB_10ms_baseline_prr_v2', '.xlsx'] completed.
+2024-04-01 17:38:41,388 - Analyzer - INFO - Verbose plotting of stats for [WindowsPath('inputs'), '2015-05-28_2_-42dB_10ms_baseline_prr_v2', '.xlsx']
+2024-04-01 17:38:41,769 - Analyzer - DEBUG - Axis limits cannot be NaN or Inf
+2024-04-01 17:38:41,783 - Analyzer - INFO - Verbose plotting of stats for [WindowsPath('inputs'), '2015-05-28_2_-42dB_10ms_baseline_prr_v2', '.xlsx'] completed.
+2024-04-01 17:38:41,783 - Analyzer - INFO - Saving verbose plotting of stats for [WindowsPath('inputs'), '2015-05-28_2_-42dB_10ms_baseline_prr_v2', '.xlsx']
+2024-04-01 17:38:42,386 - Analyzer - INFO - Saving verbose plotting of stats for [WindowsPath('inputs'), '2015-05-28_2_-42dB_10ms_baseline_prr_v2', '.xlsx'] completed.
+2024-04-01 17:38:42,386 - Analyzer - INFO - Reading: 2016-10-12_1_5pulses_baseline_prr
+2024-04-01 17:38:46,048 - Analyzer - INFO - Level 1 optimization: Activation potentials optimized using paradigm with maximum depolarization.
+2024-04-01 17:38:46,052 - Analyzer - INFO - Optimizing activation potentials for current clamps in 40pps
+2024-04-01 17:41:31,266 - Analyzer - INFO - Optimization results: convergence = True, iterations = 460
+2024-04-01 17:41:31,267 - Analyzer - INFO - Optimum activation potentials: [-0.050304451938294525, -0.07175042849364807, -0.07149441986678336]
+2024-04-01 17:41:31,369 - Analyzer - INFO - estimated conductances for 60pps
+2024-04-01 17:41:31,370 - Analyzer - INFO - estimated conductances for 40pps
+2024-04-01 17:41:31,474 - Analyzer - INFO - estimated conductances for 20pps
+2024-04-01 17:41:31,573 - Analyzer - INFO - estimated conductances for 10pps
+2024-04-01 17:41:31,675 - Analyzer - INFO - estimated conductances for 5pps
+2024-04-01 17:41:31,677 - Analyzer - INFO - Level 1 optimization: Completed.
+2024-04-01 17:41:31,677 - Analyzer - INFO - Analysis of 2016-10-12_1_5pulses_baseline_prr completed.
+2024-04-01 17:41:31,682 - Analyzer - INFO - Verbose plotting of conductance estimations for [WindowsPath('inputs'), '2015-05-28_2_-42dB_10ms_baseline_prr_v2', '.xlsx']
+2024-04-01 17:41:32,272 - Analyzer - INFO - Verbose plotting of conductance estimations for [WindowsPath('inputs'), '2015-05-28_2_-42dB_10ms_baseline_prr_v2', '.xlsx'] completed.
+2024-04-01 17:41:32,273 - Analyzer - INFO - Saving verbose plotting of conductance estimations for [WindowsPath('inputs'), '2015-05-28_2_-42dB_10ms_baseline_prr_v2', '.xlsx']
+2024-04-01 17:41:35,853 - Analyzer - INFO - Saving verbose plotting of conductance estimations for [WindowsPath('inputs'), '2015-05-28_2_-42dB_10ms_baseline_prr_v2', '.xlsx'] completed.
+2024-04-01 17:41:35,853 - Analyzer - INFO - Verbose plotting of stats for [WindowsPath('inputs'), '2015-05-28_2_-42dB_10ms_baseline_prr_v2', '.xlsx']
+2024-04-01 17:41:36,080 - Analyzer - INFO - Verbose plotting of stats for [WindowsPath('inputs'), '2015-05-28_2_-42dB_10ms_baseline_prr_v2', '.xlsx'] completed.
+2024-04-01 17:41:36,081 - Analyzer - INFO - Saving verbose plotting of stats for [WindowsPath('inputs'), '2015-05-28_2_-42dB_10ms_baseline_prr_v2', '.xlsx']
+2024-04-01 17:41:36,674 - Analyzer - INFO - Saving verbose plotting of stats for [WindowsPath('inputs'), '2015-05-28_2_-42dB_10ms_baseline_prr_v2', '.xlsx'] completed.
+2024-04-01 17:41:36,674 - Analyzer - INFO - Reading: 2016-10-12_1_baseline_prr
+2024-04-01 17:41:44,900 - Analyzer - INFO - Level 1 optimization: Activation potentials optimized using paradigm with maximum depolarization.
+2024-04-01 17:41:44,903 - Analyzer - INFO - Optimizing activation potentials for current clamps in 60pps
+2024-04-01 17:41:45,529 - Analyzer - INFO - Optimization results: convergence = True, iterations = 1
+2024-04-01 17:41:45,530 - Analyzer - INFO - Optimum activation potentials: [-0.044925256123386444, -0.0599603961839966, -0.07383487617243405, -0.08860028323461076]
+2024-04-01 17:41:45,691 - Analyzer - INFO - estimated conductances for 5pps
+2024-04-01 17:41:45,855 - Analyzer - INFO - estimated conductances for 10pps
+2024-04-01 17:41:46,012 - Analyzer - INFO - estimated conductances for 20pps
+2024-04-01 17:41:46,173 - Analyzer - INFO - estimated conductances for 40pps
+2024-04-01 17:41:46,174 - Analyzer - INFO - estimated conductances for 60pps
+2024-04-01 17:41:46,174 - Analyzer - INFO - Level 1 optimization: Completed.
+2024-04-01 17:41:46,175 - Analyzer - INFO - Analysis of 2016-10-12_1_baseline_prr completed.
+2024-04-01 17:41:46,177 - Analyzer - INFO - Verbose plotting of conductance estimations for [WindowsPath('inputs'), '2015-05-28_2_-42dB_10ms_baseline_prr_v2', '.xlsx']
+2024-04-01 17:41:47,094 - Analyzer - INFO - Verbose plotting of conductance estimations for [WindowsPath('inputs'), '2015-05-28_2_-42dB_10ms_baseline_prr_v2', '.xlsx'] completed.
+2024-04-01 17:41:47,094 - Analyzer - INFO - Saving verbose plotting of conductance estimations for [WindowsPath('inputs'), '2015-05-28_2_-42dB_10ms_baseline_prr_v2', '.xlsx']
+2024-04-01 17:41:50,461 - Analyzer - INFO - Saving verbose plotting of conductance estimations for [WindowsPath('inputs'), '2015-05-28_2_-42dB_10ms_baseline_prr_v2', '.xlsx'] completed.
+2024-04-01 17:41:50,461 - Analyzer - INFO - Verbose plotting of stats for [WindowsPath('inputs'), '2015-05-28_2_-42dB_10ms_baseline_prr_v2', '.xlsx']
+2024-04-01 17:41:50,679 - Analyzer - INFO - Verbose plotting of stats for [WindowsPath('inputs'), '2015-05-28_2_-42dB_10ms_baseline_prr_v2', '.xlsx'] completed.
+2024-04-01 17:41:50,679 - Analyzer - INFO - Saving verbose plotting of stats for [WindowsPath('inputs'), '2015-05-28_2_-42dB_10ms_baseline_prr_v2', '.xlsx']
+2024-04-01 17:41:51,267 - Analyzer - INFO - Saving verbose plotting of stats for [WindowsPath('inputs'), '2015-05-28_2_-42dB_10ms_baseline_prr_v2', '.xlsx'] completed.
+2024-04-01 17:41:51,268 - Analyzer - INFO - Reading: 2019-11-22_1_baseline_prr_v2
+2024-04-01 17:41:56,722 - Analyzer - INFO - Level 1 optimization: Activation potentials optimized using paradigm with maximum depolarization.
+2024-04-01 17:41:56,724 - Analyzer - INFO - Optimizing activation potentials for current clamps in 40pps
+2024-04-01 17:41:59,097 - Analyzer - INFO - Optimization results: convergence = True, iterations = 12
+2024-04-01 17:41:59,098 - Analyzer - INFO - Optimum activation potentials: [-0.03211721655845975, -0.038023980465504904]
+2024-04-01 17:41:59,224 - Analyzer - INFO - estimated conductances for 5pps
+2024-04-01 17:41:59,345 - Analyzer - INFO - estimated conductances for 10pps
+2024-04-01 17:41:59,465 - Analyzer - INFO - estimated conductances for 20pps
+2024-04-01 17:41:59,465 - Analyzer - INFO - estimated conductances for 40pps
+2024-04-01 17:41:59,560 - Analyzer - INFO - estimated conductances for 60pps
+2024-04-01 17:41:59,561 - Analyzer - INFO - Level 1 optimization: Completed.
+2024-04-01 17:41:59,561 - Analyzer - INFO - Analysis of 2019-11-22_1_baseline_prr_v2 completed.
+2024-04-01 17:41:59,568 - Analyzer - INFO - Verbose plotting of conductance estimations for [WindowsPath('inputs'), '2015-05-28_2_-42dB_10ms_baseline_prr_v2', '.xlsx']
+2024-04-01 17:42:00,204 - Analyzer - INFO - Verbose plotting of conductance estimations for [WindowsPath('inputs'), '2015-05-28_2_-42dB_10ms_baseline_prr_v2', '.xlsx'] completed.
+2024-04-01 17:42:00,205 - Analyzer - INFO - Saving verbose plotting of conductance estimations for [WindowsPath('inputs'), '2015-05-28_2_-42dB_10ms_baseline_prr_v2', '.xlsx']
+2024-04-01 17:42:03,821 - Analyzer - INFO - Saving verbose plotting of conductance estimations for [WindowsPath('inputs'), '2015-05-28_2_-42dB_10ms_baseline_prr_v2', '.xlsx'] completed.
+2024-04-01 17:42:03,822 - Analyzer - INFO - Verbose plotting of stats for [WindowsPath('inputs'), '2015-05-28_2_-42dB_10ms_baseline_prr_v2', '.xlsx']
+2024-04-01 17:42:04,030 - Analyzer - DEBUG - Axis limits cannot be NaN or Inf
+2024-04-01 17:42:04,043 - Analyzer - INFO - Verbose plotting of stats for [WindowsPath('inputs'), '2015-05-28_2_-42dB_10ms_baseline_prr_v2', '.xlsx'] completed.
+2024-04-01 17:42:04,044 - Analyzer - INFO - Saving verbose plotting of stats for [WindowsPath('inputs'), '2015-05-28_2_-42dB_10ms_baseline_prr_v2', '.xlsx']
+2024-04-01 17:42:04,649 - Analyzer - INFO - Saving verbose plotting of stats for [WindowsPath('inputs'), '2015-05-28_2_-42dB_10ms_baseline_prr_v2', '.xlsx'] completed.
+2024-04-01 17:42:04,649 - Analyzer - INFO - Reading: 2020-03-04_1_baseline_prr
+2024-04-01 17:42:09,723 - Analyzer - INFO - Level 1 optimization: Activation potentials optimized using paradigm with maximum depolarization.
+2024-04-01 17:42:09,725 - Analyzer - INFO - Optimizing activation potentials for current clamps in 60pps
+2024-04-01 17:44:50,932 - Analyzer - INFO - Optimization results: convergence = True, iterations = 355
+2024-04-01 17:44:50,933 - Analyzer - INFO - Optimum activation potentials: [-0.0462371356333956, -0.06423459974312368, -0.0734874775256456]
+2024-04-01 17:44:51,055 - Analyzer - INFO - estimated conductances for 10pps
+2024-04-01 17:44:51,174 - Analyzer - INFO - estimated conductances for 20pps
+2024-04-01 17:44:51,290 - Analyzer - INFO - estimated conductances for 40pps
+2024-04-01 17:44:51,290 - Analyzer - INFO - estimated conductances for 60pps
+2024-04-01 17:44:51,406 - Analyzer - INFO - estimated conductances for 80pps
+2024-04-01 17:44:51,407 - Analyzer - INFO - Level 1 optimization: Completed.
+2024-04-01 17:44:51,407 - Analyzer - INFO - Analysis of 2020-03-04_1_baseline_prr completed.
+2024-04-01 17:44:51,409 - Analyzer - INFO - Verbose plotting of conductance estimations for [WindowsPath('inputs'), '2015-05-28_2_-42dB_10ms_baseline_prr_v2', '.xlsx']
+2024-04-01 17:44:52,427 - Analyzer - INFO - Verbose plotting of conductance estimations for [WindowsPath('inputs'), '2015-05-28_2_-42dB_10ms_baseline_prr_v2', '.xlsx'] completed.
+2024-04-01 17:44:52,428 - Analyzer - INFO - Saving verbose plotting of conductance estimations for [WindowsPath('inputs'), '2015-05-28_2_-42dB_10ms_baseline_prr_v2', '.xlsx']
+2024-04-01 17:44:55,671 - Analyzer - INFO - Saving verbose plotting of conductance estimations for [WindowsPath('inputs'), '2015-05-28_2_-42dB_10ms_baseline_prr_v2', '.xlsx'] completed.
+2024-04-01 17:44:55,672 - Analyzer - INFO - Verbose plotting of stats for [WindowsPath('inputs'), '2015-05-28_2_-42dB_10ms_baseline_prr_v2', '.xlsx']
+2024-04-01 17:44:55,888 - Analyzer - INFO - Verbose plotting of stats for [WindowsPath('inputs'), '2015-05-28_2_-42dB_10ms_baseline_prr_v2', '.xlsx'] completed.
+2024-04-01 17:44:55,889 - Analyzer - INFO - Saving verbose plotting of stats for [WindowsPath('inputs'), '2015-05-28_2_-42dB_10ms_baseline_prr_v2', '.xlsx']
+2024-04-01 17:44:56,496 - Analyzer - INFO - Saving verbose plotting of stats for [WindowsPath('inputs'), '2015-05-28_2_-42dB_10ms_baseline_prr_v2', '.xlsx'] completed.
+2024-04-01 17:44:56,496 - Analyzer - INFO - Reading: 2020-03-04_1_KF_prr
+2024-04-01 17:45:01,505 - Analyzer - INFO - Level 1 optimization: Activation potentials optimized using paradigm with maximum depolarization.
+2024-04-01 17:45:01,508 - Analyzer - INFO - Optimizing activation potentials for current clamps in 80pps
+2024-04-01 17:45:03,218 - Analyzer - INFO - Optimization results: convergence = True, iterations = 9
+2024-04-01 17:45:03,219 - Analyzer - INFO - Optimum activation potentials: [-0.0484371111432673, -0.05217069679179698]
+2024-04-01 17:45:03,334 - Analyzer - INFO - estimated conductances for 10pps
+2024-04-01 17:45:03,455 - Analyzer - INFO - estimated conductances for 20pps
+2024-04-01 17:45:03,573 - Analyzer - INFO - estimated conductances for 40pps
+2024-04-01 17:45:03,698 - Analyzer - INFO - estimated conductances for 60pps
+2024-04-01 17:45:03,699 - Analyzer - INFO - estimated conductances for 80pps
+2024-04-01 17:45:03,700 - Analyzer - INFO - Level 1 optimization: Completed.
+2024-04-01 17:45:03,700 - Analyzer - INFO - Analysis of 2020-03-04_1_KF_prr completed.
+2024-04-01 17:45:03,701 - Analyzer - INFO - Verbose plotting of conductance estimations for [WindowsPath('inputs'), '2015-05-28_2_-42dB_10ms_baseline_prr_v2', '.xlsx']
+2024-04-01 17:45:04,770 - Analyzer - INFO - Verbose plotting of conductance estimations for [WindowsPath('inputs'), '2015-05-28_2_-42dB_10ms_baseline_prr_v2', '.xlsx'] completed.
+2024-04-01 17:45:04,771 - Analyzer - INFO - Saving verbose plotting of conductance estimations for [WindowsPath('inputs'), '2015-05-28_2_-42dB_10ms_baseline_prr_v2', '.xlsx']
+2024-04-01 17:45:08,011 - Analyzer - INFO - Saving verbose plotting of conductance estimations for [WindowsPath('inputs'), '2015-05-28_2_-42dB_10ms_baseline_prr_v2', '.xlsx'] completed.
+2024-04-01 17:45:08,012 - Analyzer - INFO - Verbose plotting of stats for [WindowsPath('inputs'), '2015-05-28_2_-42dB_10ms_baseline_prr_v2', '.xlsx']
+2024-04-01 17:45:08,220 - Analyzer - DEBUG - Axis limits cannot be NaN or Inf
+2024-04-01 17:45:08,241 - Analyzer - INFO - Verbose plotting of stats for [WindowsPath('inputs'), '2015-05-28_2_-42dB_10ms_baseline_prr_v2', '.xlsx'] completed.
+2024-04-01 17:45:08,241 - Analyzer - INFO - Saving verbose plotting of stats for [WindowsPath('inputs'), '2015-05-28_2_-42dB_10ms_baseline_prr_v2', '.xlsx']
+2024-04-01 17:45:08,857 - Analyzer - INFO - Saving verbose plotting of stats for [WindowsPath('inputs'), '2015-05-28_2_-42dB_10ms_baseline_prr_v2', '.xlsx'] completed.
+2024-04-01 17:45:08,858 - Analyzer - INFO - Reading: 2020-03-18_1_baseline_prr
+2024-04-01 17:45:10,984 - Analyzer - INFO - Level 1 optimization: Activation potentials optimized using paradigm with maximum depolarization.
+2024-04-01 17:45:10,987 - Analyzer - INFO - Optimizing activation potentials for current clamps in 10pps
+2024-04-01 17:46:22,703 - Analyzer - INFO - Optimization results: convergence = True, iterations = 266
+2024-04-01 17:46:22,704 - Analyzer - INFO - Optimum activation potentials: [-0.03872949672329327, -0.05949021505899368]
+2024-04-01 17:46:22,785 - Analyzer - INFO - estimated conductances for 5pps
+2024-04-01 17:46:22,786 - Analyzer - INFO - estimated conductances for 10pps
+2024-04-01 17:46:22,863 - Analyzer - INFO - estimated conductances for 20pps
+2024-04-01 17:46:22,942 - Analyzer - INFO - estimated conductances for 40pps
+2024-04-01 17:46:22,943 - Analyzer - INFO - Level 1 optimization: Completed.
+2024-04-01 17:46:22,943 - Analyzer - INFO - Analysis of 2020-03-18_1_baseline_prr completed.
+2024-04-01 17:46:22,945 - Analyzer - INFO - Verbose plotting of conductance estimations for [WindowsPath('inputs'), '2015-05-28_2_-42dB_10ms_baseline_prr_v2', '.xlsx']
+2024-04-01 17:46:23,889 - Analyzer - INFO - Verbose plotting of conductance estimations for [WindowsPath('inputs'), '2015-05-28_2_-42dB_10ms_baseline_prr_v2', '.xlsx'] completed.
+2024-04-01 17:46:23,890 - Analyzer - INFO - Saving verbose plotting of conductance estimations for [WindowsPath('inputs'), '2015-05-28_2_-42dB_10ms_baseline_prr_v2', '.xlsx']
+2024-04-01 17:46:26,657 - Analyzer - INFO - Saving verbose plotting of conductance estimations for [WindowsPath('inputs'), '2015-05-28_2_-42dB_10ms_baseline_prr_v2', '.xlsx'] completed.
+2024-04-01 17:46:26,657 - Analyzer - INFO - Verbose plotting of stats for [WindowsPath('inputs'), '2015-05-28_2_-42dB_10ms_baseline_prr_v2', '.xlsx']
+2024-04-01 17:46:26,872 - Analyzer - INFO - Verbose plotting of stats for [WindowsPath('inputs'), '2015-05-28_2_-42dB_10ms_baseline_prr_v2', '.xlsx'] completed.
+2024-04-01 17:46:26,872 - Analyzer - INFO - Saving verbose plotting of stats for [WindowsPath('inputs'), '2015-05-28_2_-42dB_10ms_baseline_prr_v2', '.xlsx']
+2024-04-01 17:46:27,523 - Analyzer - INFO - Saving verbose plotting of stats for [WindowsPath('inputs'), '2015-05-28_2_-42dB_10ms_baseline_prr_v2', '.xlsx'] completed.
+2024-04-01 17:46:27,523 - Analyzer - INFO - Reading: 2020-03-18_1_KF_prr
+2024-04-01 17:46:29,641 - Analyzer - INFO - Level 1 optimization: Activation potentials optimized using paradigm with maximum depolarization.
+2024-04-01 17:46:29,643 - Analyzer - INFO - Optimizing activation potentials for current clamps in 40pps
+2024-04-01 17:47:44,388 - Analyzer - INFO - Optimization results: convergence = True, iterations = 371
+2024-04-01 17:47:44,388 - Analyzer - INFO - Optimum activation potentials: [-0.05018333832734131, -0.09157561564315374]
+2024-04-01 17:47:44,475 - Analyzer - INFO - estimated conductances for 5pps
+2024-04-01 17:47:44,550 - Analyzer - INFO - estimated conductances for 10pps
+2024-04-01 17:47:44,632 - Analyzer - INFO - estimated conductances for 20pps
+2024-04-01 17:47:44,633 - Analyzer - INFO - estimated conductances for 40pps
+2024-04-01 17:47:44,634 - Analyzer - INFO - Level 1 optimization: Completed.
+2024-04-01 17:47:44,634 - Analyzer - INFO - Analysis of 2020-03-18_1_KF_prr completed.
+2024-04-01 17:47:44,635 - Analyzer - INFO - Verbose plotting of conductance estimations for [WindowsPath('inputs'), '2015-05-28_2_-42dB_10ms_baseline_prr_v2', '.xlsx']
+2024-04-01 17:47:45,694 - Analyzer - INFO - Verbose plotting of conductance estimations for [WindowsPath('inputs'), '2015-05-28_2_-42dB_10ms_baseline_prr_v2', '.xlsx'] completed.
+2024-04-01 17:47:45,695 - Analyzer - INFO - Saving verbose plotting of conductance estimations for [WindowsPath('inputs'), '2015-05-28_2_-42dB_10ms_baseline_prr_v2', '.xlsx']
+2024-04-01 17:47:48,490 - Analyzer - INFO - Saving verbose plotting of conductance estimations for [WindowsPath('inputs'), '2015-05-28_2_-42dB_10ms_baseline_prr_v2', '.xlsx'] completed.
+2024-04-01 17:47:48,491 - Analyzer - INFO - Verbose plotting of stats for [WindowsPath('inputs'), '2015-05-28_2_-42dB_10ms_baseline_prr_v2', '.xlsx']
+2024-04-01 17:47:48,711 - Analyzer - INFO - Verbose plotting of stats for [WindowsPath('inputs'), '2015-05-28_2_-42dB_10ms_baseline_prr_v2', '.xlsx'] completed.
+2024-04-01 17:47:48,712 - Analyzer - INFO - Saving verbose plotting of stats for [WindowsPath('inputs'), '2015-05-28_2_-42dB_10ms_baseline_prr_v2', '.xlsx']
+2024-04-01 17:47:49,366 - Analyzer - INFO - Saving verbose plotting of stats for [WindowsPath('inputs'), '2015-05-28_2_-42dB_10ms_baseline_prr_v2', '.xlsx'] completed.
+2024-04-01 17:47:49,367 - Analyzer - INFO - Reading: 2020-03-20_7_baseline_prr
+2024-04-01 17:47:52,041 - Analyzer - INFO - Level 1 optimization: Activation potentials optimized using paradigm with maximum depolarization.
+2024-04-01 17:47:52,044 - Analyzer - INFO - Optimizing activation potentials for current clamps in 60pps
+2024-04-01 17:47:53,414 - Analyzer - INFO - Optimization results: convergence = True, iterations = 9
+2024-04-01 17:47:53,414 - Analyzer - INFO - Optimum activation potentials: [-0.025400977154675368, -0.044174649876747]
+2024-04-01 17:47:53,415 - Analyzer - INFO - estimated conductances for 60pps
+2024-04-01 17:47:53,491 - Analyzer - INFO - estimated conductances for 40pps
+2024-04-01 17:47:53,569 - Analyzer - INFO - estimated conductances for 20pps
+2024-04-01 17:47:53,646 - Analyzer - INFO - estimated conductances for 10pps
+2024-04-01 17:47:53,724 - Analyzer - INFO - estimated conductances for 5pps
+2024-04-01 17:47:53,725 - Analyzer - INFO - Level 1 optimization: Completed.
+2024-04-01 17:47:53,725 - Analyzer - INFO - Analysis of 2020-03-20_7_baseline_prr completed.
+2024-04-01 17:47:53,726 - Analyzer - INFO - Verbose plotting of conductance estimations for [WindowsPath('inputs'), '2015-05-28_2_-42dB_10ms_baseline_prr_v2', '.xlsx']
+2024-04-01 17:47:54,880 - Analyzer - INFO - Verbose plotting of conductance estimations for [WindowsPath('inputs'), '2015-05-28_2_-42dB_10ms_baseline_prr_v2', '.xlsx'] completed.
+2024-04-01 17:47:54,881 - Analyzer - INFO - Saving verbose plotting of conductance estimations for [WindowsPath('inputs'), '2015-05-28_2_-42dB_10ms_baseline_prr_v2', '.xlsx']
+2024-04-01 17:47:58,078 - Analyzer - INFO - Saving verbose plotting of conductance estimations for [WindowsPath('inputs'), '2015-05-28_2_-42dB_10ms_baseline_prr_v2', '.xlsx'] completed.
+2024-04-01 17:47:58,079 - Analyzer - INFO - Verbose plotting of stats for [WindowsPath('inputs'), '2015-05-28_2_-42dB_10ms_baseline_prr_v2', '.xlsx']
+2024-04-01 17:47:58,302 - Analyzer - INFO - Verbose plotting of stats for [WindowsPath('inputs'), '2015-05-28_2_-42dB_10ms_baseline_prr_v2', '.xlsx'] completed.
+2024-04-01 17:47:58,302 - Analyzer - INFO - Saving verbose plotting of stats for [WindowsPath('inputs'), '2015-05-28_2_-42dB_10ms_baseline_prr_v2', '.xlsx']
+2024-04-01 17:47:58,896 - Analyzer - INFO - Saving verbose plotting of stats for [WindowsPath('inputs'), '2015-05-28_2_-42dB_10ms_baseline_prr_v2', '.xlsx'] completed.
+2024-04-01 17:47:58,897 - Analyzer - INFO - Reading: 2020-03-20_7_KF_prr
+2024-04-01 17:48:01,580 - Analyzer - INFO - Level 1 optimization: Activation potentials optimized using paradigm with maximum depolarization.
+2024-04-01 17:48:01,583 - Analyzer - INFO - Optimizing activation potentials for current clamps in 60pps
+2024-04-01 17:48:03,094 - Analyzer - INFO - Optimization results: convergence = True, iterations = 10
+2024-04-01 17:48:03,095 - Analyzer - INFO - Optimum activation potentials: [-0.04399999996519631, -0.048525881408713896]
+2024-04-01 17:48:03,096 - Analyzer - INFO - estimated conductances for 60pps
+2024-04-01 17:48:03,180 - Analyzer - INFO - estimated conductances for 40pps
+2024-04-01 17:48:03,260 - Analyzer - INFO - estimated conductances for 20pps
+2024-04-01 17:48:03,343 - Analyzer - INFO - estimated conductances for 10pps
+2024-04-01 17:48:03,421 - Analyzer - INFO - estimated conductances for 5pps
+2024-04-01 17:48:03,423 - Analyzer - INFO - Level 1 optimization: Completed.
+2024-04-01 17:48:03,423 - Analyzer - INFO - Analysis of 2020-03-20_7_KF_prr completed.
+2024-04-01 17:48:03,425 - Analyzer - INFO - Verbose plotting of conductance estimations for [WindowsPath('inputs'), '2015-05-28_2_-42dB_10ms_baseline_prr_v2', '.xlsx']
+2024-04-01 17:48:04,623 - Analyzer - INFO - Verbose plotting of conductance estimations for [WindowsPath('inputs'), '2015-05-28_2_-42dB_10ms_baseline_prr_v2', '.xlsx'] completed.
+2024-04-01 17:48:04,624 - Analyzer - INFO - Saving verbose plotting of conductance estimations for [WindowsPath('inputs'), '2015-05-28_2_-42dB_10ms_baseline_prr_v2', '.xlsx']
+2024-04-01 17:48:07,850 - Analyzer - INFO - Saving verbose plotting of conductance estimations for [WindowsPath('inputs'), '2015-05-28_2_-42dB_10ms_baseline_prr_v2', '.xlsx'] completed.
+2024-04-01 17:48:07,851 - Analyzer - INFO - Verbose plotting of stats for [WindowsPath('inputs'), '2015-05-28_2_-42dB_10ms_baseline_prr_v2', '.xlsx']
+2024-04-01 17:48:08,064 - Analyzer - INFO - Verbose plotting of stats for [WindowsPath('inputs'), '2015-05-28_2_-42dB_10ms_baseline_prr_v2', '.xlsx'] completed.
+2024-04-01 17:48:08,065 - Analyzer - INFO - Saving verbose plotting of stats for [WindowsPath('inputs'), '2015-05-28_2_-42dB_10ms_baseline_prr_v2', '.xlsx']
+2024-04-01 17:48:08,687 - Analyzer - INFO - Saving verbose plotting of stats for [WindowsPath('inputs'), '2015-05-28_2_-42dB_10ms_baseline_prr_v2', '.xlsx'] completed.
+2024-04-01 17:48:08,687 - Analyzer - INFO - Reading: 2021-12-10_4_baseline_prr
+2024-04-01 17:48:15,899 - Analyzer - INFO - Level 1 optimization: Activation potentials optimized using paradigm with maximum depolarization.
+2024-04-01 17:48:15,901 - Analyzer - INFO - Optimizing activation potentials for current clamps in 40pps
+2024-04-01 17:51:59,642 - Analyzer - INFO - Optimization results: convergence = True, iterations = 369
+2024-04-01 17:51:59,642 - Analyzer - INFO - Optimum activation potentials: [-0.05580825076157934, -0.08730712247326082, -0.07814307291682358]
+2024-04-01 17:51:59,774 - Analyzer - INFO - estimated conductances for 5pps
+2024-04-01 17:51:59,910 - Analyzer - INFO - estimated conductances for 10pps
+2024-04-01 17:52:00,049 - Analyzer - INFO - estimated conductances for 20pps
+2024-04-01 17:52:00,050 - Analyzer - INFO - estimated conductances for 40pps
+2024-04-01 17:52:00,194 - Analyzer - INFO - estimated conductances for 60pps
+2024-04-01 17:52:00,195 - Analyzer - INFO - Level 1 optimization: Completed.
+2024-04-01 17:52:00,195 - Analyzer - INFO - Analysis of 2021-12-10_4_baseline_prr completed.
+2024-04-01 17:52:00,197 - Analyzer - INFO - Verbose plotting of conductance estimations for [WindowsPath('inputs'), '2015-05-28_2_-42dB_10ms_baseline_prr_v2', '.xlsx']
+2024-04-01 17:52:00,823 - Analyzer - INFO - Verbose plotting of conductance estimations for [WindowsPath('inputs'), '2015-05-28_2_-42dB_10ms_baseline_prr_v2', '.xlsx'] completed.
+2024-04-01 17:52:00,824 - Analyzer - INFO - Saving verbose plotting of conductance estimations for [WindowsPath('inputs'), '2015-05-28_2_-42dB_10ms_baseline_prr_v2', '.xlsx']
+2024-04-01 17:52:04,199 - Analyzer - INFO - Saving verbose plotting of conductance estimations for [WindowsPath('inputs'), '2015-05-28_2_-42dB_10ms_baseline_prr_v2', '.xlsx'] completed.
+2024-04-01 17:52:04,199 - Analyzer - INFO - Verbose plotting of stats for [WindowsPath('inputs'), '2015-05-28_2_-42dB_10ms_baseline_prr_v2', '.xlsx']
+2024-04-01 17:52:04,427 - Analyzer - INFO - Verbose plotting of stats for [WindowsPath('inputs'), '2015-05-28_2_-42dB_10ms_baseline_prr_v2', '.xlsx'] completed.
+2024-04-01 17:52:04,428 - Analyzer - INFO - Saving verbose plotting of stats for [WindowsPath('inputs'), '2015-05-28_2_-42dB_10ms_baseline_prr_v2', '.xlsx']
+2024-04-01 17:52:05,016 - Analyzer - INFO - Saving verbose plotting of stats for [WindowsPath('inputs'), '2015-05-28_2_-42dB_10ms_baseline_prr_v2', '.xlsx'] completed.
+2024-04-01 17:52:05,016 - Analyzer - INFO - Reading: 2022-12-07_1_baseline
+2024-04-01 17:52:10,246 - Analyzer - INFO - Level 1 optimization: Activation potentials optimized using paradigm with maximum depolarization.
+2024-04-01 17:52:10,250 - Analyzer - INFO - Optimizing activation potentials for current clamps in 20pps
+2024-04-01 17:52:10,768 - Analyzer - INFO - Optimization results: convergence = True, iterations = 1
+2024-04-01 17:52:10,768 - Analyzer - INFO - Optimum activation potentials: [-0.04640034810678207, -0.050711427509519284, -0.05321320271880764, -0.059773156351783936]
+2024-04-01 17:52:10,896 - Analyzer - INFO - estimated conductances for 10pps
+2024-04-01 17:52:10,897 - Analyzer - INFO - estimated conductances for 20pps
+2024-04-01 17:52:11,028 - Analyzer - INFO - estimated conductances for 30pps
+2024-04-01 17:52:11,161 - Analyzer - INFO - estimated conductances for 40pps
+2024-04-01 17:52:11,269 - Analyzer - INFO - estimated conductances for 50pps
+2024-04-01 17:52:11,271 - Analyzer - INFO - Level 1 optimization: Completed.
+2024-04-01 17:52:11,271 - Analyzer - INFO - Analysis of 2022-12-07_1_baseline completed.
+2024-04-01 17:52:11,272 - Analyzer - INFO - Verbose plotting of conductance estimations for [WindowsPath('inputs'), '2015-05-28_2_-42dB_10ms_baseline_prr_v2', '.xlsx']
+2024-04-01 17:52:11,900 - Analyzer - INFO - Verbose plotting of conductance estimations for [WindowsPath('inputs'), '2015-05-28_2_-42dB_10ms_baseline_prr_v2', '.xlsx'] completed.
+2024-04-01 17:52:11,900 - Analyzer - INFO - Saving verbose plotting of conductance estimations for [WindowsPath('inputs'), '2015-05-28_2_-42dB_10ms_baseline_prr_v2', '.xlsx']
+2024-04-01 17:52:15,274 - Analyzer - INFO - Saving verbose plotting of conductance estimations for [WindowsPath('inputs'), '2015-05-28_2_-42dB_10ms_baseline_prr_v2', '.xlsx'] completed.
+2024-04-01 17:52:15,274 - Analyzer - INFO - Verbose plotting of stats for [WindowsPath('inputs'), '2015-05-28_2_-42dB_10ms_baseline_prr_v2', '.xlsx']
+2024-04-01 17:52:15,502 - Analyzer - INFO - Verbose plotting of stats for [WindowsPath('inputs'), '2015-05-28_2_-42dB_10ms_baseline_prr_v2', '.xlsx'] completed.
+2024-04-01 17:52:15,503 - Analyzer - INFO - Saving verbose plotting of stats for [WindowsPath('inputs'), '2015-05-28_2_-42dB_10ms_baseline_prr_v2', '.xlsx']
+2024-04-01 17:52:16,097 - Analyzer - INFO - Saving verbose plotting of stats for [WindowsPath('inputs'), '2015-05-28_2_-42dB_10ms_baseline_prr_v2', '.xlsx'] completed.
+2024-04-01 17:52:16,097 - Analyzer - INFO - Reading: 2022-12-07_1_NBQX
+2024-04-01 17:52:21,450 - Analyzer - INFO - Level 1 optimization: Activation potentials optimized using paradigm with maximum depolarization.
+2024-04-01 17:52:21,453 - Analyzer - INFO - Optimizing activation potentials for current clamps in 40pps
+2024-04-01 17:52:21,951 - Analyzer - INFO - Optimization results: convergence = True, iterations = 1
+2024-04-01 17:52:21,952 - Analyzer - INFO - Optimum activation potentials: [-0.04636723505457291, -0.05428483527128062, -0.05739903519143578, -0.06328308924461391]
+2024-04-01 17:52:22,085 - Analyzer - INFO - estimated conductances for 10pps
+2024-04-01 17:52:22,220 - Analyzer - INFO - estimated conductances for 20pps
+2024-04-01 17:52:22,355 - Analyzer - INFO - estimated conductances for 30pps
+2024-04-01 17:52:22,356 - Analyzer - INFO - estimated conductances for 40pps
+2024-04-01 17:52:22,489 - Analyzer - INFO - estimated conductances for 50pps
+2024-04-01 17:52:22,490 - Analyzer - INFO - Level 1 optimization: Completed.
+2024-04-01 17:52:22,490 - Analyzer - INFO - Analysis of 2022-12-07_1_NBQX completed.
+2024-04-01 17:52:22,492 - Analyzer - INFO - Verbose plotting of conductance estimations for [WindowsPath('inputs'), '2015-05-28_2_-42dB_10ms_baseline_prr_v2', '.xlsx']
+2024-04-01 17:52:23,123 - Analyzer - INFO - Verbose plotting of conductance estimations for [WindowsPath('inputs'), '2015-05-28_2_-42dB_10ms_baseline_prr_v2', '.xlsx'] completed.
+2024-04-01 17:52:23,123 - Analyzer - INFO - Saving verbose plotting of conductance estimations for [WindowsPath('inputs'), '2015-05-28_2_-42dB_10ms_baseline_prr_v2', '.xlsx']
+2024-04-01 17:52:26,519 - Analyzer - INFO - Saving verbose plotting of conductance estimations for [WindowsPath('inputs'), '2015-05-28_2_-42dB_10ms_baseline_prr_v2', '.xlsx'] completed.
+2024-04-01 17:52:26,520 - Analyzer - INFO - Verbose plotting of stats for [WindowsPath('inputs'), '2015-05-28_2_-42dB_10ms_baseline_prr_v2', '.xlsx']
+2024-04-01 17:52:26,751 - Analyzer - INFO - Verbose plotting of stats for [WindowsPath('inputs'), '2015-05-28_2_-42dB_10ms_baseline_prr_v2', '.xlsx'] completed.
+2024-04-01 17:52:26,752 - Analyzer - INFO - Saving verbose plotting of stats for [WindowsPath('inputs'), '2015-05-28_2_-42dB_10ms_baseline_prr_v2', '.xlsx']
+2024-04-01 17:52:27,363 - Analyzer - INFO - Saving verbose plotting of stats for [WindowsPath('inputs'), '2015-05-28_2_-42dB_10ms_baseline_prr_v2', '.xlsx'] completed.

@@ -3,6 +3,17 @@ import os
 from pathlib import Path
 from datetime import datetime
 
+class CommonUtils:
+    def make_new_unique_list(list1, list2):
+        if list1 is None and list2 is None:
+            return []
+        elif list1 is None:
+            return list2
+        elif list2 is None:
+            return list1
+        else:
+            return list(set(list1 + list2))
+
 class SystemOperations:
     def make_directory(self, directory):
         if not os.path.exists(directory):
@@ -86,6 +97,12 @@ class Configurations:
     
     def get_filters(self):
         return self.settings["filters"]
-    
+        
     def get_optimization(self):
         return self.settings["optimization"]
+    
+    def get_loggers(self):
+        return self.settings["loggers"]
+    
+    def list_output_files(self):
+        self.sysops.list_files(self.get_output_directory())
