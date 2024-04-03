@@ -1,33 +1,47 @@
 {
-    "loggers": {
-        "version": 1,
-        "handlers": {
-            "console": {
-                "class": "logging.StreamHandler",
-                "level": "DEBUG",
-                "formatter": "detailed"
-            },
-            "file": {
-                "class": "logging.FileHandler",
-                "filename": "./logs/Analyzer.log",
-                "level": "DEBUG",
-                "formatter": "detailed"
-            }
-        },
-        "formatters": {
-            "detailed": {
-                "format": "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-            }
-        },
-        "loggers": {
-            "Analyzer": {
-                "handlers": ["file"],
-                "level": "DEBUG"
-            }
-        },
-        "root": {
+    "version": 1,
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
             "level": "DEBUG",
-            "handlers": ["console"]
+            "formatter": "detailed"
+        },
+        "file": {
+            "class": "logging.FileHandler",
+            "filename": "./logs/Analyzer.log",
+            "level": "DEBUG",
+            "formatter": "detailed"
         }
+    },
+    "formatters": {
+        "detailed": {
+            "format": "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+        }
+    },
+    "loggers": {
+        "Analyzer": {
+            "handlers": ["file"],
+            "level": "DEBUG"
+        }, 
+        "WholecellRecording": {
+            "handlers": ["file"],
+            "level": "DEBUG"
+        },
+        "LowPassFilter": {
+            "handlers": ["file"],
+            "level": "DEBUG"
+        }, 
+        "optimizer": {
+            "handlers": ["file"],
+            "level": "DEBUG"
+        },
+        "plotter": {
+            "handlers": ["file"],
+            "level": "DEBUG"
+        }
+    },
+    "root": {
+        "level": "DEBUG",
+        "handlers": ["console"]
     }
 }

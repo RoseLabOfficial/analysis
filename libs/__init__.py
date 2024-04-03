@@ -5,6 +5,10 @@ import openpyxl
 import logging.config
 import json
 from pathlib import Path
+import scipy.signal as filters
+from scipy.optimize import minimize, Bounds
+import matplotlib.pyplot as plt
+
 
 def init_logging(logger_configurations):
     logging.config.dictConfig(logger_configurations)
@@ -26,3 +30,7 @@ jh = JsonHandler()
 logger_configurations = jh.read("./settings/logging.json")
 init_logging(logger_configurations)
 analysis_logger = logging.getLogger('Analyzer')
+wholecell_logger = logging.getLogger('WholecellRecording')
+lpf_logger = logging.getLogger('LowPassFilter')
+optimizer_logger = logging.getLogger('optimizer')
+plotter_logger = logging.getLogger('plotter')

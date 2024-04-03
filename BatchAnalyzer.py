@@ -1,20 +1,11 @@
-from libs.readers import XLReader
+from libs.readers import AnalysisConfigurations
 from libs.systems import Analyzer
-from libs.sysops import *
-import numpy as np
-import matplotlib.pyplot as plt
 import argparse
-import logging
-import os
 from pathlib import Path
-import logging.config
-
-def init_logging(logger_configurations):
-    logging.config.dictConfig(logger_configurations)
 
 def load_configurations():
     configurations_json: Path = "./settings/configurations.json"
-    return Configurations(configurations_json)
+    return AnalysisConfigurations(configurations_json)
 
 def main():
     configs = load_configurations()
@@ -44,12 +35,10 @@ def main():
         configs.set_output_directory(args.set_outputdir)
         print(configs.settings)
     if args.run:
-        init_logging(configs.get_loggers())
         inputdir = configs.get_input_directory()
-        inputfiles = configs.get_files_to_analyze()
+        inputfiles = configs.get_input_files()
         files = [inputdir / filename for filename in inputfiles]
-        logger = logging.getLogger('Analyzer')
-        analyzer = Analyzer(files, configs.get_output_directory(), configs.get_filters(), logger)
+        analyzer = Analyzer(files, configs.get_output_directory(), configs.get_filters())
         analyzer.run()
     if args.run_file is not None:
         inputdir = configs.get_input_directory()
