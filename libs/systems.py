@@ -304,7 +304,6 @@ class Analyzer:
             analysis_logger.debug(f"{e}")
         dEact = recordings[optim_paradigm].parameters["Eact"] - recordings[optim_paradigm].parameters["Ess"]
         recordings[optim_paradigm].stats.insert(0, "paradigm", optim_paradigm)
-        analysis_logger.info(f"Optimization results: convergence = {result.success}, iterations = {result.niter}")
         analysis_logger.info(f"Optimum activation potentials: {recordings[optim_paradigm].parameters["Eact"].to_numpy().tolist()}")
         overall_stats = recordings[optim_paradigm].stats.copy()
         for idx, paradigm in enumerate(recordings):
