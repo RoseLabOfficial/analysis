@@ -441,10 +441,8 @@ class Analyzer:
             axs[6, idx].set_ylabel("Stimulus")
             axs[6, idx].set_xlabel("times(sec)")
             axs[6, idx].grid(True)
-        analysis_logger.info(f"Verbose plotting of conductance estimations for {self.filepaths[1]} completed.")
         analysis_logger.info(f"Saving verbose plotting of conductance estimations for {self.filepaths[1]}")
         plt.savefig(str(filename)+f"_dev_traces.png")
-        analysis_logger.info(f"Saving verbose plotting of conductance estimations for {self.filepaths[1]} completed.")
         pass
 
     def set_stats_scale(self, ax, scale_max, margin=0.1):
@@ -501,10 +499,8 @@ class Analyzer:
         scale_max = np.amax(spikes_per_stimulus_repetition)
         self.set_stats_scale(ax, scale_max, 0.1)
         axs[4].set_ylabel("G (S)")
-        analysis_logger.info(f"Verbose plotting of stats for {self.filepaths[1]} completed.")
         analysis_logger.info(f"Saving verbose plotting of stats for {self.filepaths[1]}")
         plt.savefig(str(filename)+f"_dev_stats.png")
-        analysis_logger.info(f"Saving verbose plotting of stats for {self.filepaths[1]} completed.")
         pass
 
     def run(self, optimization_level=1):
