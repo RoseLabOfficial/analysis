@@ -1,0 +1,100 @@
+2024-04-05 10:19:08,523 - Analyzer - INFO - Reading: 2016-10-12_1_baseline_prr
+2024-04-05 10:19:10,707 - Analyzer - INFO - Level 1 optimization: Activation potentials optimized using paradigm with maximum depolarization.
+2024-04-05 10:19:10,707 - Analyzer - INFO - Finding the best paradigm to optimize
+2024-04-05 10:19:10,708 - Analyzer - INFO - Optimizing activation potentials for current clamps in 60pps
+2024-04-05 10:19:10,960 - optimizer - INFO - Optimization Success?True iterations:1
+2024-04-05 10:19:10,960 - Analyzer - INFO - Optimum activation potentials: [-0.04492525612339045, -0.05996039618400176, -0.07383487617242994, -0.08860028323461903]
+2024-04-05 10:19:11,040 - Analyzer - INFO - estimated conductances for 5pps
+2024-04-05 10:19:11,121 - Analyzer - INFO - estimated conductances for 10pps
+2024-04-05 10:19:11,196 - Analyzer - INFO - estimated conductances for 20pps
+2024-04-05 10:19:11,268 - Analyzer - INFO - estimated conductances for 40pps
+2024-04-05 10:19:11,268 - Analyzer - INFO - estimated conductances for 60pps
+2024-04-05 10:19:11,268 - Analyzer - INFO - Level 1 optimization: Completed.
+2024-04-05 10:19:11,268 - Analyzer - INFO - Analysis of 2016-10-12_1_baseline_prr completed.
+2024-04-05 10:19:11,268 - Analyzer - INFO - Verbose plotting of conductance estimations for outputs/2016-10-12_1_baseline_prr_analyzed
+2024-04-05 10:19:11,628 - Analyzer - INFO - Saving verbose plotting of conductance estimations for outputs/2016-10-12_1_baseline_prr_analyzed
+2024-04-05 10:19:35,604 - Analyzer - INFO - Reading: 2016-10-12_1_baseline_prr
+2024-04-05 10:19:37,784 - Analyzer - INFO - Level 1 optimization: Activation potentials optimized using paradigm with maximum depolarization.
+2024-04-05 10:19:37,784 - Analyzer - INFO - Finding the best paradigm to optimize
+2024-04-05 10:19:37,784 - Analyzer - INFO - Optimizing activation potentials for current clamps in 60pps
+2024-04-05 10:19:38,021 - optimizer - INFO - Optimization Success?True iterations:1
+2024-04-05 10:19:38,021 - Analyzer - INFO - Optimum activation potentials: [-0.04492525612339045, -0.05996039618400176, -0.07383487617242994, -0.08860028323461903]
+2024-04-05 10:19:38,097 - Analyzer - INFO - estimated conductances for 5pps
+2024-04-05 10:19:38,188 - Analyzer - INFO - estimated conductances for 10pps
+2024-04-05 10:19:38,272 - Analyzer - INFO - estimated conductances for 20pps
+2024-04-05 10:19:38,341 - Analyzer - INFO - estimated conductances for 40pps
+2024-04-05 10:19:38,341 - Analyzer - INFO - estimated conductances for 60pps
+2024-04-05 10:19:38,341 - Analyzer - INFO - Level 1 optimization: Completed.
+2024-04-05 10:19:38,341 - Analyzer - INFO - Analysis of 2016-10-12_1_baseline_prr completed.
+2024-04-05 10:19:38,341 - Analyzer - INFO - Verbose plotting of conductance estimations for outputs/2016-10-12_1_baseline_prr_analyzed
+2024-04-05 10:19:38,639 - Analyzer - INFO - Saving verbose plotting of conductance estimations for outputs/2016-10-12_1_baseline_prr_analyzed
+2024-04-05 10:19:39,715 - Analyzer - INFO - Verbose plotting of stats for outputs/2016-10-12_1_baseline_prr_analyzed
+2024-04-05 10:19:39,754 - Analyzer - INFO - Saving verbose plotting of stats for outputs/2016-10-12_1_baseline_prr_analyzed
+2024-04-05 10:20:55,189 - Analyzer - INFO - Reading: 2016-10-12_1_baseline_prr
+2024-04-05 10:20:57,311 - Analyzer - INFO - Level 1 optimization: Activation potentials optimized using paradigm with maximum depolarization.
+2024-04-05 10:20:57,311 - Analyzer - INFO - Finding the best paradigm to optimize
+2024-04-05 10:20:57,311 - Analyzer - INFO - Optimizing activation potentials for current clamps in 60pps
+2024-04-05 10:20:57,376 - Analyzer - DEBUG - Unknown solver basinhopping
+2024-04-05 10:20:57,377 - Analyzer - INFO - Optimum activation potentials: [-0.063986532, -0.07997853199999999, -0.096205032, -0.10762153199999999]
+2024-04-05 10:20:57,440 - Analyzer - INFO - estimated conductances for 5pps
+2024-04-05 10:20:57,503 - Analyzer - INFO - estimated conductances for 10pps
+2024-04-05 10:20:57,566 - Analyzer - INFO - estimated conductances for 20pps
+2024-04-05 10:20:57,627 - Analyzer - INFO - estimated conductances for 40pps
+2024-04-05 10:20:57,627 - Analyzer - INFO - estimated conductances for 60pps
+2024-04-05 10:20:57,628 - Analyzer - INFO - Level 1 optimization: Completed.
+2024-04-05 10:20:57,628 - Analyzer - INFO - Analysis of 2016-10-12_1_baseline_prr completed.
+2024-04-05 10:20:57,628 - Analyzer - INFO - Verbose plotting of conductance estimations for outputs/2016-10-12_1_baseline_prr_analyzed
+2024-04-05 10:20:57,917 - Analyzer - INFO - Saving verbose plotting of conductance estimations for outputs/2016-10-12_1_baseline_prr_analyzed
+2024-04-05 10:20:59,017 - Analyzer - INFO - Verbose plotting of stats for outputs/2016-10-12_1_baseline_prr_analyzed
+2024-04-05 10:20:59,057 - Analyzer - INFO - Saving verbose plotting of stats for outputs/2016-10-12_1_baseline_prr_analyzed
+2024-04-05 10:22:27,576 - Analyzer - INFO - Reading: 2016-10-12_1_baseline_prr
+2024-04-05 10:22:29,699 - Analyzer - INFO - Level 1 optimization: Activation potentials optimized using paradigm with maximum depolarization.
+2024-04-05 10:22:29,699 - Analyzer - INFO - Finding the best paradigm to optimize
+2024-04-05 10:22:29,699 - Analyzer - INFO - Optimizing activation potentials for current clamps in 60pps
+2024-04-05 10:22:29,764 - Analyzer - DEBUG - Unknown solver shgo
+2024-04-05 10:22:29,764 - Analyzer - INFO - Optimum activation potentials: [-0.063986532, -0.07997853199999999, -0.096205032, -0.10762153199999999]
+2024-04-05 10:22:29,827 - Analyzer - INFO - estimated conductances for 5pps
+2024-04-05 10:22:29,889 - Analyzer - INFO - estimated conductances for 10pps
+2024-04-05 10:22:29,951 - Analyzer - INFO - estimated conductances for 20pps
+2024-04-05 10:22:30,013 - Analyzer - INFO - estimated conductances for 40pps
+2024-04-05 10:22:30,013 - Analyzer - INFO - estimated conductances for 60pps
+2024-04-05 10:22:30,013 - Analyzer - INFO - Level 1 optimization: Completed.
+2024-04-05 10:22:30,013 - Analyzer - INFO - Analysis of 2016-10-12_1_baseline_prr completed.
+2024-04-05 10:22:30,014 - Analyzer - INFO - Verbose plotting of conductance estimations for outputs/2016-10-12_1_baseline_prr_analyzed
+2024-04-05 10:22:30,297 - Analyzer - INFO - Saving verbose plotting of conductance estimations for outputs/2016-10-12_1_baseline_prr_analyzed
+2024-04-05 10:22:31,374 - Analyzer - INFO - Verbose plotting of stats for outputs/2016-10-12_1_baseline_prr_analyzed
+2024-04-05 10:22:31,413 - Analyzer - INFO - Saving verbose plotting of stats for outputs/2016-10-12_1_baseline_prr_analyzed
+2024-04-05 10:27:29,621 - Analyzer - INFO - Reading: 2016-10-12_1_baseline_prr
+2024-04-05 10:27:31,848 - Analyzer - INFO - Level 1 optimization: Activation potentials optimized using paradigm with maximum depolarization.
+2024-04-05 10:27:31,848 - Analyzer - INFO - Finding the best paradigm to optimize
+2024-04-05 10:27:31,849 - Analyzer - INFO - Optimizing activation potentials for current clamps in 60pps
+2024-04-05 10:27:32,086 - optimizer - INFO - Optimization Success?True iterations:1
+2024-04-05 10:27:32,086 - Analyzer - INFO - Optimum activation potentials: [-0.04492525612339045, -0.05996039618400176, -0.07383487617242994, -0.08860028323461903]
+2024-04-05 10:27:32,166 - Analyzer - INFO - estimated conductances for 5pps
+2024-04-05 10:27:32,248 - Analyzer - INFO - estimated conductances for 10pps
+2024-04-05 10:27:32,330 - Analyzer - INFO - estimated conductances for 20pps
+2024-04-05 10:27:32,400 - Analyzer - INFO - estimated conductances for 40pps
+2024-04-05 10:27:32,400 - Analyzer - INFO - estimated conductances for 60pps
+2024-04-05 10:27:32,400 - Analyzer - INFO - Level 1 optimization: Completed.
+2024-04-05 10:27:32,400 - Analyzer - INFO - Analysis of 2016-10-12_1_baseline_prr completed.
+2024-04-05 10:27:32,401 - Analyzer - INFO - Verbose plotting of conductance estimations for outputs/2016-10-12_1_baseline_prr_analyzed
+2024-04-05 10:27:32,720 - Analyzer - INFO - Saving verbose plotting of conductance estimations for outputs/2016-10-12_1_baseline_prr_analyzed
+2024-04-05 10:27:33,802 - Analyzer - INFO - Verbose plotting of stats for outputs/2016-10-12_1_baseline_prr_analyzed
+2024-04-05 10:27:33,842 - Analyzer - INFO - Saving verbose plotting of stats for outputs/2016-10-12_1_baseline_prr_analyzed
+2024-04-05 10:28:40,453 - Analyzer - INFO - Reading: 2016-10-12_1_baseline_prr
+2024-04-05 10:28:42,589 - Analyzer - INFO - Level 1 optimization: Activation potentials optimized using paradigm with maximum depolarization.
+2024-04-05 10:28:42,589 - Analyzer - INFO - Finding the best paradigm to optimize
+2024-04-05 10:28:42,590 - Analyzer - INFO - Optimizing activation potentials for current clamps in 60pps
+2024-04-05 10:30:50,928 - optimizer - INFO - Optimization Success?True iterations:493
+2024-04-05 10:30:50,928 - Analyzer - INFO - Optimum activation potentials: [-0.0449293475372619, -0.05996058429448291, -0.10208480998039886, -0.08860047763012026]
+2024-04-05 10:30:50,992 - Analyzer - INFO - estimated conductances for 5pps
+2024-04-05 10:30:51,056 - Analyzer - INFO - estimated conductances for 10pps
+2024-04-05 10:30:51,120 - Analyzer - INFO - estimated conductances for 20pps
+2024-04-05 10:30:51,183 - Analyzer - INFO - estimated conductances for 40pps
+2024-04-05 10:30:51,184 - Analyzer - INFO - estimated conductances for 60pps
+2024-04-05 10:30:51,184 - Analyzer - INFO - Level 1 optimization: Completed.
+2024-04-05 10:30:51,184 - Analyzer - INFO - Analysis of 2016-10-12_1_baseline_prr completed.
+2024-04-05 10:30:51,184 - Analyzer - INFO - Verbose plotting of conductance estimations for outputs/2016-10-12_1_baseline_prr_analyzed
+2024-04-05 10:30:51,463 - Analyzer - INFO - Saving verbose plotting of conductance estimations for outputs/2016-10-12_1_baseline_prr_analyzed
+2024-04-05 10:30:52,596 - Analyzer - INFO - Verbose plotting of stats for outputs/2016-10-12_1_baseline_prr_analyzed
+2024-04-05 10:30:52,638 - Analyzer - INFO - Saving verbose plotting of stats for outputs/2016-10-12_1_baseline_prr_analyzed

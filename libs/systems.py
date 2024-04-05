@@ -175,34 +175,6 @@ class WholeCellRecording:
             activation_current = self.filters["activation_currents"].propagate(self.data["Iactivation_"+str(inj)], sampling_rate, log)
             self.data["filtered_Iactivation_"+str(inj)] = activation_current
         return self.data
-
-    def squared_sum_of_negative_conductances(self, solution, log=False):
-        if log:
-            wholecell_logger.info("Computing objective function values")
-        self.parameters["Eact"] = solution
-        self.compute_activation_currents(log)
-        self.filter_activation_currents(log)
-        self.compute_passive_conductances(log)
-        self.compute_stats(log)
-        negative_going_excitation = self.data["excitation"][self.data["excitation"] < 0]
-        negative_going_excitation = negative_going_excitation/np.amin(negative_going_excitation)
-        negative_going_inhibition = self.data["inhibition"][self.data["inhibition"] < 0]
-        negative_going_inhibition = negative_going_inhibition/np.amin(negative_going_inhibition)
-        return np.square(np.sum(negative_going_excitation) + np.sum(negative_going_inhibition))
-    
-    def optimize(self, log=False):
-        if log:
-            wholecell_logger.info("Optimizing")
-        self.estimate_conductances()
-        def obj_wrapper(solution):
-            return self.squared_sum_of_negative_conductances(solution)
-        maximum_recorded_membrane_voltage = [max_val for max_val in self.data[[x for x in self.parameters["Iinj"]]].max()]
-        steady_state_potential = np.asarray([x for x in self.parameters["Ess"]])
-        activation_potential_bounds = Bounds(steady_state_potential, maximum_recorded_membrane_voltage)
-        result = minimize(obj_wrapper, maximum_recorded_membrane_voltage, method='trust-constr', bounds=activation_potential_bounds)
-        optimizer_logger.info(f"Optimization Success?{result.success} iterations:{result.niter}")
-        self.parameters["Eact"] = result.x
-        return result
     
     def compute_passive_conductances(self, log=False):
         if log:
@@ -275,6 +247,32 @@ class WholeCellRecording:
         self.compute_passive_conductances(log)
         self.stats = self.compute_stats(log)
         return self.data
+    
+    def squared_sum_of_negative_conductances(self, solution, log=False):
+        if log:
+            wholecell_logger.info("Computing objective function values")
+        self.parameters["Eact"] = solution
+        self.compute_activation_currents(log)
+        self.filter_activation_currents(log)
+        self.compute_passive_conductances(log)
+        self.compute_stats(log)
+        negative_going_excitation = self.data["excitation"][self.data["excitation"] < 0]
+        negative_going_excitation = negative_going_excitation/np.amin(negative_going_excitation)
+        negative_going_inhibition = self.data["inhibition"][self.data["inhibition"] < 0]
+        negative_going_inhibition = negative_going_inhibition/np.amin(negative_going_inhibition)
+        return np.square(np.sum(negative_going_excitation) + np.sum(negative_going_inhibition))
+    
+    def optimize(self, log=False):
+        if log:
+            wholecell_logger.info("Optimizing")
+        self.estimate_conductances()
+        maximum_recorded_membrane_voltage = [max_val for max_val in self.data[[x for x in self.parameters["Iinj"]]].max()]
+        steady_state_potential = np.asarray([x for x in self.parameters["Ess"]])
+        activation_potential_bounds = Bounds(steady_state_potential, maximum_recorded_membrane_voltage)
+        result = minimize(self.squared_sum_of_negative_conductances, maximum_recorded_membrane_voltage, method='trust-constr', bounds=activation_potential_bounds)
+        optimizer_logger.info(f"Optimization Success?{result.success} iterations:{result.niter}")
+        self.parameters["Eact"] = result.x
+        return result
 
 class Analyzer:
     def __init__(self, filepaths: Path, output_path: Path, filter_configurations: dict):
@@ -390,7 +388,7 @@ class Analyzer:
         pass
 
     def plot_dev(self, recordings, filename: Path):
-        analysis_logger.info(f"Verbose plotting of conductance estimations for {self.filepaths[1]}")
+        analysis_logger.info(f"Verbose plotting of conductance estimations for {filename}")
         fig, axs = plt.subplots(nrows = 7, ncols = len(recordings), sharex="all", sharey="row", figsize=(15, 10), constrained_layout=True)
         for idx, paradigm in enumerate(recordings):
             if "representative" in recordings[paradigm].data:
@@ -441,7 +439,7 @@ class Analyzer:
             axs[6, idx].set_ylabel("Stimulus")
             axs[6, idx].set_xlabel("times(sec)")
             axs[6, idx].grid(True)
-        analysis_logger.info(f"Saving verbose plotting of conductance estimations for {self.filepaths[1]}")
+        analysis_logger.info(f"Saving verbose plotting of conductance estimations for {filename}")
         plt.savefig(str(filename)+f"_dev_traces.png")
         pass
 
@@ -454,7 +452,7 @@ class Analyzer:
         pass
 
     def plot_stats_dev(self, recordings, filename: Path):
-        analysis_logger.info(f"Verbose plotting of stats for {self.filepaths[1]}")
+        analysis_logger.info(f"Verbose plotting of stats for {filename}")
         fig, axs = plt.subplots(nrows = 5, ncols = 1, sharex="all", figsize=(15, 10), constrained_layout=True)
         mean_depolarizations = np.asarray([recordings[paradigm].stats["depolarization"][0] for paradigm in recordings])
         mean_hyperpolarizations = np.asarray([recordings[paradigm].stats["hyperpolarization"][0] for paradigm in recordings])
@@ -499,7 +497,7 @@ class Analyzer:
         scale_max = np.amax(spikes_per_stimulus_repetition)
         self.set_stats_scale(ax, scale_max, 0.1)
         axs[4].set_ylabel("G (S)")
-        analysis_logger.info(f"Saving verbose plotting of stats for {self.filepaths[1]}")
+        analysis_logger.info(f"Saving verbose plotting of stats for {filename}")
         plt.savefig(str(filename)+f"_dev_stats.png")
         pass
 
