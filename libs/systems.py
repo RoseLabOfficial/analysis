@@ -119,7 +119,7 @@ class WholeCellRecording:
         self.parameters["alpha"] = self.parameters["alpha"]*self.parameters["xalpha"]
         self.parameters["beta"] = self.parameters["beta"]*self.parameters["xbeta"]
         if log:
-            wholecell_logger.info(f"alpha = {self.parameters["alpha"].to_numpy().tolist()} & beta = {self.parameters["beta"].to_numpy().tolist()}")
+            wholecell_logger.info(f"alpha = {self.parameters['alpha'].to_numpy().tolist()} & beta = {self.parameters['beta'].to_numpy().tolist()}")
         return self.parameters
     
     def compute_polarizations(self, log=False):
@@ -302,7 +302,7 @@ class Analyzer:
             analysis_logger.debug(f"{e}")
         dEact = recordings[optim_paradigm].parameters["Eact"] - recordings[optim_paradigm].parameters["Ess"]
         recordings[optim_paradigm].stats.insert(0, "paradigm", optim_paradigm)
-        analysis_logger.info(f"Optimum activation potentials: {recordings[optim_paradigm].parameters["Eact"].to_numpy().tolist()}")
+        analysis_logger.info(f"Optimum activation potentials: {recordings[optim_paradigm].parameters['Eact'].to_numpy().tolist()}")
         overall_stats = recordings[optim_paradigm].stats.copy()
         for idx, paradigm in enumerate(recordings):
             if not paradigm == optim_paradigm:

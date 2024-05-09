@@ -4,13 +4,14 @@
     // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
+
         {
-            "name": "Python Debugger: Current File",
+            "name": "BatchAnalyzer",
             "type": "debugpy",
             "request": "launch",
-            "program": "${file}",
+            "program": "./BatchAnalyzer.py",
             "console": "integratedTerminal",
-            "args": ["-ru"]
+            "args": ["-rf", "/home/roselab/Documents/Docs/JS/2016-10-26_1/-30dB_200Hz_15msPD_10pulses.xlsx"]
         }
     ]
 }

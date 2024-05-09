@@ -3,7 +3,8 @@ from libs.systems import WholeCellRecording, NonLinearModel
 import numpy as np
 import matplotlib.pyplot as plt
 if __name__ == "__main__":
-    filename = "./test_data/2012-05-03_2_baseline_prr_v4.xlsx"
+    # filename = "./test_data/2012-05-03_2_baseline_prr_v4.xlsx"
+    filename = '/home/roselab/Documents/Docs/JS/2016-10-26_1/-30dB_200Hz_15msPD_10pulses.xlsx'
     reader = XLReader(filename)
     for paradigm in reader.get_paradigms():
         data = WholeCellRecording(reader.get_paradigm_data(paradigm), 
