@@ -17,8 +17,9 @@ def main():
     parser.add_argument("--set_inputdir", "-si", type=Path, default = None, help="set input directory in configurations")
     parser.add_argument("--set_outputdir", "-so", type=Path, default = None, help="set output directory in configurations")
     parser.add_argument("--run", "-r", action="store_true", help="Run all the files in a dictory and put the results in outputs")
-    parser.add_argument("--run-file", "-rf", type=Path, default = None, help="run a single file")
-    parser.add_argument("--run-user-files", "-ru", action="store_true", help="run user files from configuration")
+    parser.add_argument("--run_file", "-rf", type=Path, default = None, help="run a single file")
+    parser.add_argument("--run_user_files", "-ru", action="store_true", help="run user files from configuration")
+    parser.add_argument("--optimization_level", "-o", type=int, default=0, help="0: User-specified values of Eact, 1: Compute Eact based on PR with max depolarization, 2: Compute Eact for each PR")
     args = parser.parse_args()
     if args.show_configs:
         print(configs.settings)
@@ -39,14 +40,14 @@ def main():
         inputfiles = configs.get_input_files()
         files = [inputdir / filename for filename in inputfiles]
         analyzer = Analyzer(files, configs.get_output_directory(), configs.get_filters())
-        analyzer.run()
+        analyzer.run(args.optimization_level)
     if args.run_file is not None:
         inputdir = configs.get_input_directory()
         filepath = inputdir / args.run_file
         print(filepath, type(filepath), filepath.exists())
         if filepath.exists():
             analyzer = Analyzer([filepath], configs.get_output_directory(), configs.get_filters())
-            analyzer.run(0)
+            analyzer.run(args.optimization_level)
         else:
             raise BufferError(f"{filepath} doesn't exist!")
     if args.run_user_files is not None:
@@ -55,7 +56,7 @@ def main():
         for filepath in filepaths:
             if filepath.exists():
                 analyzer = Analyzer([filepath], configs.get_output_directory(), configs.get_filters())
-                analyzer.run(configs.get_optimiizer_level())
+                analyzer.run(args.optimization_level)
             else:
                 Warning(f"{filepath} does not exist. Skipping!")
 

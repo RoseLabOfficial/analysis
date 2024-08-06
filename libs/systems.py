@@ -147,7 +147,7 @@ class WholeCellRecording:
             activation_current = alpha_current + beta_current
             activation_current[self.data[clamp] < self.parameters["Ess"][idx]] = 0.0
             activation_current[self.data[clamp] > self.parameters["Et"][idx]] = 0.0
-            self.data["Iactivation_"+str(clamp)] = -activation_current / 100
+            self.data["Iactivation_"+str(clamp)] = activation_current / 100
         return self.data
     
     def compute_membrane_currents(self, log=False):
@@ -361,9 +361,9 @@ class Analyzer:
             recordings, overall_stats = self.estimate_optimum_activation_potential(recordings)
             analysis_logger.info(f"Level 1 optimization: Completed.")
         elif optimize == 2:
-            analysis_logger.info(f"Level 3 optimization: Activation potentials optimized for every paradigm.")
+            analysis_logger.info(f"Level 2 optimization: Activation potentials optimized for every paradigm.")
             recordings, overall_stats = self.estimate_optimum_activation_potential_each_paradigm(recordings)
-            analysis_logger.info(f"Level 3 optimization: Complete.")
+            analysis_logger.info(f"Level 2 optimization: Complete.")
         result_filename = self.output_path / f"{filename}_analyzed"
         analysis_logger.info(f"Analysis of {filename} completed.")
         return recordings, overall_stats, result_filename

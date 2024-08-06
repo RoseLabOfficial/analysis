@@ -361,3 +361,97 @@
 2024-08-06 17:19:54,569 - Analyzer - INFO - Saving verbose plotting of conductance estimations for NATCALL_VDC/2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT_analyzed
 2024-08-06 17:19:56,454 - Analyzer - INFO - Verbose plotting of stats for NATCALL_VDC/2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT_analyzed
 2024-08-06 17:19:56,572 - Analyzer - INFO - Saving verbose plotting of stats for NATCALL_VDC/2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT_analyzed
+2024-08-06 17:27:23,608 - Analyzer - INFO - Reading: 2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT
+2024-08-06 17:27:27,152 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-08-06 17:27:27,573 - Analyzer - INFO - Analysis of 2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT completed.
+2024-08-06 17:27:27,573 - Analyzer - INFO - Verbose plotting of conductance estimations for NATCALL_VDC/2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT_analyzed
+2024-08-06 17:27:28,170 - Analyzer - INFO - Saving verbose plotting of conductance estimations for NATCALL_VDC/2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT_analyzed
+2024-08-06 17:27:30,055 - Analyzer - INFO - Verbose plotting of stats for NATCALL_VDC/2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT_analyzed
+2024-08-06 17:27:30,214 - Analyzer - INFO - Saving verbose plotting of stats for NATCALL_VDC/2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT_analyzed
+2024-08-06 17:29:27,792 - Analyzer - INFO - Reading: 2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT
+2024-08-06 17:29:31,269 - Analyzer - INFO - Level 1 optimization: Activation potentials optimized using paradigm with maximum depolarization.
+2024-08-06 17:29:31,269 - Analyzer - INFO - Finding the best paradigm to optimize
+2024-08-06 17:29:31,270 - Analyzer - INFO - Optimizing activation potentials for current clamps in 10pps
+2024-08-06 17:30:28,861 - optimizer - INFO - Optimization Success?True iterations:278
+2024-08-06 17:30:28,861 - Analyzer - INFO - Optimum activation potentials: [-0.05461830191707638, -0.06572783405763187, -0.08798993447334003]
+2024-08-06 17:30:28,941 - Analyzer - INFO - estimated conductances for 5pps
+2024-08-06 17:30:28,941 - Analyzer - INFO - estimated conductances for 10pps
+2024-08-06 17:30:29,021 - Analyzer - INFO - estimated conductances for 20pps
+2024-08-06 17:30:29,101 - Analyzer - INFO - estimated conductances for 40pps
+2024-08-06 17:30:29,180 - Analyzer - INFO - estimated conductances for 60pps
+2024-08-06 17:30:29,181 - Analyzer - INFO - Level 1 optimization: Completed.
+2024-08-06 17:30:29,181 - Analyzer - INFO - Analysis of 2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT completed.
+2024-08-06 17:30:29,181 - Analyzer - INFO - Verbose plotting of conductance estimations for NATCALL_VDC/2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT_analyzed
+2024-08-06 17:30:29,778 - Analyzer - INFO - Saving verbose plotting of conductance estimations for NATCALL_VDC/2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT_analyzed
+2024-08-06 17:30:31,564 - Analyzer - INFO - Verbose plotting of stats for NATCALL_VDC/2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT_analyzed
+2024-08-06 17:30:31,700 - Analyzer - INFO - Saving verbose plotting of stats for NATCALL_VDC/2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT_analyzed
+2024-08-06 17:44:28,046 - Analyzer - INFO - Reading: 2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT
+2024-08-06 17:44:31,419 - Analyzer - INFO - Level 1 optimization: Activation potentials optimized using paradigm with maximum depolarization.
+2024-08-06 17:44:31,419 - Analyzer - INFO - Finding the best paradigm to optimize
+2024-08-06 17:44:31,420 - Analyzer - INFO - Optimizing activation potentials for current clamps in 10pps
+2024-08-06 17:44:41,917 - optimizer - INFO - Optimization Success?True iterations:55
+2024-08-06 17:44:41,917 - Analyzer - INFO - Optimum activation potentials: [-0.057807070742947386, -0.07598681424163327, -0.08477026402201408]
+2024-08-06 17:44:41,997 - Analyzer - INFO - estimated conductances for 5pps
+2024-08-06 17:44:41,997 - Analyzer - INFO - estimated conductances for 10pps
+2024-08-06 17:44:42,077 - Analyzer - INFO - estimated conductances for 20pps
+2024-08-06 17:44:42,157 - Analyzer - INFO - estimated conductances for 40pps
+2024-08-06 17:44:42,237 - Analyzer - INFO - estimated conductances for 60pps
+2024-08-06 17:44:42,237 - Analyzer - INFO - Level 1 optimization: Completed.
+2024-08-06 17:44:42,237 - Analyzer - INFO - Analysis of 2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT completed.
+2024-08-06 17:44:42,237 - Analyzer - INFO - Verbose plotting of conductance estimations for NATCALL_VDC/2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT_analyzed
+2024-08-06 17:44:42,793 - Analyzer - INFO - Saving verbose plotting of conductance estimations for NATCALL_VDC/2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT_analyzed
+2024-08-06 17:44:44,684 - Analyzer - INFO - Verbose plotting of stats for NATCALL_VDC/2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT_analyzed
+2024-08-06 17:44:44,844 - Analyzer - INFO - Saving verbose plotting of stats for NATCALL_VDC/2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT_analyzed
+2024-08-06 17:45:23,774 - Analyzer - INFO - Reading: 2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT
+2024-08-06 17:45:27,235 - Analyzer - INFO - Level 1 optimization: Activation potentials optimized using paradigm with maximum depolarization.
+2024-08-06 17:45:27,235 - Analyzer - INFO - Finding the best paradigm to optimize
+2024-08-06 17:45:27,236 - Analyzer - INFO - Optimizing activation potentials for current clamps in 10pps
+2024-08-06 17:45:37,853 - optimizer - INFO - Optimization Success?True iterations:55
+2024-08-06 17:45:37,853 - Analyzer - INFO - Optimum activation potentials: [-0.057807070742947386, -0.07598681424163327, -0.08477026402201408]
+2024-08-06 17:45:37,934 - Analyzer - INFO - estimated conductances for 5pps
+2024-08-06 17:45:37,934 - Analyzer - INFO - estimated conductances for 10pps
+2024-08-06 17:45:38,016 - Analyzer - INFO - estimated conductances for 20pps
+2024-08-06 17:45:38,096 - Analyzer - INFO - estimated conductances for 40pps
+2024-08-06 17:45:38,176 - Analyzer - INFO - estimated conductances for 60pps
+2024-08-06 17:45:38,176 - Analyzer - INFO - Level 1 optimization: Completed.
+2024-08-06 17:45:38,176 - Analyzer - INFO - Analysis of 2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT completed.
+2024-08-06 17:45:38,176 - Analyzer - INFO - Verbose plotting of conductance estimations for NATCALL_VDC/2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT_analyzed
+2024-08-06 17:45:38,731 - Analyzer - INFO - Saving verbose plotting of conductance estimations for NATCALL_VDC/2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT_analyzed
+2024-08-06 17:45:40,643 - Analyzer - INFO - Verbose plotting of stats for NATCALL_VDC/2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT_analyzed
+2024-08-06 17:45:40,799 - Analyzer - INFO - Saving verbose plotting of stats for NATCALL_VDC/2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT_analyzed
+2024-08-06 17:46:03,323 - Analyzer - INFO - Reading: 2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT
+2024-08-06 17:46:06,833 - Analyzer - INFO - Level 1 optimization: Activation potentials optimized using paradigm with maximum depolarization.
+2024-08-06 17:46:06,833 - Analyzer - INFO - Finding the best paradigm to optimize
+2024-08-06 17:46:06,835 - Analyzer - INFO - Optimizing activation potentials for current clamps in 10pps
+2024-08-06 17:46:17,638 - optimizer - INFO - Optimization Success?True iterations:55
+2024-08-06 17:46:17,638 - Analyzer - INFO - Optimum activation potentials: [-0.057807070742947386, -0.07598681424163327, -0.08477026402201408]
+2024-08-06 17:46:17,720 - Analyzer - INFO - estimated conductances for 5pps
+2024-08-06 17:46:17,720 - Analyzer - INFO - estimated conductances for 10pps
+2024-08-06 17:46:17,803 - Analyzer - INFO - estimated conductances for 20pps
+2024-08-06 17:46:17,884 - Analyzer - INFO - estimated conductances for 40pps
+2024-08-06 17:46:17,965 - Analyzer - INFO - estimated conductances for 60pps
+2024-08-06 17:46:17,965 - Analyzer - INFO - Level 1 optimization: Completed.
+2024-08-06 17:46:17,965 - Analyzer - INFO - Analysis of 2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT completed.
+2024-08-06 17:46:17,965 - Analyzer - INFO - Verbose plotting of conductance estimations for NATCALL_VDC/2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT_analyzed
+2024-08-06 17:46:18,544 - Analyzer - INFO - Saving verbose plotting of conductance estimations for NATCALL_VDC/2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT_analyzed
+2024-08-06 17:46:20,536 - Analyzer - INFO - Verbose plotting of stats for NATCALL_VDC/2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT_analyzed
+2024-08-06 17:46:20,693 - Analyzer - INFO - Saving verbose plotting of stats for NATCALL_VDC/2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT_analyzed
+2024-08-06 17:49:43,598 - Analyzer - INFO - Reading: 2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT
+2024-08-06 17:49:46,999 - Analyzer - INFO - Level 1 optimization: Activation potentials optimized using paradigm with maximum depolarization.
+2024-08-06 17:49:46,999 - Analyzer - INFO - Finding the best paradigm to optimize
+2024-08-06 17:49:47,000 - Analyzer - INFO - Optimizing activation potentials for current clamps in 10pps
+2024-08-06 17:50:09,409 - Analyzer - INFO - Reading: 2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT
+2024-08-06 17:50:12,940 - Analyzer - INFO - Level 1 optimization: Activation potentials optimized using paradigm with maximum depolarization.
+2024-08-06 17:50:12,940 - Analyzer - INFO - Finding the best paradigm to optimize
+2024-08-06 17:50:12,941 - Analyzer - INFO - Optimizing activation potentials for current clamps in 10pps
+2024-08-06 17:50:49,421 - Analyzer - INFO - Reading: 2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT
+2024-08-06 17:50:52,909 - Analyzer - INFO - Level 1 optimization: Activation potentials optimized using paradigm with maximum depolarization.
+2024-08-06 17:50:52,909 - Analyzer - INFO - Finding the best paradigm to optimize
+2024-08-06 17:50:52,910 - Analyzer - INFO - Optimizing activation potentials for current clamps in 10pps
+2024-08-06 17:51:31,652 - Analyzer - INFO - Reading: 2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT
+2024-08-06 17:51:35,010 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-08-06 17:51:35,412 - Analyzer - INFO - Analysis of 2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT completed.
+2024-08-06 17:51:35,412 - Analyzer - INFO - Verbose plotting of conductance estimations for NATCALL_VDC/2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT_analyzed
+2024-08-06 17:51:35,998 - Analyzer - INFO - Saving verbose plotting of conductance estimations for NATCALL_VDC/2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT_analyzed
+2024-08-06 17:51:37,831 - Analyzer - INFO - Verbose plotting of stats for NATCALL_VDC/2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT_analyzed
+2024-08-06 17:51:37,997 - Analyzer - INFO - Saving verbose plotting of stats for NATCALL_VDC/2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT_analyzed
