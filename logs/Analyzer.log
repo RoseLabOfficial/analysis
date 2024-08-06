@@ -101,3 +101,263 @@
 2024-05-08 16:22:24,953 - Analyzer - INFO - Reading: -30dB_200Hz_15msPD_10pulses
 2024-05-08 16:26:06,227 - Analyzer - INFO - Reading: -30dB_200Hz_15msPD_10pulses
 2024-05-08 16:29:08,682 - Analyzer - INFO - Reading: -30dB_200Hz_15msPD_10pulses
+2024-05-29 11:00:05,296 - Analyzer - INFO - Reading: baseline_prr
+2024-05-29 11:00:08,644 - Analyzer - INFO - Level 1 optimization: Activation potentials optimized using paradigm with maximum depolarization.
+2024-05-29 11:00:08,644 - Analyzer - INFO - Finding the best paradigm to optimize
+2024-05-29 11:00:08,646 - Analyzer - INFO - Optimizing activation potentials for current clamps in 20pps-10pulses
+2024-05-29 11:00:08,646 - Analyzer - DEBUG - 'times'
+2024-05-29 11:01:31,887 - Analyzer - INFO - Reading: baseline_prr
+2024-05-29 11:01:35,143 - Analyzer - INFO - Level 1 optimization: Activation potentials optimized using paradigm with maximum depolarization.
+2024-05-29 11:01:35,143 - Analyzer - INFO - Finding the best paradigm to optimize
+2024-05-29 11:01:35,144 - Analyzer - INFO - Optimizing activation potentials for current clamps in 20pps-10pulses
+2024-05-29 11:01:35,144 - Analyzer - DEBUG - 'times'
+2024-05-29 11:01:58,675 - Analyzer - INFO - Reading: baseline_prr
+2024-05-29 11:02:02,045 - Analyzer - INFO - Level 1 optimization: Activation potentials optimized using paradigm with maximum depolarization.
+2024-05-29 11:02:02,045 - Analyzer - INFO - Finding the best paradigm to optimize
+2024-05-29 11:02:02,046 - Analyzer - INFO - Optimizing activation potentials for current clamps in 20pps-10pulses
+2024-05-29 11:02:02,046 - Analyzer - DEBUG - 'times'
+2024-05-29 11:02:59,005 - Analyzer - INFO - Reading: baseline_prr
+2024-05-29 11:03:02,340 - Analyzer - INFO - Level 0 optimization: No optimizing using user provided values.
+2024-05-29 11:03:59,285 - Analyzer - INFO - Reading: baseline_prr
+2024-05-29 11:04:02,708 - Analyzer - INFO - Level 0 optimization: No optimizing using user provided values.
+2024-05-29 11:04:15,222 - Analyzer - INFO - Reading: baseline_prr
+2024-05-29 11:04:18,561 - Analyzer - INFO - Level 0 optimization: No optimizing using user provided values.
+2024-05-29 11:04:18,981 - Analyzer - INFO - Analysis of baseline_prr completed.
+2024-05-29 11:04:18,981 - Analyzer - INFO - Verbose plotting of conductance estimations for outputs/baseline_prr_analyzed
+2024-05-29 11:04:19,565 - Analyzer - INFO - Saving verbose plotting of conductance estimations for outputs/baseline_prr_analyzed
+2024-05-29 11:08:01,878 - Analyzer - INFO - Reading: baseline_prr
+2024-05-29 11:08:05,137 - Analyzer - INFO - Level 0 optimization: No optimizing using user provided values.
+2024-05-29 11:08:05,546 - Analyzer - INFO - Analysis of baseline_prr completed.
+2024-05-29 11:08:05,547 - Analyzer - INFO - Verbose plotting of conductance estimations for /home/roselab/Documents/Docs/JS/2016-10-26_1/baseline_prr_analyzed
+2024-05-29 11:08:06,137 - Analyzer - INFO - Saving verbose plotting of conductance estimations for /home/roselab/Documents/Docs/JS/2016-10-26_1/baseline_prr_analyzed
+2024-05-29 11:08:07,877 - Analyzer - INFO - Verbose plotting of stats for /home/roselab/Documents/Docs/JS/2016-10-26_1/baseline_prr_analyzed
+2024-05-29 11:08:08,021 - Analyzer - INFO - Saving verbose plotting of stats for /home/roselab/Documents/Docs/JS/2016-10-26_1/baseline_prr_analyzed
+2024-05-29 11:41:38,204 - Analyzer - INFO - Reading: nbqx_cpp_prr
+2024-05-29 11:45:39,095 - Analyzer - INFO - Reading: nbqx_cpp_prr
+2024-05-29 11:48:01,593 - Analyzer - INFO - Reading: nbqx_cpp_prr
+2024-05-29 11:48:47,094 - Analyzer - INFO - Reading: nbqx_cpp_prr
+2024-05-29 11:50:08,191 - Analyzer - INFO - Reading: nbqx_cpp_prr
+2024-05-29 11:50:26,731 - Analyzer - INFO - Reading: nbqx_cpp_prr
+2024-05-29 11:52:38,906 - Analyzer - INFO - Reading: nbqx_cpp_prr
+2024-05-29 11:52:43,149 - Analyzer - INFO - Level 0 optimization: No optimizing using user provided values.
+2024-05-29 11:52:43,728 - Analyzer - INFO - Analysis of nbqx_cpp_prr completed.
+2024-05-29 11:52:43,728 - Analyzer - INFO - Verbose plotting of conductance estimations for /home/roselab/Documents/Docs/JS/2016-10-26_1/nbqx_cpp_prr_analyzed
+2024-05-29 11:52:44,350 - Analyzer - INFO - Saving verbose plotting of conductance estimations for /home/roselab/Documents/Docs/JS/2016-10-26_1/nbqx_cpp_prr_analyzed
+2024-05-29 11:52:46,243 - Analyzer - INFO - Verbose plotting of stats for /home/roselab/Documents/Docs/JS/2016-10-26_1/nbqx_cpp_prr_analyzed
+2024-05-29 11:52:46,356 - Analyzer - INFO - Saving verbose plotting of stats for /home/roselab/Documents/Docs/JS/2016-10-26_1/nbqx_cpp_prr_analyzed
+2024-05-29 12:00:43,796 - Analyzer - INFO - Reading: nbqx_cpp_prr
+2024-05-29 12:00:47,957 - Analyzer - INFO - Level 0 optimization: No optimizing using user provided values.
+2024-05-29 12:00:48,528 - Analyzer - INFO - Analysis of nbqx_cpp_prr completed.
+2024-05-29 12:00:48,528 - Analyzer - INFO - Verbose plotting of conductance estimations for /home/roselab/Documents/Docs/JS/2016-10-26_1/nbqx_cpp_prr_analyzed
+2024-05-29 12:00:49,161 - Analyzer - INFO - Saving verbose plotting of conductance estimations for /home/roselab/Documents/Docs/JS/2016-10-26_1/nbqx_cpp_prr_analyzed
+2024-05-29 12:00:51,129 - Analyzer - INFO - Verbose plotting of stats for /home/roselab/Documents/Docs/JS/2016-10-26_1/nbqx_cpp_prr_analyzed
+2024-05-29 12:00:51,245 - Analyzer - INFO - Saving verbose plotting of stats for /home/roselab/Documents/Docs/JS/2016-10-26_1/nbqx_cpp_prr_analyzed
+2024-05-29 12:00:59,505 - Analyzer - INFO - Reading: nbqx_cpp_prr
+2024-05-29 12:01:03,624 - Analyzer - INFO - Level 0 optimization: No optimizing using user provided values.
+2024-05-29 12:01:04,177 - Analyzer - INFO - Analysis of nbqx_cpp_prr completed.
+2024-05-29 12:01:04,177 - Analyzer - INFO - Verbose plotting of conductance estimations for /home/roselab/Documents/Docs/JS/2016-10-26_1/nbqx_cpp_prr_analyzed
+2024-05-29 12:01:04,800 - Analyzer - INFO - Saving verbose plotting of conductance estimations for /home/roselab/Documents/Docs/JS/2016-10-26_1/nbqx_cpp_prr_analyzed
+2024-05-29 12:01:06,638 - Analyzer - INFO - Verbose plotting of stats for /home/roselab/Documents/Docs/JS/2016-10-26_1/nbqx_cpp_prr_analyzed
+2024-05-29 12:01:06,797 - Analyzer - INFO - Saving verbose plotting of stats for /home/roselab/Documents/Docs/JS/2016-10-26_1/nbqx_cpp_prr_analyzed
+2024-05-29 12:05:19,656 - Analyzer - INFO - Reading: nbqx_cpp_prr
+2024-05-29 12:05:24,013 - Analyzer - INFO - Level 0 optimization: No optimizing using user provided values.
+2024-05-29 12:05:24,557 - Analyzer - INFO - Analysis of nbqx_cpp_prr completed.
+2024-05-29 12:05:24,557 - Analyzer - INFO - Verbose plotting of conductance estimations for /home/roselab/Documents/Docs/JS/2016-10-26_1/nbqx_cpp_prr_analyzed
+2024-05-29 12:05:25,205 - Analyzer - INFO - Saving verbose plotting of conductance estimations for /home/roselab/Documents/Docs/JS/2016-10-26_1/nbqx_cpp_prr_analyzed
+2024-05-29 12:05:27,062 - Analyzer - INFO - Verbose plotting of stats for /home/roselab/Documents/Docs/JS/2016-10-26_1/nbqx_cpp_prr_analyzed
+2024-05-29 12:05:27,179 - Analyzer - INFO - Saving verbose plotting of stats for /home/roselab/Documents/Docs/JS/2016-10-26_1/nbqx_cpp_prr_analyzed
+2024-05-29 12:06:44,988 - Analyzer - INFO - Reading: nbqx_cpp_prr
+2024-05-29 12:06:49,258 - Analyzer - INFO - Level 0 optimization: No optimizing using user provided values.
+2024-05-29 12:06:49,817 - Analyzer - INFO - Analysis of nbqx_cpp_prr completed.
+2024-05-29 12:06:49,817 - Analyzer - INFO - Verbose plotting of conductance estimations for /home/roselab/Documents/Docs/JS/2016-10-26_1/nbqx_cpp_prr_analyzed
+2024-05-29 12:06:50,462 - Analyzer - INFO - Saving verbose plotting of conductance estimations for /home/roselab/Documents/Docs/JS/2016-10-26_1/nbqx_cpp_prr_analyzed
+2024-05-29 12:06:52,318 - Analyzer - INFO - Verbose plotting of stats for /home/roselab/Documents/Docs/JS/2016-10-26_1/nbqx_cpp_prr_analyzed
+2024-05-29 12:06:52,465 - Analyzer - INFO - Saving verbose plotting of stats for /home/roselab/Documents/Docs/JS/2016-10-26_1/nbqx_cpp_prr_analyzed
+2024-05-29 12:10:21,235 - Analyzer - INFO - Reading: nbqx_cpp_prr
+2024-05-29 12:10:48,640 - Analyzer - INFO - Reading: nbqx_cpp_prr
+2024-05-29 12:10:52,902 - Analyzer - INFO - Level 0 optimization: No optimizing using user provided values.
+2024-05-29 12:10:53,466 - Analyzer - INFO - Analysis of nbqx_cpp_prr completed.
+2024-05-29 12:10:53,467 - Analyzer - INFO - Verbose plotting of conductance estimations for /home/roselab/Documents/Docs/JS/2016-10-26_1/nbqx_cpp_prr_analyzed
+2024-05-29 12:10:54,093 - Analyzer - INFO - Saving verbose plotting of conductance estimations for /home/roselab/Documents/Docs/JS/2016-10-26_1/nbqx_cpp_prr_analyzed
+2024-05-29 12:10:55,977 - Analyzer - INFO - Verbose plotting of stats for /home/roselab/Documents/Docs/JS/2016-10-26_1/nbqx_cpp_prr_analyzed
+2024-05-29 12:10:56,121 - Analyzer - INFO - Saving verbose plotting of stats for /home/roselab/Documents/Docs/JS/2016-10-26_1/nbqx_cpp_prr_analyzed
+2024-05-29 12:14:05,691 - Analyzer - INFO - Reading: nbqx_cpp_prr
+2024-05-29 12:15:33,291 - Analyzer - INFO - Reading: nbqx_cpp_prr
+2024-05-29 12:15:39,793 - Analyzer - INFO - Level 0 optimization: No optimizing using user provided values.
+2024-05-29 12:15:40,190 - Analyzer - INFO - Analysis of nbqx_cpp_prr completed.
+2024-05-29 12:15:40,191 - Analyzer - INFO - Verbose plotting of conductance estimations for /home/roselab/Documents/Docs/JS/2016-10-26_1/nbqx_cpp_prr_analyzed
+2024-05-29 12:15:40,760 - Analyzer - INFO - Saving verbose plotting of conductance estimations for /home/roselab/Documents/Docs/JS/2016-10-26_1/nbqx_cpp_prr_analyzed
+2024-05-29 12:15:42,573 - Analyzer - INFO - Verbose plotting of stats for /home/roselab/Documents/Docs/JS/2016-10-26_1/nbqx_cpp_prr_analyzed
+2024-05-29 12:15:42,685 - Analyzer - INFO - Saving verbose plotting of stats for /home/roselab/Documents/Docs/JS/2016-10-26_1/nbqx_cpp_prr_analyzed
+2024-05-30 10:08:35,650 - Analyzer - INFO - Reading: nbqx_cpp_prr
+2024-05-30 10:08:42,513 - Analyzer - INFO - Level 0 optimization: No optimizing using user provided values.
+2024-05-30 10:08:42,927 - Analyzer - INFO - Analysis of nbqx_cpp_prr completed.
+2024-05-30 10:08:42,927 - Analyzer - INFO - Verbose plotting of conductance estimations for /home/roselab/Documents/Docs/JS/2016-10-26_1/nbqx_cpp_prr_analyzed
+2024-05-30 10:08:43,445 - Analyzer - INFO - Saving verbose plotting of conductance estimations for /home/roselab/Documents/Docs/JS/2016-10-26_1/nbqx_cpp_prr_analyzed
+2024-05-30 10:08:45,229 - Analyzer - INFO - Verbose plotting of stats for /home/roselab/Documents/Docs/JS/2016-10-26_1/nbqx_cpp_prr_analyzed
+2024-05-30 10:08:45,338 - Analyzer - INFO - Saving verbose plotting of stats for /home/roselab/Documents/Docs/JS/2016-10-26_1/nbqx_cpp_prr_analyzed
+2024-05-30 10:25:15,103 - Analyzer - INFO - Reading: baseline_prr
+2024-05-30 10:25:18,404 - Analyzer - INFO - Level 0 optimization: No optimizing using user provided values.
+2024-05-30 10:25:18,825 - Analyzer - INFO - Analysis of baseline_prr completed.
+2024-05-30 10:25:18,825 - Analyzer - INFO - Verbose plotting of conductance estimations for /home/roselab/Documents/Docs/JS/2016-10-26_1/baseline_prr_analyzed
+2024-05-30 10:25:19,430 - Analyzer - INFO - Saving verbose plotting of conductance estimations for /home/roselab/Documents/Docs/JS/2016-10-26_1/baseline_prr_analyzed
+2024-05-30 10:25:21,215 - Analyzer - INFO - Verbose plotting of stats for /home/roselab/Documents/Docs/JS/2016-10-26_1/baseline_prr_analyzed
+2024-05-30 10:25:21,371 - Analyzer - INFO - Saving verbose plotting of stats for /home/roselab/Documents/Docs/JS/2016-10-26_1/baseline_prr_analyzed
+2024-05-30 10:28:51,874 - Analyzer - INFO - Reading: baseline_prr
+2024-05-30 10:30:07,028 - Analyzer - INFO - Reading: baseline_prr
+2024-05-30 10:31:42,300 - Analyzer - INFO - Reading: baseline_prr
+2024-05-30 10:33:04,405 - Analyzer - INFO - Reading: baseline_prr
+2024-05-30 10:33:58,407 - Analyzer - INFO - Reading: baseline_prr
+2024-05-30 10:35:00,247 - Analyzer - INFO - Reading: baseline_prr
+2024-05-30 10:37:03,701 - Analyzer - INFO - Reading: baseline_prr
+2024-05-30 10:38:07,203 - Analyzer - INFO - Reading: baseline_prr
+2024-05-30 10:39:47,272 - Analyzer - INFO - Reading: baseline_prr
+2024-05-30 10:42:44,202 - Analyzer - INFO - Reading: baseline_prr
+2024-05-30 10:43:01,486 - Analyzer - INFO - Reading: baseline_prr
+2024-05-30 10:44:01,677 - Analyzer - INFO - Reading: baseline_prr
+2024-05-30 10:44:07,795 - Analyzer - INFO - Level 0 optimization: No optimizing using user provided values.
+2024-05-30 10:44:08,123 - Analyzer - INFO - Analysis of baseline_prr completed.
+2024-05-30 10:44:08,123 - Analyzer - INFO - Verbose plotting of conductance estimations for /home/roselab/Documents/Docs/JS/2016-10-26_1/baseline_prr_analyzed
+2024-05-30 10:44:08,666 - Analyzer - INFO - Saving verbose plotting of conductance estimations for /home/roselab/Documents/Docs/JS/2016-10-26_1/baseline_prr_analyzed
+2024-05-30 10:44:10,416 - Analyzer - INFO - Verbose plotting of stats for /home/roselab/Documents/Docs/JS/2016-10-26_1/baseline_prr_analyzed
+2024-05-30 10:44:10,532 - Analyzer - INFO - Saving verbose plotting of stats for /home/roselab/Documents/Docs/JS/2016-10-26_1/baseline_prr_analyzed
+2024-05-30 13:38:49,471 - Analyzer - INFO - Reading: baseline_prr
+2024-05-30 13:38:55,718 - Analyzer - INFO - Level 0 optimization: No optimizing using user provided values.
+2024-05-30 13:38:56,053 - Analyzer - INFO - Analysis of baseline_prr completed.
+2024-05-30 13:38:56,053 - Analyzer - INFO - Verbose plotting of conductance estimations for /home/roselab/Documents/Docs/JS/2016-10-26_1/baseline_prr_analyzed
+2024-05-30 13:38:56,568 - Analyzer - INFO - Saving verbose plotting of conductance estimations for /home/roselab/Documents/Docs/JS/2016-10-26_1/baseline_prr_analyzed
+2024-05-30 13:38:58,406 - Analyzer - INFO - Verbose plotting of stats for /home/roselab/Documents/Docs/JS/2016-10-26_1/baseline_prr_analyzed
+2024-05-30 13:38:58,518 - Analyzer - INFO - Saving verbose plotting of stats for /home/roselab/Documents/Docs/JS/2016-10-26_1/baseline_prr_analyzed
+2024-05-30 13:42:27,164 - Analyzer - INFO - Reading: baseline_prr
+2024-05-30 13:42:33,321 - Analyzer - INFO - Level 0 optimization: No optimizing using user provided values.
+2024-05-30 13:42:33,644 - Analyzer - INFO - Analysis of baseline_prr completed.
+2024-05-30 13:42:33,644 - Analyzer - INFO - Verbose plotting of conductance estimations for /home/roselab/Documents/Docs/JS/2016-10-26_1/baseline_prr_analyzed
+2024-05-30 13:42:34,205 - Analyzer - INFO - Saving verbose plotting of conductance estimations for /home/roselab/Documents/Docs/JS/2016-10-26_1/baseline_prr_analyzed
+2024-05-30 13:42:36,005 - Analyzer - INFO - Verbose plotting of stats for /home/roselab/Documents/Docs/JS/2016-10-26_1/baseline_prr_analyzed
+2024-05-30 13:42:36,147 - Analyzer - INFO - Saving verbose plotting of stats for /home/roselab/Documents/Docs/JS/2016-10-26_1/baseline_prr_analyzed
+2024-05-30 13:46:47,687 - Analyzer - INFO - Reading: baseline_prr
+2024-05-30 13:46:53,927 - Analyzer - INFO - Level 0 optimization: No optimizing using user provided values.
+2024-05-30 13:46:54,257 - Analyzer - INFO - Analysis of baseline_prr completed.
+2024-05-30 13:46:54,257 - Analyzer - INFO - Verbose plotting of conductance estimations for /home/roselab/Documents/Docs/JS/2016-10-26_1/baseline_prr_analyzed
+2024-05-30 13:46:54,773 - Analyzer - INFO - Saving verbose plotting of conductance estimations for /home/roselab/Documents/Docs/JS/2016-10-26_1/baseline_prr_analyzed
+2024-05-30 13:46:56,547 - Analyzer - INFO - Verbose plotting of stats for /home/roselab/Documents/Docs/JS/2016-10-26_1/baseline_prr_analyzed
+2024-05-30 13:46:56,690 - Analyzer - INFO - Saving verbose plotting of stats for /home/roselab/Documents/Docs/JS/2016-10-26_1/baseline_prr_analyzed
+2024-05-30 14:38:21,598 - Analyzer - INFO - Reading: 2020-03-04_1_baseline_prr
+2024-05-30 14:38:23,327 - Analyzer - INFO - Level 0 optimization: No optimizing using user provided values.
+2024-05-30 14:38:23,679 - Analyzer - INFO - Analysis of 2020-03-04_1_baseline_prr completed.
+2024-05-30 14:38:23,679 - Analyzer - INFO - Verbose plotting of conductance estimations for /home/roselab/Documents/Docs/2020-03-04_1_baseline_prr_analyzed
+2024-05-30 14:38:24,222 - Analyzer - INFO - Saving verbose plotting of conductance estimations for /home/roselab/Documents/Docs/2020-03-04_1_baseline_prr_analyzed
+2024-05-30 14:38:25,911 - Analyzer - INFO - Verbose plotting of stats for /home/roselab/Documents/Docs/2020-03-04_1_baseline_prr_analyzed
+2024-05-30 14:38:26,056 - Analyzer - INFO - Saving verbose plotting of stats for /home/roselab/Documents/Docs/2020-03-04_1_baseline_prr_analyzed
+2024-05-30 14:40:35,372 - Analyzer - INFO - Reading: 2020-03-04_1_baseline_prr
+2024-05-30 14:40:37,125 - Analyzer - INFO - Level 0 optimization: No optimizing using user provided values.
+2024-05-30 14:40:37,471 - Analyzer - INFO - Analysis of 2020-03-04_1_baseline_prr completed.
+2024-05-30 14:40:37,471 - Analyzer - INFO - Verbose plotting of conductance estimations for /home/roselab/Documents/Docs/2020-03-04_1_baseline_prr_analyzed
+2024-05-30 14:40:38,064 - Analyzer - INFO - Saving verbose plotting of conductance estimations for /home/roselab/Documents/Docs/2020-03-04_1_baseline_prr_analyzed
+2024-05-30 14:40:39,766 - Analyzer - INFO - Verbose plotting of stats for /home/roselab/Documents/Docs/2020-03-04_1_baseline_prr_analyzed
+2024-05-30 14:40:39,879 - Analyzer - INFO - Saving verbose plotting of stats for /home/roselab/Documents/Docs/2020-03-04_1_baseline_prr_analyzed
+2024-05-30 14:46:26,857 - Analyzer - INFO - Reading: 2020-03-04_1_baseline_prr
+2024-05-30 14:46:28,541 - Analyzer - INFO - Level 0 optimization: No optimizing using user provided values.
+2024-05-30 14:46:28,885 - Analyzer - INFO - Analysis of 2020-03-04_1_baseline_prr completed.
+2024-05-30 14:46:28,886 - Analyzer - INFO - Verbose plotting of conductance estimations for /home/roselab/Documents/Docs/2020-03-04_1_baseline_prr_analyzed
+2024-05-30 14:46:29,476 - Analyzer - INFO - Saving verbose plotting of conductance estimations for /home/roselab/Documents/Docs/2020-03-04_1_baseline_prr_analyzed
+2024-05-30 14:46:31,176 - Analyzer - INFO - Verbose plotting of stats for /home/roselab/Documents/Docs/2020-03-04_1_baseline_prr_analyzed
+2024-05-30 14:46:31,328 - Analyzer - INFO - Saving verbose plotting of stats for /home/roselab/Documents/Docs/2020-03-04_1_baseline_prr_analyzed
+2024-05-30 14:47:50,249 - Analyzer - INFO - Reading: 2020-03-04_1_baseline_prr
+2024-05-30 14:47:51,931 - Analyzer - INFO - Level 0 optimization: No optimizing using user provided values.
+2024-05-30 14:47:52,274 - Analyzer - INFO - Analysis of 2020-03-04_1_baseline_prr completed.
+2024-05-30 14:47:52,274 - Analyzer - INFO - Verbose plotting of conductance estimations for /home/roselab/Documents/Docs/2020-03-04_1_baseline_prr_analyzed
+2024-05-30 14:47:52,776 - Analyzer - INFO - Saving verbose plotting of conductance estimations for /home/roselab/Documents/Docs/2020-03-04_1_baseline_prr_analyzed
+2024-05-30 14:47:54,408 - Analyzer - INFO - Verbose plotting of stats for /home/roselab/Documents/Docs/2020-03-04_1_baseline_prr_analyzed
+2024-05-30 14:47:54,563 - Analyzer - INFO - Saving verbose plotting of stats for /home/roselab/Documents/Docs/2020-03-04_1_baseline_prr_analyzed
+2024-05-30 14:48:38,232 - Analyzer - INFO - Reading: 2020-03-04_1_baseline_prr
+2024-05-30 14:48:39,982 - Analyzer - INFO - Level 0 optimization: No optimizing using user provided values.
+2024-05-30 14:48:40,334 - Analyzer - INFO - Analysis of 2020-03-04_1_baseline_prr completed.
+2024-05-30 14:48:40,334 - Analyzer - INFO - Verbose plotting of conductance estimations for /home/roselab/Documents/Docs/2020-03-04_1_baseline_prr_analyzed
+2024-05-30 14:48:40,939 - Analyzer - INFO - Saving verbose plotting of conductance estimations for /home/roselab/Documents/Docs/2020-03-04_1_baseline_prr_analyzed
+2024-05-30 14:48:42,669 - Analyzer - INFO - Verbose plotting of stats for /home/roselab/Documents/Docs/2020-03-04_1_baseline_prr_analyzed
+2024-05-30 14:48:42,818 - Analyzer - INFO - Saving verbose plotting of stats for /home/roselab/Documents/Docs/2020-03-04_1_baseline_prr_analyzed
+2024-05-30 14:50:13,448 - Analyzer - INFO - Reading: 2020-03-04_1_baseline_prr
+2024-05-30 14:50:15,153 - Analyzer - INFO - Level 0 optimization: No optimizing using user provided values.
+2024-05-30 14:50:15,498 - Analyzer - INFO - Analysis of 2020-03-04_1_baseline_prr completed.
+2024-05-30 14:50:15,498 - Analyzer - INFO - Verbose plotting of conductance estimations for /home/roselab/Documents/Docs/2020-03-04_1_baseline_prr_analyzed
+2024-05-30 14:50:16,077 - Analyzer - INFO - Saving verbose plotting of conductance estimations for /home/roselab/Documents/Docs/2020-03-04_1_baseline_prr_analyzed
+2024-05-30 14:50:17,667 - Analyzer - INFO - Verbose plotting of stats for /home/roselab/Documents/Docs/2020-03-04_1_baseline_prr_analyzed
+2024-05-30 14:50:17,823 - Analyzer - INFO - Saving verbose plotting of stats for /home/roselab/Documents/Docs/2020-03-04_1_baseline_prr_analyzed
+2024-05-30 14:50:35,054 - Analyzer - INFO - Reading: 2020-03-04_1_baseline_prr
+2024-05-30 14:50:36,736 - Analyzer - INFO - Level 0 optimization: No optimizing using user provided values.
+2024-05-30 14:50:37,077 - Analyzer - INFO - Analysis of 2020-03-04_1_baseline_prr completed.
+2024-05-30 14:50:37,077 - Analyzer - INFO - Verbose plotting of conductance estimations for /home/roselab/Documents/Docs/2020-03-04_1_baseline_prr_analyzed
+2024-05-30 14:50:37,670 - Analyzer - INFO - Saving verbose plotting of conductance estimations for /home/roselab/Documents/Docs/2020-03-04_1_baseline_prr_analyzed
+2024-05-30 14:50:39,294 - Analyzer - INFO - Verbose plotting of stats for /home/roselab/Documents/Docs/2020-03-04_1_baseline_prr_analyzed
+2024-05-30 14:50:39,445 - Analyzer - INFO - Saving verbose plotting of stats for /home/roselab/Documents/Docs/2020-03-04_1_baseline_prr_analyzed
+2024-05-30 14:50:54,569 - Analyzer - INFO - Reading: 2020-03-04_1_baseline_prr
+2024-05-30 14:50:56,267 - Analyzer - INFO - Level 0 optimization: No optimizing using user provided values.
+2024-05-30 14:50:56,608 - Analyzer - INFO - Analysis of 2020-03-04_1_baseline_prr completed.
+2024-05-30 14:50:56,608 - Analyzer - INFO - Verbose plotting of conductance estimations for /home/roselab/Documents/Docs/2020-03-04_1_baseline_prr_analyzed
+2024-05-30 14:50:57,190 - Analyzer - INFO - Saving verbose plotting of conductance estimations for /home/roselab/Documents/Docs/2020-03-04_1_baseline_prr_analyzed
+2024-05-30 14:50:58,793 - Analyzer - INFO - Verbose plotting of stats for /home/roselab/Documents/Docs/2020-03-04_1_baseline_prr_analyzed
+2024-05-30 14:50:58,941 - Analyzer - INFO - Saving verbose plotting of stats for /home/roselab/Documents/Docs/2020-03-04_1_baseline_prr_analyzed
+2024-08-06 15:52:42,562 - Analyzer - INFO - Reading: 2016-10-12_1_baseline_prr
+2024-08-06 15:52:45,346 - Analyzer - INFO - Level 0 optimization: No optimizing using user provided values.
+2024-08-06 15:52:45,850 - Analyzer - INFO - Analysis of 2016-10-12_1_baseline_prr completed.
+2024-08-06 15:52:45,850 - Analyzer - INFO - Verbose plotting of conductance estimations for 2016-10-12_1_baseline_prr_analyzed
+2024-08-06 15:52:46,416 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2016-10-12_1_baseline_prr_analyzed
+2024-08-06 15:52:48,271 - Analyzer - INFO - Verbose plotting of stats for 2016-10-12_1_baseline_prr_analyzed
+2024-08-06 15:52:48,429 - Analyzer - INFO - Saving verbose plotting of stats for 2016-10-12_1_baseline_prr_analyzed
+2024-08-06 16:11:33,667 - Analyzer - INFO - Reading: 2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT
+2024-08-06 16:12:33,606 - Analyzer - INFO - Reading: 2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT
+2024-08-06 16:12:36,958 - Analyzer - INFO - Level 0 optimization: No optimizing using user provided values.
+2024-08-06 16:12:37,363 - Analyzer - INFO - Analysis of 2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT completed.
+2024-08-06 16:12:37,363 - Analyzer - INFO - Verbose plotting of conductance estimations for 2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT_analyzed
+2024-08-06 16:12:37,983 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT_analyzed
+2024-08-06 16:12:39,738 - Analyzer - INFO - Verbose plotting of stats for 2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT_analyzed
+2024-08-06 16:12:39,883 - Analyzer - INFO - Saving verbose plotting of stats for 2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT_analyzed
+2024-08-06 16:29:06,788 - Analyzer - INFO - Reading: 2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT
+2024-08-06 16:29:25,864 - Analyzer - INFO - Reading: 2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT
+2024-08-06 16:29:29,318 - Analyzer - INFO - Level 0 optimization: No optimizing using user provided values.
+2024-08-06 16:29:29,742 - Analyzer - INFO - Analysis of 2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT completed.
+2024-08-06 16:29:29,743 - Analyzer - INFO - Verbose plotting of conductance estimations for NATCALL_VDC/2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT_analyzed
+2024-08-06 16:29:30,337 - Analyzer - INFO - Saving verbose plotting of conductance estimations for NATCALL_VDC/2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT_analyzed
+2024-08-06 16:29:45,328 - Analyzer - INFO - Reading: 2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT
+2024-08-06 16:29:48,761 - Analyzer - INFO - Level 0 optimization: No optimizing using user provided values.
+2024-08-06 16:29:49,188 - Analyzer - INFO - Analysis of 2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT completed.
+2024-08-06 16:29:49,188 - Analyzer - INFO - Verbose plotting of conductance estimations for NATCALL_VDC/2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT_analyzed
+2024-08-06 16:29:49,783 - Analyzer - INFO - Saving verbose plotting of conductance estimations for NATCALL_VDC/2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT_analyzed
+2024-08-06 16:29:51,522 - Analyzer - INFO - Verbose plotting of stats for NATCALL_VDC/2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT_analyzed
+2024-08-06 16:29:51,682 - Analyzer - INFO - Saving verbose plotting of stats for NATCALL_VDC/2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT_analyzed
+2024-08-06 16:33:24,546 - Analyzer - INFO - Reading: 2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT
+2024-08-06 16:33:27,932 - Analyzer - INFO - Level 0 optimization: No optimizing using user provided values.
+2024-08-06 16:33:28,341 - Analyzer - INFO - Analysis of 2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT completed.
+2024-08-06 16:33:28,341 - Analyzer - INFO - Verbose plotting of conductance estimations for NATCALL_VDC/2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT_analyzed
+2024-08-06 16:33:28,967 - Analyzer - INFO - Saving verbose plotting of conductance estimations for NATCALL_VDC/2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT_analyzed
+2024-08-06 16:33:30,771 - Analyzer - INFO - Verbose plotting of stats for NATCALL_VDC/2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT_analyzed
+2024-08-06 16:33:30,924 - Analyzer - INFO - Saving verbose plotting of stats for NATCALL_VDC/2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT_analyzed
+2024-08-06 16:37:05,438 - Analyzer - INFO - Reading: 2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT
+2024-08-06 16:37:08,860 - Analyzer - INFO - Level 0 optimization: No optimizing using user provided values.
+2024-08-06 16:37:09,263 - Analyzer - INFO - Analysis of 2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT completed.
+2024-08-06 16:37:09,263 - Analyzer - INFO - Verbose plotting of conductance estimations for NATCALL_VDC/2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT_analyzed
+2024-08-06 16:37:09,862 - Analyzer - INFO - Saving verbose plotting of conductance estimations for NATCALL_VDC/2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT_analyzed
+2024-08-06 16:37:11,661 - Analyzer - INFO - Verbose plotting of stats for NATCALL_VDC/2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT_analyzed
+2024-08-06 16:37:11,786 - Analyzer - INFO - Saving verbose plotting of stats for NATCALL_VDC/2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT_analyzed
+2024-08-06 16:39:19,315 - Analyzer - INFO - Reading: 2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT
+2024-08-06 16:39:22,680 - Analyzer - INFO - Level 0 optimization: No optimizing using user provided values.
+2024-08-06 16:39:23,082 - Analyzer - INFO - Analysis of 2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT completed.
+2024-08-06 16:39:23,082 - Analyzer - INFO - Verbose plotting of conductance estimations for NATCALL_VDC/2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT_analyzed
+2024-08-06 16:39:23,672 - Analyzer - INFO - Saving verbose plotting of conductance estimations for NATCALL_VDC/2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT_analyzed
+2024-08-06 16:39:25,469 - Analyzer - INFO - Verbose plotting of stats for NATCALL_VDC/2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT_analyzed
+2024-08-06 16:39:25,633 - Analyzer - INFO - Saving verbose plotting of stats for NATCALL_VDC/2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT_analyzed
+2024-08-06 16:57:21,885 - Analyzer - INFO - Reading: 2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT
+2024-08-06 16:57:25,389 - Analyzer - INFO - Level 0 optimization: No optimizing using user provided values.
+2024-08-06 16:57:25,806 - Analyzer - INFO - Analysis of 2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT completed.
+2024-08-06 16:57:25,806 - Analyzer - INFO - Verbose plotting of conductance estimations for NATCALL_VDC/2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT_analyzed
+2024-08-06 16:57:26,395 - Analyzer - INFO - Saving verbose plotting of conductance estimations for NATCALL_VDC/2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT_analyzed
+2024-08-06 16:57:28,252 - Analyzer - INFO - Verbose plotting of stats for NATCALL_VDC/2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT_analyzed
+2024-08-06 16:57:28,418 - Analyzer - INFO - Saving verbose plotting of stats for NATCALL_VDC/2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT_analyzed
+2024-08-06 17:19:50,063 - Analyzer - INFO - Reading: 2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT
+2024-08-06 17:19:53,573 - Analyzer - INFO - Level 0 optimization: No optimizing using user provided values.
+2024-08-06 17:19:54,000 - Analyzer - INFO - Analysis of 2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT completed.
+2024-08-06 17:19:54,000 - Analyzer - INFO - Verbose plotting of conductance estimations for NATCALL_VDC/2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT_analyzed
+2024-08-06 17:19:54,569 - Analyzer - INFO - Saving verbose plotting of conductance estimations for NATCALL_VDC/2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT_analyzed
+2024-08-06 17:19:56,454 - Analyzer - INFO - Verbose plotting of stats for NATCALL_VDC/2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT_analyzed
+2024-08-06 17:19:56,572 - Analyzer - INFO - Saving verbose plotting of stats for NATCALL_VDC/2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT_analyzed

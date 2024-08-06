@@ -142,12 +142,12 @@ class WholeCellRecording:
             wholecell_logger.info("Computing activation currents")
         self.compute_activation_conductance_constants(log)
         for idx, clamp in enumerate(self.parameters["Iinj"]):
-            alpha_current = self.parameters["alpha"][idx]*(self.data[clamp] - self.parameters["Er"][idx])*(self.data[clamp] - self.parameters["Et"][idx])
-            beta_current = self.parameters["beta"][idx]*(self.data[clamp] - self.parameters["Er"][idx])
+            alpha_current = self.parameters["alpha"][idx]*(self.data[clamp] - self.parameters["Ess"][idx])*(self.data[clamp] - self.parameters["Et"][idx])
+            beta_current = self.parameters["beta"][idx]*(self.data[clamp] - self.parameters["Ess"][idx])
             activation_current = alpha_current + beta_current
             activation_current[self.data[clamp] < self.parameters["Ess"][idx]] = 0.0
-            activation_current[self.data[clamp] > self.parameters["Eact"][idx]] = 0.0
-            self.data["Iactivation_"+str(clamp)] = activation_current
+            activation_current[self.data[clamp] > self.parameters["Et"][idx]] = 0.0
+            self.data["Iactivation_"+str(clamp)] = -activation_current / 100
         return self.data
     
     def compute_membrane_currents(self, log=False):
@@ -339,7 +339,7 @@ class Analyzer:
         overall_stats = overall_stats.sort_values(by="paradigm", ascending=True)
         return recordings, overall_stats
 
-    def analyze(self, fileaddress, optimize=1):
+    def analyze(self, fileaddress, optimize=0):
         filepath = fileaddress[0]
         filename = fileaddress[1]
         fileformat = fileaddress[2]
@@ -353,9 +353,9 @@ class Analyzer:
                 self.filter_configurations
             )
         if optimize == 0:
-            analysis_logger.info(f"Level 0 optimization: No optimizing using user provided values.")
+            analysis_logger.info(f"Level 0 optimization: No optimization--using user provided values.")
             recordings, overall_stats = self.estimation_without_optim_activation_potential(recordings)
-            self.logger.info(f"Level 0 optimization: Completed.")
+            # self.logger.info(f"Level 0 optimization: Completed.")
         elif optimize == 1:
             analysis_logger.info(f"Level 1 optimization: Activation potentials optimized using paradigm with maximum depolarization.")
             recordings, overall_stats = self.estimate_optimum_activation_potential(recordings)
@@ -501,7 +501,7 @@ class Analyzer:
         plt.savefig(str(filename)+f"_dev_stats.png")
         pass
 
-    def run(self, optimization_level=1):
+    def run(self, optimization_level=0):
         for filepath in self.filepaths:
             recordings, stats, result_filename = self.analyze(filepath, optimize=optimization_level)
             # self.write_to_excel(f"{result_filename}.xlsx", recordings, stats)

@@ -43,11 +43,12 @@ def main():
     if args.run_file is not None:
         inputdir = configs.get_input_directory()
         filepath = inputdir / args.run_file
+        print(filepath, type(filepath), filepath.exists())
         if filepath.exists():
             analyzer = Analyzer([filepath], configs.get_output_directory(), configs.get_filters())
-            analyzer.run(configs.get_optimiizer_level())
+            analyzer.run(0)
         else:
-            BufferError(f"{filepath} doesn't exist!")
+            raise BufferError(f"{filepath} doesn't exist!")
     if args.run_user_files is not None:
         inputdir = configs.get_input_directory()
         filepaths = [inputdir / x for x in configs.get_user_files()]

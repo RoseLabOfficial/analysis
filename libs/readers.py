@@ -21,7 +21,9 @@ class XLReader:
     
     def get_paradigm_parameters(self, paradigm: str):
         paradigm = "parameters_"+paradigm
-        return pd.read_excel(self.filepath, sheet_name=paradigm, header=0)
+        df = pd.read_excel(self.filepath, sheet_name=paradigm, header=0)
+        df = df.dropna(how='all').dropna(axis=1, how='all')
+        return df
 
 
 class AnalysisConfigurations:
@@ -32,8 +34,14 @@ class AnalysisConfigurations:
     def get_input_directory(self):
         return Path(self.settings["inputdir"])
     
+    def set_input_directory(self, newdir: str) -> None:
+        self.settings["inputdir"] = str(newdir)
+    
     def get_output_directory(self):
         return Path(self.settings["outputdir"])
+    
+    def set_output_directory(self, newdir: str) -> None:
+        self.settings["outputdir"] = str(newdir)
     
     def get_input_files(self):
         return self.sysops_handler.list_files(self.get_input_directory())
