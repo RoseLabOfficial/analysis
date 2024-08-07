@@ -9,9 +9,9 @@
             "attenuation": 80
         },
         "membrane_currents": {
-            "passband": 40,
+            "passband": 20,
             "ripple": 0.01,
-            "stopband": 60,
+            "stopband": 40,
             "attenuation": 80
         },
         "activation_currents": {

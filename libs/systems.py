@@ -131,7 +131,7 @@ class WholeCellRecording:
             activation_current = alpha_current + beta_current
             activation_current[self.data[clamp] < self.parameters["Ess"][idx]] = 0.0
             activation_current[self.data[clamp] > self.parameters["Et"][idx]] = 0.0
-            self.data["Iactivation_"+str(clamp)] = activation_current / 100
+            self.data["Iactivation_"+str(clamp)] = activation_current
         return self.data
     
     def compute_membrane_currents(self, log=False):
@@ -157,7 +157,7 @@ class WholeCellRecording:
         sampling_rate = 1/(self.data["times"][1] - self.data["times"][0])
         for inj in list(self.parameters["Iinj"]):
             activation_current = self.filters["activation_currents"].propagate(self.data["Iactivation_"+str(inj)], sampling_rate, log)
-            self.data["filtered_Iactivation_"+str(inj)] = activation_current
+            self.data["filtered_Iactivation_"+str(inj)] = activation_current 
         return self.data
     
     def compute_passive_conductances(self, log=False):
