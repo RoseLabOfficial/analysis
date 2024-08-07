@@ -50,14 +50,3 @@ class Compliance:
                 if not clamp in data:
                     return False
         return True
-    
-class FileAddressHandler:
-    def __init__(self):
-        pass
-
-    def split_fileaddress(self, fileaddress: Path):
-        return fileaddress.parent, fileaddress.stem, fileaddress.suffix
-    
-    def split_fileaddress_list(self, fileaddress_list: Path):
-        return [(self.split_fileaddress(fileaddress)) for fileaddress in fileaddress_list]
-    

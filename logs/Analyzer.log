@@ -455,3 +455,157 @@
 2024-08-06 17:51:35,998 - Analyzer - INFO - Saving verbose plotting of conductance estimations for NATCALL_VDC/2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT_analyzed
 2024-08-06 17:51:37,831 - Analyzer - INFO - Verbose plotting of stats for NATCALL_VDC/2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT_analyzed
 2024-08-06 17:51:37,997 - Analyzer - INFO - Saving verbose plotting of stats for NATCALL_VDC/2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT_analyzed
+2024-08-06 17:57:25,175 - Analyzer - INFO - Reading: 2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT
+2024-08-06 17:57:28,569 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-08-06 17:57:28,971 - Analyzer - INFO - Analysis of 2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT completed.
+2024-08-06 17:57:28,971 - Analyzer - INFO - Verbose plotting of conductance estimations for NATCALL_VDC/2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT_analyzed
+2024-08-06 17:57:29,585 - Analyzer - INFO - Saving verbose plotting of conductance estimations for NATCALL_VDC/2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT_analyzed
+2024-08-06 17:57:31,522 - Analyzer - INFO - Verbose plotting of stats for NATCALL_VDC/2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT_analyzed
+2024-08-06 17:57:31,695 - Analyzer - INFO - Saving verbose plotting of stats for NATCALL_VDC/2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT_analyzed
+2024-08-06 17:58:31,137 - Analyzer - INFO - Reading: 2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT
+2024-08-06 17:58:34,663 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-08-06 17:58:35,083 - Analyzer - INFO - Analysis of 2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT completed.
+2024-08-06 17:58:35,084 - Analyzer - INFO - Verbose plotting of conductance estimations for NATCALL_VDC/2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT_analyzed
+2024-08-06 17:58:35,674 - Analyzer - INFO - Saving verbose plotting of conductance estimations for NATCALL_VDC/2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT_analyzed
+2024-08-06 17:58:37,555 - Analyzer - INFO - Verbose plotting of stats for NATCALL_VDC/2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT_analyzed
+2024-08-06 17:58:37,725 - Analyzer - INFO - Saving verbose plotting of stats for NATCALL_VDC/2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT_analyzed
+2024-08-06 17:59:08,613 - Analyzer - INFO - Reading: 2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT
+2024-08-06 17:59:12,095 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-08-06 17:59:12,512 - Analyzer - INFO - Analysis of 2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT completed.
+2024-08-06 17:59:12,512 - Analyzer - INFO - Verbose plotting of conductance estimations for NATCALL_VDC/2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT_analyzed
+2024-08-06 17:59:13,122 - Analyzer - INFO - Saving verbose plotting of conductance estimations for NATCALL_VDC/2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT_analyzed
+2024-08-06 17:59:14,984 - Analyzer - INFO - Verbose plotting of stats for NATCALL_VDC/2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT_analyzed
+2024-08-06 17:59:15,151 - Analyzer - INFO - Saving verbose plotting of stats for NATCALL_VDC/2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT_analyzed
+2024-08-06 18:00:31,342 - Analyzer - INFO - Reading: 2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT
+2024-08-06 18:00:34,897 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-08-06 18:00:35,324 - Analyzer - INFO - Analysis of 2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT completed.
+2024-08-06 18:00:35,324 - Analyzer - INFO - Verbose plotting of conductance estimations for NATCALL_VDC/2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT_analyzed
+2024-08-06 18:00:35,928 - Analyzer - INFO - Saving verbose plotting of conductance estimations for NATCALL_VDC/2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT_analyzed
+2024-08-06 18:00:37,816 - Analyzer - INFO - Verbose plotting of stats for NATCALL_VDC/2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT_analyzed
+2024-08-06 18:00:37,974 - Analyzer - INFO - Saving verbose plotting of stats for NATCALL_VDC/2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT_analyzed
+2024-08-06 18:01:35,087 - Analyzer - INFO - Reading: 2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT
+2024-08-06 18:01:38,502 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-08-06 18:01:38,908 - Analyzer - INFO - Analysis of 2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT completed.
+2024-08-06 18:01:38,908 - Analyzer - INFO - Verbose plotting of conductance estimations for NATCALL_VDC/2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT_analyzed
+2024-08-06 18:01:39,513 - Analyzer - INFO - Saving verbose plotting of conductance estimations for NATCALL_VDC/2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT_analyzed
+2024-08-06 18:01:41,400 - Analyzer - INFO - Verbose plotting of stats for NATCALL_VDC/2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT_analyzed
+2024-08-06 18:01:41,559 - Analyzer - INFO - Saving verbose plotting of stats for NATCALL_VDC/2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT_analyzed
+2024-08-06 18:02:54,189 - Analyzer - INFO - Reading: 2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT
+2024-08-06 18:02:57,623 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-08-06 18:02:58,027 - Analyzer - INFO - Analysis of 2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT completed.
+2024-08-06 18:02:58,027 - Analyzer - INFO - Verbose plotting of conductance estimations for NATCALL_VDC/2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT_analyzed
+2024-08-06 18:02:58,623 - Analyzer - INFO - Saving verbose plotting of conductance estimations for NATCALL_VDC/2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT_analyzed
+2024-08-06 18:03:00,525 - Analyzer - INFO - Verbose plotting of stats for NATCALL_VDC/2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT_analyzed
+2024-08-06 18:03:00,690 - Analyzer - INFO - Saving verbose plotting of stats for NATCALL_VDC/2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT_analyzed
+2024-08-06 18:04:05,019 - Analyzer - INFO - Reading: 2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT
+2024-08-06 18:04:08,500 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-08-06 18:04:08,911 - Analyzer - INFO - Analysis of 2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT completed.
+2024-08-06 18:04:08,911 - Analyzer - INFO - Verbose plotting of conductance estimations for NATCALL_VDC/2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT_analyzed
+2024-08-06 18:04:09,500 - Analyzer - INFO - Saving verbose plotting of conductance estimations for NATCALL_VDC/2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT_analyzed
+2024-08-06 18:04:11,410 - Analyzer - INFO - Verbose plotting of stats for NATCALL_VDC/2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT_analyzed
+2024-08-06 18:04:11,570 - Analyzer - INFO - Saving verbose plotting of stats for NATCALL_VDC/2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT_analyzed
+2024-08-06 18:05:33,278 - Analyzer - INFO - Reading: 2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT
+2024-08-06 18:05:36,685 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-08-06 18:05:37,089 - Analyzer - INFO - Analysis of 2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT completed.
+2024-08-06 18:05:37,089 - Analyzer - INFO - Verbose plotting of conductance estimations for NATCALL_VDC/2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT_analyzed
+2024-08-06 18:05:37,702 - Analyzer - INFO - Saving verbose plotting of conductance estimations for NATCALL_VDC/2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT_analyzed
+2024-08-06 18:05:39,624 - Analyzer - INFO - Verbose plotting of stats for NATCALL_VDC/2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT_analyzed
+2024-08-06 18:05:39,788 - Analyzer - INFO - Saving verbose plotting of stats for NATCALL_VDC/2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT_analyzed
+2024-08-06 18:06:45,209 - Analyzer - INFO - Reading: 2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT
+2024-08-06 18:06:48,592 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-08-06 18:06:49,002 - Analyzer - INFO - Analysis of 2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT completed.
+2024-08-06 18:06:49,002 - Analyzer - INFO - Verbose plotting of conductance estimations for NATCALL_VDC/2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT_analyzed
+2024-08-06 18:06:49,608 - Analyzer - INFO - Saving verbose plotting of conductance estimations for NATCALL_VDC/2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT_analyzed
+2024-08-06 18:06:51,485 - Analyzer - INFO - Verbose plotting of stats for NATCALL_VDC/2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT_analyzed
+2024-08-06 18:06:51,602 - Analyzer - INFO - Saving verbose plotting of stats for NATCALL_VDC/2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT_analyzed
+2024-08-06 18:12:31,943 - Analyzer - INFO - Reading: 2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT
+2024-08-06 18:12:35,344 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-08-06 18:12:35,752 - Analyzer - INFO - Analysis of 2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT completed.
+2024-08-06 18:12:35,752 - Analyzer - INFO - Verbose plotting of conductance estimations for NATCALL_VDC/2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT_analyzed
+2024-08-06 18:12:36,343 - Analyzer - INFO - Saving verbose plotting of conductance estimations for NATCALL_VDC/2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT_analyzed
+2024-08-06 18:12:38,202 - Analyzer - INFO - Verbose plotting of stats for NATCALL_VDC/2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT_analyzed
+2024-08-06 18:12:38,366 - Analyzer - INFO - Saving verbose plotting of stats for NATCALL_VDC/2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT_analyzed
+2024-08-07 12:52:05,599 - Analyzer - INFO - Reading: 2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT
+2024-08-07 12:52:09,080 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-08-07 12:52:09,493 - Analyzer - INFO - Analysis of 2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT completed.
+2024-08-07 12:52:09,493 - Analyzer - INFO - Verbose plotting of conductance estimations for /home/roselab/Documents/GitHub/Essays/natural_calls_paper/intra_cases/2021-09-01_2_700Hz_LIN/2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT_analyzed
+2024-08-07 12:52:10,056 - Analyzer - INFO - Saving verbose plotting of conductance estimations for /home/roselab/Documents/GitHub/Essays/natural_calls_paper/intra_cases/2021-09-01_2_700Hz_LIN/2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT_analyzed
+2024-08-07 12:52:11,905 - Analyzer - INFO - Verbose plotting of stats for /home/roselab/Documents/GitHub/Essays/natural_calls_paper/intra_cases/2021-09-01_2_700Hz_LIN/2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT_analyzed
+2024-08-07 12:52:12,039 - Analyzer - INFO - Saving verbose plotting of stats for /home/roselab/Documents/GitHub/Essays/natural_calls_paper/intra_cases/2021-09-01_2_700Hz_LIN/2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT_analyzed
+2024-08-07 13:35:02,322 - Analyzer - INFO - Reading: 2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT
+2024-08-07 13:35:03,021 - WholecellRecording - WARNING - Invalid current_clamps argument in WholeCellRecording initialization: not a subset of clamps in excel file. Using all clamps present in file.
+2024-08-07 13:35:03,760 - WholecellRecording - WARNING - Invalid current_clamps argument in WholeCellRecording initialization: not a subset of clamps in excel file. Using all clamps present in file.
+2024-08-07 13:35:04,433 - WholecellRecording - WARNING - Invalid current_clamps argument in WholeCellRecording initialization: not a subset of clamps in excel file. Using all clamps present in file.
+2024-08-07 13:35:05,088 - WholecellRecording - WARNING - Invalid current_clamps argument in WholeCellRecording initialization: not a subset of clamps in excel file. Using all clamps present in file.
+2024-08-07 14:48:16,967 - Analyzer - INFO - Reading: 2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT.xlsx
+2024-08-07 14:49:28,669 - Analyzer - INFO - Reading: 2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT.xlsx
+2024-08-07 14:52:32,653 - Analyzer - INFO - Reading: 2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT.xlsx
+2024-08-07 15:10:37,010 - Analyzer - INFO - Reading: 2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT.xlsx
+2024-08-07 15:21:32,910 - Analyzer - INFO - Reading: 2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT.xlsx
+2024-08-07 15:21:34,797 - WholecellRecording - WARNING - Invalid current_clamps argument in WholeCellRecording initialization: not a subset of clamps in excel file. Using all clamps present in file.
+2024-08-07 15:21:36,650 - WholecellRecording - WARNING - Invalid current_clamps argument in WholeCellRecording initialization: not a subset of clamps in excel file. Using all clamps present in file.
+2024-08-07 15:21:38,469 - WholecellRecording - WARNING - Invalid current_clamps argument in WholeCellRecording initialization: not a subset of clamps in excel file. Using all clamps present in file.
+2024-08-07 15:21:40,273 - WholecellRecording - WARNING - Invalid current_clamps argument in WholeCellRecording initialization: not a subset of clamps in excel file. Using all clamps present in file.
+2024-08-07 15:21:42,096 - WholecellRecording - WARNING - Invalid current_clamps argument in WholeCellRecording initialization: not a subset of clamps in excel file. Using all clamps present in file.
+2024-08-07 15:21:42,098 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-08-07 15:21:42,663 - Analyzer - INFO - Analysis of 2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT.xlsx completed.
+2024-08-07 15:21:42,663 - Analyzer - INFO - Verbose plotting of conductance estimations for /home/roselab/Documents/GitHub/Essays/natural_calls_paper/intra_cases/2021-09-01_2_700Hz_LIN/2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT_analyzed
+2024-08-07 15:21:43,620 - Analyzer - INFO - Saving verbose plotting of conductance estimations for /home/roselab/Documents/GitHub/Essays/natural_calls_paper/intra_cases/2021-09-01_2_700Hz_LIN/2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT_analyzed
+2024-08-07 15:21:49,217 - Analyzer - INFO - Reading: 2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT.xlsx
+2024-08-07 15:21:51,100 - WholecellRecording - WARNING - Invalid current_clamps argument in WholeCellRecording initialization: not a subset of clamps in excel file. Using all clamps present in file.
+2024-08-07 15:21:52,972 - WholecellRecording - WARNING - Invalid current_clamps argument in WholeCellRecording initialization: not a subset of clamps in excel file. Using all clamps present in file.
+2024-08-07 15:21:54,811 - WholecellRecording - WARNING - Invalid current_clamps argument in WholeCellRecording initialization: not a subset of clamps in excel file. Using all clamps present in file.
+2024-08-07 15:21:56,655 - WholecellRecording - WARNING - Invalid current_clamps argument in WholeCellRecording initialization: not a subset of clamps in excel file. Using all clamps present in file.
+2024-08-07 15:21:58,553 - WholecellRecording - WARNING - Invalid current_clamps argument in WholeCellRecording initialization: not a subset of clamps in excel file. Using all clamps present in file.
+2024-08-07 15:21:58,555 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-08-07 15:21:59,135 - Analyzer - INFO - Analysis of 2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT.xlsx completed.
+2024-08-07 15:21:59,135 - Analyzer - INFO - Verbose plotting of conductance estimations for /home/roselab/Documents/GitHub/Essays/natural_calls_paper/intra_cases/2021-09-01_2_700Hz_LIN/2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT_analyzed
+2024-08-07 15:22:00,119 - Analyzer - INFO - Saving verbose plotting of conductance estimations for /home/roselab/Documents/GitHub/Essays/natural_calls_paper/intra_cases/2021-09-01_2_700Hz_LIN/2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT_analyzed
+2024-08-07 15:22:04,590 - Analyzer - INFO - Verbose plotting of stats for /home/roselab/Documents/GitHub/Essays/natural_calls_paper/intra_cases/2021-09-01_2_700Hz_LIN/2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT_analyzed
+2024-08-07 15:22:04,832 - Analyzer - INFO - Saving verbose plotting of stats for /home/roselab/Documents/GitHub/Essays/natural_calls_paper/intra_cases/2021-09-01_2_700Hz_LIN/2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT_analyzed
+2024-08-07 15:22:40,547 - Analyzer - INFO - Reading: 2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT.xlsx
+2024-08-07 15:23:22,340 - Analyzer - INFO - Reading: 2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT.xlsx
+2024-08-07 15:26:19,339 - Analyzer - INFO - Reading: 2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT.xlsx
+2024-08-07 15:26:28,902 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-08-07 15:26:29,518 - Analyzer - INFO - Analysis of 2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT.xlsx completed.
+2024-08-07 15:26:29,518 - Analyzer - INFO - Verbose plotting of conductance estimations for /home/roselab/Documents/GitHub/Essays/natural_calls_paper/intra_cases/2021-09-01_2_700Hz_LIN/2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT_analyzed
+2024-08-07 15:26:30,461 - Analyzer - INFO - Saving verbose plotting of conductance estimations for /home/roselab/Documents/GitHub/Essays/natural_calls_paper/intra_cases/2021-09-01_2_700Hz_LIN/2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT_analyzed
+2024-08-07 15:26:35,018 - Analyzer - INFO - Verbose plotting of stats for /home/roselab/Documents/GitHub/Essays/natural_calls_paper/intra_cases/2021-09-01_2_700Hz_LIN/2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT_analyzed
+2024-08-07 15:26:35,218 - Analyzer - INFO - Saving verbose plotting of stats for /home/roselab/Documents/GitHub/Essays/natural_calls_paper/intra_cases/2021-09-01_2_700Hz_LIN/2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT_analyzed
+2024-08-07 15:32:04,190 - Analyzer - INFO - Reading: 2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT.xlsx
+2024-08-07 15:32:13,424 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-08-07 15:32:13,990 - Analyzer - INFO - Analysis of 2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT.xlsx completed.
+2024-08-07 15:32:13,990 - Analyzer - INFO - Verbose plotting of conductance estimations for /home/roselab/Documents/GitHub/Essays/natural_calls_paper/intra_cases/2021-09-01_2_700Hz_LIN/2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT_analyzed
+2024-08-07 15:32:14,966 - Analyzer - INFO - Saving verbose plotting of conductance estimations for /home/roselab/Documents/GitHub/Essays/natural_calls_paper/intra_cases/2021-09-01_2_700Hz_LIN/2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT_analyzed
+2024-08-07 15:32:19,306 - Analyzer - INFO - Verbose plotting of stats for /home/roselab/Documents/GitHub/Essays/natural_calls_paper/intra_cases/2021-09-01_2_700Hz_LIN/2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT_analyzed
+2024-08-07 15:32:19,546 - Analyzer - INFO - Saving verbose plotting of stats for /home/roselab/Documents/GitHub/Essays/natural_calls_paper/intra_cases/2021-09-01_2_700Hz_LIN/2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT_analyzed
+2024-08-07 15:40:02,267 - Analyzer - INFO - Reading: 2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT.xlsx
+2024-08-07 15:40:11,617 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-08-07 15:40:12,187 - Analyzer - INFO - Analysis of 2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT.xlsx completed.
+2024-08-07 15:40:12,187 - Analyzer - INFO - Verbose plotting of conductance estimations for /home/roselab/Documents/GitHub/Essays/natural_calls_paper/intra_cases/2021-09-01_2_700Hz_LIN/2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT_analyzed
+2024-08-07 15:40:13,152 - Analyzer - INFO - Saving verbose plotting of conductance estimations for /home/roselab/Documents/GitHub/Essays/natural_calls_paper/intra_cases/2021-09-01_2_700Hz_LIN/2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT_analyzed
+2024-08-07 15:40:17,538 - Analyzer - INFO - Verbose plotting of stats for /home/roselab/Documents/GitHub/Essays/natural_calls_paper/intra_cases/2021-09-01_2_700Hz_LIN/2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT_analyzed
+2024-08-07 15:40:17,781 - Analyzer - INFO - Saving verbose plotting of stats for /home/roselab/Documents/GitHub/Essays/natural_calls_paper/intra_cases/2021-09-01_2_700Hz_LIN/2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT_analyzed
+2024-08-07 15:41:08,707 - Analyzer - INFO - Reading: 2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT.xlsx
+2024-08-07 15:41:17,818 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-08-07 15:41:18,392 - Analyzer - INFO - Analysis of 2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT.xlsx completed.
+2024-08-07 15:41:18,393 - Analyzer - INFO - Verbose plotting of conductance estimations for /home/roselab/Documents/GitHub/Essays/natural_calls_paper/intra_cases/2021-09-01_2_700Hz_LIN/2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT_analyzed
+2024-08-07 15:41:19,390 - Analyzer - INFO - Saving verbose plotting of conductance estimations for /home/roselab/Documents/GitHub/Essays/natural_calls_paper/intra_cases/2021-09-01_2_700Hz_LIN/2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT_analyzed
+2024-08-07 15:41:23,851 - Analyzer - INFO - Verbose plotting of stats for /home/roselab/Documents/GitHub/Essays/natural_calls_paper/intra_cases/2021-09-01_2_700Hz_LIN/2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT_analyzed
+2024-08-07 15:41:24,062 - Analyzer - INFO - Saving verbose plotting of stats for /home/roselab/Documents/GitHub/Essays/natural_calls_paper/intra_cases/2021-09-01_2_700Hz_LIN/2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT_analyzed
+2024-08-07 15:41:45,980 - Analyzer - INFO - Reading: 2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT.xlsx
+2024-08-07 15:41:55,406 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-08-07 15:41:55,985 - Analyzer - INFO - Analysis of 2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT.xlsx completed.
+2024-08-07 15:43:18,356 - Analyzer - INFO - Reading: 2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT.xlsx
+2024-08-07 15:43:27,825 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-08-07 16:00:37,693 - Analyzer - INFO - Reading: 2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT.xlsx
+2024-08-07 16:01:20,051 - Analyzer - INFO - Reading: 2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT.xlsx
+2024-08-07 16:01:29,491 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-08-07 16:01:29,949 - Analyzer - INFO - Analysis of 2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT.xlsx completed.
+2024-08-07 16:03:09,325 - Analyzer - INFO - Reading: 2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT.xlsx
+2024-08-07 16:03:18,496 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-08-07 16:03:18,955 - Analyzer - INFO - Analysis of 2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT.xlsx completed.
+2024-08-07 16:03:18,955 - Analyzer - INFO - Verbose plotting of conductance estimations for /home/roselab/Documents/GitHub/Essays/natural_calls_paper/intra_cases/2021-09-01_2_700Hz_LIN/2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT_analyzed
+2024-08-07 16:03:19,910 - Analyzer - INFO - Saving verbose plotting of conductance estimations for /home/roselab/Documents/GitHub/Essays/natural_calls_paper/intra_cases/2021-09-01_2_700Hz_LIN/2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT_analyzed
+2024-08-07 16:03:24,401 - Analyzer - INFO - Verbose plotting of stats for /home/roselab/Documents/GitHub/Essays/natural_calls_paper/intra_cases/2021-09-01_2_700Hz_LIN/2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT_analyzed
+2024-08-07 16:03:24,636 - Analyzer - INFO - Saving verbose plotting of stats for /home/roselab/Documents/GitHub/Essays/natural_calls_paper/intra_cases/2021-09-01_2_700Hz_LIN/2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT_analyzed
