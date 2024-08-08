@@ -83,7 +83,7 @@ class WholeCellRecording:
     def scale_data(self, log=False):
         if log:
             wholecell_logger.info("Scaling membrane voltage")
-        for idx, clamp in enumerate(list(self.parameters["Iinj"])):
+        for idx, clamp in zip(self.parameters["Iinj"].keys(), self.parameters["Iinj"]):
             self.data[clamp] = ((self.data[clamp] - self.data[clamp][0])*1e-3)+self.parameters["Ess"][idx]
         return self.data
     
@@ -91,7 +91,7 @@ class WholeCellRecording:
         if log:
             wholecell_logger.info("Filtering membrane potentials")
         sampling_rate = 1/(self.data["times"][1] - self.data["times"][0])
-        for inj in list(self.parameters["Iinj"]):
+        for inj in self.parameters["Iinj"]:
             self.data[inj] = self.filters["membrane_potentials"].propagate(self.data[inj], sampling_rate, log)
         return self.data
     
@@ -109,7 +109,7 @@ class WholeCellRecording:
     def compute_polarizations(self, log=False):
         if log:
             wholecell_logger.info("Computing polarizations")
-        for idx, clamp in enumerate(list(self.parameters["Iinj"])):
+        for idx, clamp in zip(self.parameters["Iinj"].keys(), self.parameters["Iinj"]):
             self.data["depolarization_"+str(clamp)] = np.where(self.data[clamp] > self.parameters["Ess"][idx], self.data[clamp] - self.parameters["Ess"][idx], 0)
             self.data["hyperpolarization_"+str(clamp)] = np.where(self.data[clamp] < self.parameters["Ess"][idx], self.data[clamp] - self.parameters["Ess"][idx], 0)
         return self.data
@@ -117,7 +117,7 @@ class WholeCellRecording:
     def compute_leakage_currents(self, log=False):
         if log:
             wholecell_logger.info("Computing leakage currents")
-        for idx, clamp in enumerate(list(self.parameters["Iinj"])):
+        for idx, clamp in zip(self.parameters["Iinj"].keys(), self.parameters["Iinj"]):
             self.data["Ileakage_"+str(clamp)] = (1/self.parameters["Rin"][idx])*(self.data[clamp] - self.parameters["Er"][idx])
         return self.data
     
@@ -125,7 +125,7 @@ class WholeCellRecording:
         if log:
             wholecell_logger.info("Computing activation currents")
         self.compute_activation_conductance_constants(log)
-        for idx, clamp in enumerate(list(self.parameters["Iinj"])):
+        for idx, clamp in zip(self.parameters["Iinj"].keys(), self.parameters["Iinj"]):
             alpha_current = self.parameters["alpha"][idx]*(self.data[clamp] - self.parameters["Ess"][idx])*(self.data[clamp] - self.parameters["Et"][idx])
             beta_current = self.parameters["beta"][idx]*(self.data[clamp] - self.parameters["Ess"][idx])
             activation_current = alpha_current + beta_current
@@ -137,7 +137,7 @@ class WholeCellRecording:
     def compute_membrane_currents(self, log=False):
         if log:
             wholecell_logger.info("Computing membrane currents")
-        for idx, clamp in enumerate(list(self.parameters["Iinj"])):
+        for idx, clamp in zip(self.parameters["Iinj"].keys(), self.parameters["Iinj"]):
             self.data["Imembrane_"+str(clamp)] = self.parameters["Cm"][idx]*(self.data[clamp].diff()/self.data["times"].diff())
             self.data.at[0, "Imembrane_"+str(clamp)] = 0.0
             self.data["Imembrane_"+str(clamp)] = self.data["Imembrane_"+str(clamp)] - self.data["Imembrane_"+str(clamp)][0]
@@ -172,7 +172,7 @@ class WholeCellRecording:
         leakage_current = self.data[["Ileakage_"+str(x) for x in list(self.parameters["Iinj"])]].to_numpy()
         excitatory_reversal_potential = self.parameters["Ee"].to_numpy()
         inhibitory_reversal_potentail = self.parameters["Ei"].to_numpy()
-        injected_current = np.array(list(self.parameters["Iinj"]))
+        injected_current = self.parameters["Iinj"].to_numpy()
         A[:, 0, 0] = np.sum(np.square(membrane_potential - excitatory_reversal_potential), axis=1)
         A[:, 0, 1] = np.sum((membrane_potential - excitatory_reversal_potential) * (membrane_potential- inhibitory_reversal_potentail), axis=1)
         A[:, 1, 0] = A[:, 0, 1]
@@ -198,8 +198,8 @@ class WholeCellRecording:
     def get_clamp_near_0(self, log=False) -> Tuple[int, float]:
         if log:
             wholecell_logger.info("computing the closest clamp to resting")
-        index_of_minimum_injected_current: int = np.argmin(np.abs(list(self.parameters["Iinj"])))
-        minimum_injected_current: float = list(self.parameters["Iinj"])[index_of_minimum_injected_current]
+        index_of_minimum_injected_current: int = np.argmin(np.abs(self.parameters["Iinj"]))
+        minimum_injected_current: float = self.parameters["Iinj"][index_of_minimum_injected_current]
         return index_of_minimum_injected_current, minimum_injected_current
     
     def compute_stats(self, log=False):
@@ -250,7 +250,7 @@ class WholeCellRecording:
         if log:
             wholecell_logger.info("Optimizing")
         self.estimate_conductances()
-        maximum_recorded_membrane_voltage = [max_val for max_val in self.data[list(list(self.parameters["Iinj"]))].max()]
+        maximum_recorded_membrane_voltage = [max_val for max_val in self.data[list(self.parameters["Iinj"])].max()]
         steady_state_potential = np.asarray([x for x in self.parameters["Ess"]])
         activation_potential_bounds = Bounds(steady_state_potential, maximum_recorded_membrane_voltage)
         result = minimize(self.squared_sum_of_negative_conductances, maximum_recorded_membrane_voltage, method='trust-constr', bounds=activation_potential_bounds)

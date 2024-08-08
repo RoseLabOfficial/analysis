@@ -4,8 +4,14 @@ from libs.readers import Configs
 import json, os, sys
 from argparse import ArgumentParser
 
+from typing import Any, Dict
+
 if __name__ == "__main__":
-    if len(sys.argv) > 1:
+    if len(sys.argv) == 2:
+        with open(sys.argv[1], 'r') as f:
+            cfg_kwargs: Dict[str, Any] = json.load(f)
+
+    elif len(sys.argv) > 2:
         parser: ArgumentParser = ArgumentParser(description="Passing named arguments to analyzer")
         parser.add_argument("--set_inputdir", "-si", type=str, default='./inputs', help="set input directory in configurations")
         parser.add_argument("--set_outputdir", "-so", type=str, default='./outputs', help="set output directory in configurations")
@@ -15,7 +21,7 @@ if __name__ == "__main__":
         args = parser.parse_args()
         args.run_file = 'ALL' if args.run else args.run_file 
 
-        cfg: Configs = Configs.new(
+        cfg_kwargs = dict(
             input_directory=args.set_inputdir, 
             output_directory=args.set_outputdir, 
             run=args.run_file, 
@@ -24,8 +30,10 @@ if __name__ == "__main__":
     
     else:
         with open('./settings/js_configs.json', 'r') as f:
-            cfg = Configs.new(**json.load(f))
+            cfg_kwargs = json.load(f)
 
+    cfg: Configs = Configs.new(**cfg_kwargs)
     assert all([os.path.exists(i) for i in cfg.full_run_paths])
+
     analyzer = Analyzer(cfg.full_run_paths, cfg.output_directory)
     analyzer.run(**cfg.analyzer_run_kwargs)

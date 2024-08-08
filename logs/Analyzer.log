@@ -781,3 +781,16 @@
 2024-08-07 17:11:56,243 - Analyzer - INFO - Saving verbose plotting of conductance estimations for /home/roselab/Documents/GitHub/Essays/natural_calls_paper/intra_cases/2021-09-01_2_700Hz_LIN/2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT_analyzed
 2024-08-07 17:11:58,037 - Analyzer - INFO - Verbose plotting of stats for /home/roselab/Documents/GitHub/Essays/natural_calls_paper/intra_cases/2021-09-01_2_700Hz_LIN/2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT_analyzed
 2024-08-07 17:11:58,191 - Analyzer - INFO - Saving verbose plotting of stats for /home/roselab/Documents/GitHub/Essays/natural_calls_paper/intra_cases/2021-09-01_2_700Hz_LIN/2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT_analyzed
+2024-08-07 17:53:59,298 - Analyzer - INFO - Reading: 2016-09-01_2_LIN_Natural_Calls_RELEASE_ALL_ADV_1_CHUCKLE_1_GRUNT_2.xlsx
+2024-08-07 17:54:11,764 - Analyzer - INFO - Reading: 2016-09-01_2_LIN_Natural_Calls_RELEASE_ALL_ADV_1_CHUCKLE_1_GRUNT_2.xlsx
+2024-08-07 17:55:00,114 - Analyzer - INFO - Reading: 2016-09-01_2_LIN_Natural_Calls_RELEASE_ALL_ADV_1_CHUCKLE_1_GRUNT_2.xlsx
+2024-08-07 18:04:28,475 - Analyzer - INFO - Reading: 2016-09-01_2_LIN_Natural_Calls_RELEASE_ALL_ADV_1_CHUCKLE_1_GRUNT_2.xlsx
+2024-08-07 18:05:57,356 - Analyzer - INFO - Reading: 2016-09-01_2_LIN_Natural_Calls_RELEASE_ALL_ADV_1_CHUCKLE_1_GRUNT_2.xlsx
+2024-08-07 18:06:07,985 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-08-07 18:07:23,887 - Analyzer - INFO - Reading: 2016-09-01_2_LIN_Natural_Calls_RELEASE_ALL_ADV_1_CHUCKLE_1_GRUNT_2.xlsx
+2024-08-07 18:07:34,195 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-08-07 18:07:34,656 - Analyzer - INFO - Analysis of 2016-09-01_2_LIN_Natural_Calls_RELEASE_ALL_ADV_1_CHUCKLE_1_GRUNT_2.xlsx completed.
+2024-08-07 18:07:34,656 - Analyzer - INFO - Verbose plotting of conductance estimations for /home/roselab/Documents/GitHub/Essays/natural_calls_paper/intra_cases/2021-09-01_2_700Hz_LIN/2016-09-01_2_LIN_Natural_Calls_RELEASE_ALL_ADV_1_CHUCKLE_1_GRUNT_2_analyzed
+2024-08-07 18:07:35,563 - Analyzer - INFO - Saving verbose plotting of conductance estimations for /home/roselab/Documents/GitHub/Essays/natural_calls_paper/intra_cases/2021-09-01_2_700Hz_LIN/2016-09-01_2_LIN_Natural_Calls_RELEASE_ALL_ADV_1_CHUCKLE_1_GRUNT_2_analyzed
+2024-08-07 18:07:38,976 - Analyzer - INFO - Verbose plotting of stats for /home/roselab/Documents/GitHub/Essays/natural_calls_paper/intra_cases/2021-09-01_2_700Hz_LIN/2016-09-01_2_LIN_Natural_Calls_RELEASE_ALL_ADV_1_CHUCKLE_1_GRUNT_2_analyzed
+2024-08-07 18:07:39,212 - Analyzer - INFO - Saving verbose plotting of stats for /home/roselab/Documents/GitHub/Essays/natural_calls_paper/intra_cases/2021-09-01_2_700Hz_LIN/2016-09-01_2_LIN_Natural_Calls_RELEASE_ALL_ADV_1_CHUCKLE_1_GRUNT_2_analyzed

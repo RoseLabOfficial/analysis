@@ -10,11 +10,12 @@
             "request": "launch",
             "program": "./BatchAnalyzer.py",
             "console": "integratedTerminal",
-            "args": [
-                "-si", "/home/roselab/Documents/GitHub/Essays/natural_calls_paper/intra_cases/2021-09-01_2_700Hz_LIN", 
-                "-so", "/home/roselab/Documents/GitHub/Essays/natural_calls_paper/intra_cases/2021-09-01_2_700Hz_LIN", 
-                "-rf", "2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT.xlsx"
-            ]
+            // "args": [
+            //     "-si", "/home/roselab/Documents/GitHub/Essays/natural_calls_paper/intra_cases/2021-09-01_2_700Hz_LIN", 
+            //     "-so", "/home/roselab/Documents/GitHub/Essays/natural_calls_paper/intra_cases/2021-09-01_2_700Hz_LIN", 
+            //     "-rf", "2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT.xlsx"
+            // ]
+            "args": ["./settings/js_cfg_nc_1.json"]
         }
     ]
 }
