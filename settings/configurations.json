@@ -5,19 +5,19 @@
     "userfiles": [],
     "filters": {
         "membrane_potentials": {
-            "passband": 200,
+            "passband": 15,
             "ripple": 0.01,
-            "stopband": 400,
+            "stopband": 60,
             "attenuation": 80
         },
         "membrane_currents": {
-            "passband": 40,
+            "passband": 30,
             "ripple": 0.01,
             "stopband": 60,
             "attenuation": 80
         },
         "activation_currents": {
-            "passband": 40,
+            "passband": 20,
             "ripple": 0.01,
             "stopband": 60,
             "attenuation": 80
@@ -25,5 +25,6 @@
     },
     "optimizer": {
         "level": 1
-    }
+    },
+    "use_clamps": [0.0, -1e-10]
 }

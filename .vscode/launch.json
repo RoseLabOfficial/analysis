@@ -5,13 +5,14 @@
     "version": "0.2.0",
     "configurations": [
 
+
         {
             "name": "BatchAnalyzer",
             "type": "debugpy",
             "request": "launch",
             "program": "./BatchAnalyzer.py",
             "console": "integratedTerminal",
-            "args": ["-rf", "/home/roselab/Documents/Docs/JS/2016-10-26_1/-30dB_200Hz_15msPD_10pulses.xlsx"]
+            "args": ["-si", "C:\\Users\\Admin\\Box\\Roselab\\analysis\\feriarum\\AM\\P. feriarum whole cell\\ECM_21254\\2024-06-12_8_375Hz_LIN_Intra", "-rf", "2024-06-12_8_375Hz_LIN_10pulses_prr_Intra.xlsx", "-so", "./"]
         }
     ]
 }

@@ -455,3 +455,1339 @@
 2024-08-06 17:51:35,998 - Analyzer - INFO - Saving verbose plotting of conductance estimations for NATCALL_VDC/2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT_analyzed
 2024-08-06 17:51:37,831 - Analyzer - INFO - Verbose plotting of stats for NATCALL_VDC/2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT_analyzed
 2024-08-06 17:51:37,997 - Analyzer - INFO - Saving verbose plotting of stats for NATCALL_VDC/2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT_analyzed
+2024-08-07 12:38:18,935 - Analyzer - INFO - Reading: 2024-06-12_8_375Hz_LIN_10pulses_prr_Intra
+2024-08-07 12:38:36,185 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-08-07 12:38:37,575 - Analyzer - INFO - Analysis of 2024-06-12_8_375Hz_LIN_10pulses_prr_Intra completed.
+2024-08-07 12:38:37,576 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_Intra_analyzed
+2024-08-07 12:38:39,264 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_Intra_analyzed
+2024-08-07 12:38:47,953 - Analyzer - INFO - Verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_Intra_analyzed
+2024-08-07 12:38:48,185 - Analyzer - INFO - Saving verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_Intra_analyzed
+2024-08-07 12:42:12,649 - Analyzer - INFO - Reading: 2024-06-12_8_375Hz_LIN_10pulses_prr_Intra
+2024-08-07 12:42:20,580 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-08-07 12:42:21,467 - Analyzer - INFO - Analysis of 2024-06-12_8_375Hz_LIN_10pulses_prr_Intra completed.
+2024-08-07 12:42:21,468 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_Intra_analyzed
+2024-08-07 12:42:22,310 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_Intra_analyzed
+2024-08-07 12:42:25,599 - Analyzer - INFO - Verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_Intra_analyzed
+2024-08-07 12:42:25,687 - Analyzer - INFO - Saving verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_Intra_analyzed
+2024-08-07 12:43:00,137 - Analyzer - INFO - Reading: 2024-06-12_8_375Hz_LIN_10pulses_prr_v2_Intra
+2024-08-07 12:43:07,011 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-08-07 12:43:07,736 - Analyzer - INFO - Analysis of 2024-06-12_8_375Hz_LIN_10pulses_prr_v2_Intra completed.
+2024-08-07 12:43:07,736 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v2_Intra_analyzed
+2024-08-07 12:43:08,495 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v2_Intra_analyzed
+2024-08-07 12:43:11,787 - Analyzer - INFO - Verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v2_Intra_analyzed
+2024-08-07 12:43:11,870 - Analyzer - INFO - Saving verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v2_Intra_analyzed
+2024-08-07 12:46:16,888 - Analyzer - INFO - Reading: 2024-06-12_8_375Hz_LIN_10pulses_prr_v2_Intra
+2024-08-07 12:46:23,715 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-08-07 12:46:24,486 - Analyzer - INFO - Analysis of 2024-06-12_8_375Hz_LIN_10pulses_prr_v2_Intra completed.
+2024-08-07 12:46:24,487 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v2_Intra_analyzed
+2024-08-07 12:46:25,305 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v2_Intra_analyzed
+2024-08-07 12:46:28,758 - Analyzer - INFO - Verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v2_Intra_analyzed
+2024-08-07 12:46:28,846 - Analyzer - INFO - Saving verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v2_Intra_analyzed
+2024-08-07 13:06:12,120 - Analyzer - INFO - Reading: 2024-02-29_9_360Hz_ICN_intra
+2024-08-07 13:06:15,698 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-08-07 13:06:16,217 - Analyzer - INFO - Analysis of 2024-02-29_9_360Hz_ICN_intra completed.
+2024-08-07 13:06:16,218 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-02-29_9_360Hz_ICN_intra_analyzed
+2024-08-07 13:06:16,895 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-02-29_9_360Hz_ICN_intra_analyzed
+2024-08-07 13:06:20,357 - Analyzer - INFO - Verbose plotting of stats for 2024-02-29_9_360Hz_ICN_intra_analyzed
+2024-08-07 13:06:20,455 - Analyzer - INFO - Saving verbose plotting of stats for 2024-02-29_9_360Hz_ICN_intra_analyzed
+2024-08-07 13:15:59,270 - Analyzer - INFO - Reading: 2024-07-03_5_190Hz_ICN_10pulses_v2_intra
+2024-08-07 13:16:03,634 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-08-07 13:16:04,056 - Analyzer - INFO - Analysis of 2024-07-03_5_190Hz_ICN_10pulses_v2_intra completed.
+2024-08-07 13:16:04,056 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-07-03_5_190Hz_ICN_10pulses_v2_intra_analyzed
+2024-08-07 13:16:04,569 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-07-03_5_190Hz_ICN_10pulses_v2_intra_analyzed
+2024-08-07 13:16:07,038 - Analyzer - INFO - Verbose plotting of stats for 2024-07-03_5_190Hz_ICN_10pulses_v2_intra_analyzed
+2024-08-07 13:16:07,111 - Analyzer - INFO - Saving verbose plotting of stats for 2024-07-03_5_190Hz_ICN_10pulses_v2_intra_analyzed
+2024-08-07 13:16:56,631 - Analyzer - INFO - Reading: 2024-07-03_5_190Hz_ICN_10pulses_v2_intra
+2024-08-07 13:17:00,830 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-08-07 13:17:01,262 - Analyzer - INFO - Analysis of 2024-07-03_5_190Hz_ICN_10pulses_v2_intra completed.
+2024-08-07 13:17:01,262 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-07-03_5_190Hz_ICN_10pulses_v2_intra_analyzed
+2024-08-07 13:17:01,776 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-07-03_5_190Hz_ICN_10pulses_v2_intra_analyzed
+2024-08-07 13:17:04,281 - Analyzer - INFO - Verbose plotting of stats for 2024-07-03_5_190Hz_ICN_10pulses_v2_intra_analyzed
+2024-08-07 13:17:04,355 - Analyzer - INFO - Saving verbose plotting of stats for 2024-07-03_5_190Hz_ICN_10pulses_v2_intra_analyzed
+2024-08-07 13:17:37,054 - Analyzer - INFO - Reading: 2024-07-03_5_190Hz_ICN_30pulses_v2_intra
+2024-08-07 13:24:17,960 - Analyzer - INFO - Reading: 2024-07-03_5_190Hz_ICN_30pulses_v2_intra
+2024-08-07 13:24:22,987 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-08-07 13:24:23,526 - Analyzer - INFO - Analysis of 2024-07-03_5_190Hz_ICN_30pulses_v2_intra completed.
+2024-08-07 13:24:23,528 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-07-03_5_190Hz_ICN_30pulses_v2_intra_analyzed
+2024-08-07 13:24:23,986 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-07-03_5_190Hz_ICN_30pulses_v2_intra_analyzed
+2024-08-07 13:24:25,882 - Analyzer - INFO - Verbose plotting of stats for 2024-07-03_5_190Hz_ICN_30pulses_v2_intra_analyzed
+2024-08-07 13:24:25,955 - Analyzer - INFO - Saving verbose plotting of stats for 2024-07-03_5_190Hz_ICN_30pulses_v2_intra_analyzed
+2024-08-07 13:27:21,973 - Analyzer - INFO - Reading: 2024-07-03_5_190Hz_ICN_30pulses_v2_intra
+2024-08-07 13:27:27,635 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-08-07 13:27:28,164 - Analyzer - INFO - Analysis of 2024-07-03_5_190Hz_ICN_30pulses_v2_intra completed.
+2024-08-07 13:27:28,165 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-07-03_5_190Hz_ICN_30pulses_v2_intra_analyzed
+2024-08-07 13:27:28,645 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-07-03_5_190Hz_ICN_30pulses_v2_intra_analyzed
+2024-08-07 13:27:30,656 - Analyzer - INFO - Verbose plotting of stats for 2024-07-03_5_190Hz_ICN_30pulses_v2_intra_analyzed
+2024-08-07 13:27:30,850 - Analyzer - INFO - Saving verbose plotting of stats for 2024-07-03_5_190Hz_ICN_30pulses_v2_intra_analyzed
+2024-08-07 13:30:13,686 - Analyzer - INFO - Reading: 2024-07-03_5_190Hz_ICN_30pulses_v2_intra
+2024-08-07 13:30:19,699 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-08-07 13:30:20,263 - Analyzer - INFO - Analysis of 2024-07-03_5_190Hz_ICN_30pulses_v2_intra completed.
+2024-08-07 13:30:20,263 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-07-03_5_190Hz_ICN_30pulses_v2_intra_analyzed
+2024-08-07 13:30:20,762 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-07-03_5_190Hz_ICN_30pulses_v2_intra_analyzed
+2024-08-07 13:30:22,689 - Analyzer - INFO - Verbose plotting of stats for 2024-07-03_5_190Hz_ICN_30pulses_v2_intra_analyzed
+2024-08-07 13:30:22,874 - Analyzer - INFO - Saving verbose plotting of stats for 2024-07-03_5_190Hz_ICN_30pulses_v2_intra_analyzed
+2024-08-07 13:31:21,928 - Analyzer - INFO - Reading: 2024-07-03_5_190Hz_ICN_30pulses_v2_intra
+2024-08-07 13:31:27,586 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-08-07 13:31:28,112 - Analyzer - INFO - Analysis of 2024-07-03_5_190Hz_ICN_30pulses_v2_intra completed.
+2024-08-07 13:31:28,113 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-07-03_5_190Hz_ICN_30pulses_v2_intra_analyzed
+2024-08-07 13:31:28,603 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-07-03_5_190Hz_ICN_30pulses_v2_intra_analyzed
+2024-08-07 13:31:30,524 - Analyzer - INFO - Verbose plotting of stats for 2024-07-03_5_190Hz_ICN_30pulses_v2_intra_analyzed
+2024-08-07 13:31:30,696 - Analyzer - INFO - Saving verbose plotting of stats for 2024-07-03_5_190Hz_ICN_30pulses_v2_intra_analyzed
+2024-08-07 13:44:54,853 - Analyzer - INFO - Reading: 2024-06-12_8_375Hz_LIN_10pulses_prr_Intra
+2024-08-07 13:45:02,603 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-08-07 13:45:03,524 - Analyzer - INFO - Analysis of 2024-06-12_8_375Hz_LIN_10pulses_prr_Intra completed.
+2024-08-07 13:45:03,525 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_Intra_analyzed
+2024-08-07 13:45:04,466 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_Intra_analyzed
+2024-08-07 13:45:07,927 - Analyzer - INFO - Verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_Intra_analyzed
+2024-08-07 13:45:08,010 - Analyzer - INFO - Saving verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_Intra_analyzed
+2024-08-07 13:45:38,926 - Analyzer - INFO - Reading: 2024-06-12_8_375Hz_LIN_10pulses_prr_v2_Intra
+2024-08-07 13:45:45,987 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-08-07 13:45:46,721 - Analyzer - INFO - Analysis of 2024-06-12_8_375Hz_LIN_10pulses_prr_v2_Intra completed.
+2024-08-07 13:45:46,722 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v2_Intra_analyzed
+2024-08-07 13:45:47,458 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v2_Intra_analyzed
+2024-08-07 13:45:50,856 - Analyzer - INFO - Verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v2_Intra_analyzed
+2024-08-07 13:45:50,942 - Analyzer - INFO - Saving verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v2_Intra_analyzed
+2024-08-07 13:52:17,585 - Analyzer - INFO - Reading: 2024-06-12_8_375Hz_LIN_10pulses_prr_v2_Intra
+2024-08-07 13:52:24,311 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-08-07 13:52:25,032 - Analyzer - INFO - Analysis of 2024-06-12_8_375Hz_LIN_10pulses_prr_v2_Intra completed.
+2024-08-07 13:52:25,033 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v2_Intra_analyzed
+2024-08-07 13:52:25,757 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v2_Intra_analyzed
+2024-08-07 13:52:29,024 - Analyzer - INFO - Verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v2_Intra_analyzed
+2024-08-07 13:52:29,109 - Analyzer - INFO - Saving verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v2_Intra_analyzed
+2024-08-07 13:53:16,643 - Analyzer - INFO - Reading: 2024-06-12_8_375Hz_LIN_10pulses_prr_v2_Intra
+2024-08-07 13:53:23,479 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-08-07 13:53:24,204 - Analyzer - INFO - Analysis of 2024-06-12_8_375Hz_LIN_10pulses_prr_v2_Intra completed.
+2024-08-07 13:53:24,205 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v2_Intra_analyzed
+2024-08-07 13:53:24,936 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v2_Intra_analyzed
+2024-08-07 13:53:28,204 - Analyzer - INFO - Verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v2_Intra_analyzed
+2024-08-07 13:53:28,296 - Analyzer - INFO - Saving verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v2_Intra_analyzed
+2024-08-07 13:54:14,535 - Analyzer - INFO - Reading: 2024-06-12_8_375Hz_LIN_10pulses_prr_v2_Intra
+2024-08-07 13:54:21,206 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-08-07 13:54:21,976 - Analyzer - INFO - Analysis of 2024-06-12_8_375Hz_LIN_10pulses_prr_v2_Intra completed.
+2024-08-07 13:54:21,977 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v2_Intra_analyzed
+2024-08-07 13:54:22,702 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v2_Intra_analyzed
+2024-08-07 13:54:25,950 - Analyzer - INFO - Verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v2_Intra_analyzed
+2024-08-07 13:54:26,031 - Analyzer - INFO - Saving verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v2_Intra_analyzed
+2024-08-07 13:54:59,825 - Analyzer - INFO - Reading: 2024-06-12_8_375Hz_LIN_10pulses_prr_v2_Intra
+2024-08-07 13:55:06,448 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-08-07 13:55:07,168 - Analyzer - INFO - Analysis of 2024-06-12_8_375Hz_LIN_10pulses_prr_v2_Intra completed.
+2024-08-07 13:55:07,168 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v2_Intra_analyzed
+2024-08-07 13:55:07,887 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v2_Intra_analyzed
+2024-08-07 13:55:11,132 - Analyzer - INFO - Verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v2_Intra_analyzed
+2024-08-07 13:55:11,215 - Analyzer - INFO - Saving verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v2_Intra_analyzed
+2024-08-07 13:56:46,296 - Analyzer - INFO - Reading: 2024-06-12_8_375Hz_LIN_10pulses_prr_v2_Intra
+2024-08-07 13:56:52,641 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-08-07 13:56:53,367 - Analyzer - INFO - Analysis of 2024-06-12_8_375Hz_LIN_10pulses_prr_v2_Intra completed.
+2024-08-07 13:56:53,368 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v2_Intra_analyzed
+2024-08-07 13:56:54,098 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v2_Intra_analyzed
+2024-08-07 13:56:57,341 - Analyzer - INFO - Verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v2_Intra_analyzed
+2024-08-07 13:56:57,423 - Analyzer - INFO - Saving verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v2_Intra_analyzed
+2024-08-07 13:58:19,045 - Analyzer - INFO - Reading: 2024-06-12_8_375Hz_LIN_10pulses_prr_v2_Intra
+2024-08-07 13:58:25,608 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-08-07 13:58:26,339 - Analyzer - INFO - Analysis of 2024-06-12_8_375Hz_LIN_10pulses_prr_v2_Intra completed.
+2024-08-07 13:58:26,340 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v2_Intra_analyzed
+2024-08-07 13:58:27,085 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v2_Intra_analyzed
+2024-08-07 13:58:30,320 - Analyzer - INFO - Verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v2_Intra_analyzed
+2024-08-07 13:58:30,406 - Analyzer - INFO - Saving verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v2_Intra_analyzed
+2024-08-07 13:59:13,102 - Analyzer - INFO - Reading: 2024-06-12_8_375Hz_LIN_10pulses_prr_v2_Intra
+2024-08-07 13:59:19,719 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-08-07 13:59:20,458 - Analyzer - INFO - Analysis of 2024-06-12_8_375Hz_LIN_10pulses_prr_v2_Intra completed.
+2024-08-07 13:59:20,460 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v2_Intra_analyzed
+2024-08-07 13:59:21,177 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v2_Intra_analyzed
+2024-08-07 13:59:24,433 - Analyzer - INFO - Verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v2_Intra_analyzed
+2024-08-07 13:59:24,515 - Analyzer - INFO - Saving verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v2_Intra_analyzed
+2024-08-07 14:12:52,219 - Analyzer - INFO - Reading: 2024-06-12_8_375Hz_LIN_10pulses_prr_v2_Intra
+2024-08-07 14:12:59,211 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-08-07 14:12:59,951 - Analyzer - INFO - Analysis of 2024-06-12_8_375Hz_LIN_10pulses_prr_v2_Intra completed.
+2024-08-07 14:12:59,952 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v2_Intra_analyzed
+2024-08-07 14:13:00,627 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v2_Intra_analyzed
+2024-08-07 14:13:03,947 - Analyzer - INFO - Verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v2_Intra_analyzed
+2024-08-07 14:13:04,185 - Analyzer - INFO - Saving verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v2_Intra_analyzed
+2024-08-07 14:13:34,675 - Analyzer - INFO - Reading: 2024-06-12_8_375Hz_LIN_10pulses_prr_v2_Intra
+2024-08-07 14:13:41,405 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-08-07 14:13:42,136 - Analyzer - INFO - Analysis of 2024-06-12_8_375Hz_LIN_10pulses_prr_v2_Intra completed.
+2024-08-07 14:13:42,137 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v2_Intra_analyzed
+2024-08-07 14:13:42,796 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v2_Intra_analyzed
+2024-08-07 14:13:46,047 - Analyzer - INFO - Verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v2_Intra_analyzed
+2024-08-07 14:13:46,273 - Analyzer - INFO - Saving verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v2_Intra_analyzed
+2024-08-07 14:14:32,555 - Analyzer - INFO - Reading: 2024-06-12_8_375Hz_LIN_10pulses_prr_v2_Intra
+2024-08-07 14:14:39,723 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-08-07 14:14:40,449 - Analyzer - INFO - Analysis of 2024-06-12_8_375Hz_LIN_10pulses_prr_v2_Intra completed.
+2024-08-07 14:14:40,450 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v2_Intra_analyzed
+2024-08-07 14:14:41,111 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v2_Intra_analyzed
+2024-08-07 14:14:44,365 - Analyzer - INFO - Verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v2_Intra_analyzed
+2024-08-07 14:14:44,583 - Analyzer - INFO - Saving verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v2_Intra_analyzed
+2024-08-07 14:16:22,576 - Analyzer - INFO - Reading: 2024-06-12_8_375Hz_LIN_10pulses_prr_v2_Intra
+2024-08-07 14:16:29,381 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-08-07 14:16:30,113 - Analyzer - INFO - Analysis of 2024-06-12_8_375Hz_LIN_10pulses_prr_v2_Intra completed.
+2024-08-07 14:16:30,114 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v2_Intra_analyzed
+2024-08-07 14:16:30,772 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v2_Intra_analyzed
+2024-08-07 14:16:34,059 - Analyzer - INFO - Verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v2_Intra_analyzed
+2024-08-07 14:16:34,281 - Analyzer - INFO - Saving verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v2_Intra_analyzed
+2024-08-07 14:20:27,937 - Analyzer - INFO - Reading: 2024-06-12_8_375Hz_LIN_10pulses_prr_v2_Intra
+2024-08-07 14:20:34,531 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-08-07 14:20:35,291 - Analyzer - INFO - Analysis of 2024-06-12_8_375Hz_LIN_10pulses_prr_v2_Intra completed.
+2024-08-07 14:20:35,292 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v2_Intra_analyzed
+2024-08-07 14:20:35,948 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v2_Intra_analyzed
+2024-08-07 14:20:39,213 - Analyzer - INFO - Verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v2_Intra_analyzed
+2024-08-07 14:20:39,448 - Analyzer - INFO - Saving verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v2_Intra_analyzed
+2024-08-07 14:22:04,742 - Analyzer - INFO - Reading: 2024-06-12_8_375Hz_LIN_10pulses_prr_v2_Intra
+2024-08-07 14:22:11,691 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-08-07 14:22:12,421 - Analyzer - INFO - Analysis of 2024-06-12_8_375Hz_LIN_10pulses_prr_v2_Intra completed.
+2024-08-07 14:22:12,422 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v2_Intra_analyzed
+2024-08-07 14:22:13,118 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v2_Intra_analyzed
+2024-08-07 14:22:16,397 - Analyzer - INFO - Verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v2_Intra_analyzed
+2024-08-07 14:22:16,642 - Analyzer - INFO - Saving verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v2_Intra_analyzed
+2024-08-07 14:23:29,720 - Analyzer - INFO - Reading: 2024-06-12_8_375Hz_LIN_10pulses_prr_v2_Intra
+2024-08-07 14:23:36,465 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-08-07 14:23:37,207 - Analyzer - INFO - Analysis of 2024-06-12_8_375Hz_LIN_10pulses_prr_v2_Intra completed.
+2024-08-07 14:23:37,208 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v2_Intra_analyzed
+2024-08-07 14:23:37,916 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v2_Intra_analyzed
+2024-08-07 14:23:41,225 - Analyzer - INFO - Verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v2_Intra_analyzed
+2024-08-07 14:23:41,473 - Analyzer - INFO - Saving verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v2_Intra_analyzed
+2024-08-07 14:26:30,879 - Analyzer - INFO - Reading: 2024-06-12_8_375Hz_LIN_10pulses_prr_v2_Intra
+2024-08-07 14:26:37,409 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-08-07 14:26:38,129 - Analyzer - INFO - Analysis of 2024-06-12_8_375Hz_LIN_10pulses_prr_v2_Intra completed.
+2024-08-07 14:26:38,130 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v2_Intra_analyzed
+2024-08-07 14:26:38,795 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v2_Intra_analyzed
+2024-08-07 14:26:42,029 - Analyzer - INFO - Verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v2_Intra_analyzed
+2024-08-07 14:26:42,268 - Analyzer - INFO - Saving verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v2_Intra_analyzed
+2024-08-07 14:28:00,749 - Analyzer - INFO - Reading: 2024-06-12_8_375Hz_LIN_10pulses_prr_v2_Intra
+2024-08-07 14:28:07,473 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-08-07 14:28:08,199 - Analyzer - INFO - Analysis of 2024-06-12_8_375Hz_LIN_10pulses_prr_v2_Intra completed.
+2024-08-07 14:28:08,201 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v2_Intra_analyzed
+2024-08-07 14:28:08,884 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v2_Intra_analyzed
+2024-08-07 14:28:12,183 - Analyzer - INFO - Verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v2_Intra_analyzed
+2024-08-07 14:28:12,438 - Analyzer - INFO - Saving verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v2_Intra_analyzed
+2024-08-07 14:30:13,452 - Analyzer - INFO - Reading: 2024-06-12_8_375Hz_LIN_10pulses_prr_v2_Intra
+2024-08-07 14:30:19,961 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-08-07 14:30:20,682 - Analyzer - INFO - Analysis of 2024-06-12_8_375Hz_LIN_10pulses_prr_v2_Intra completed.
+2024-08-07 14:30:20,683 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v2_Intra_analyzed
+2024-08-07 14:30:21,348 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v2_Intra_analyzed
+2024-08-07 14:30:24,586 - Analyzer - INFO - Verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v2_Intra_analyzed
+2024-08-07 14:30:24,811 - Analyzer - INFO - Saving verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v2_Intra_analyzed
+2024-08-07 14:33:31,582 - Analyzer - INFO - Reading: 2024-06-12_8_375Hz_LIN_10pulses_prr_v2_Intra
+2024-08-07 14:33:38,367 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-08-07 14:33:39,090 - Analyzer - INFO - Analysis of 2024-06-12_8_375Hz_LIN_10pulses_prr_v2_Intra completed.
+2024-08-07 14:33:39,091 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v2_Intra_analyzed
+2024-08-07 14:33:39,802 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v2_Intra_analyzed
+2024-08-07 14:33:43,065 - Analyzer - INFO - Verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v2_Intra_analyzed
+2024-08-07 14:33:43,318 - Analyzer - INFO - Saving verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v2_Intra_analyzed
+2024-08-07 14:48:22,099 - Analyzer - INFO - Reading: 2024-02-29_9_360Hz_ICN_intra
+2024-08-07 14:48:25,589 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-08-07 14:48:26,107 - Analyzer - INFO - Analysis of 2024-02-29_9_360Hz_ICN_intra completed.
+2024-08-07 14:48:26,108 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-02-29_9_360Hz_ICN_intra_analyzed
+2024-08-07 14:48:26,815 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-02-29_9_360Hz_ICN_intra_analyzed
+2024-08-07 14:48:30,186 - Analyzer - INFO - Verbose plotting of stats for 2024-02-29_9_360Hz_ICN_intra_analyzed
+2024-08-07 14:48:30,300 - Analyzer - INFO - Saving verbose plotting of stats for 2024-02-29_9_360Hz_ICN_intra_analyzed
+2024-08-07 15:01:15,663 - Analyzer - INFO - Reading: 2024-02-29_9_360Hz_ICN_intra
+2024-08-07 15:01:19,393 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-08-07 15:01:19,938 - Analyzer - INFO - Analysis of 2024-02-29_9_360Hz_ICN_intra completed.
+2024-08-07 15:01:19,939 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-02-29_9_360Hz_ICN_intra_analyzed
+2024-08-07 15:01:20,639 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-02-29_9_360Hz_ICN_intra_analyzed
+2024-08-07 15:01:24,457 - Analyzer - INFO - Verbose plotting of stats for 2024-02-29_9_360Hz_ICN_intra_analyzed
+2024-08-07 15:01:24,565 - Analyzer - INFO - Saving verbose plotting of stats for 2024-02-29_9_360Hz_ICN_intra_analyzed
+2024-08-07 15:12:20,071 - Analyzer - INFO - Reading: 2024-02-29_9_360Hz_ICN_intra
+2024-08-07 15:12:23,603 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-08-07 15:12:24,104 - Analyzer - INFO - Analysis of 2024-02-29_9_360Hz_ICN_intra completed.
+2024-08-07 15:12:24,105 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-02-29_9_360Hz_ICN_intra_analyzed
+2024-08-07 15:12:24,722 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-02-29_9_360Hz_ICN_intra_analyzed
+2024-08-07 15:12:28,123 - Analyzer - INFO - Verbose plotting of stats for 2024-02-29_9_360Hz_ICN_intra_analyzed
+2024-08-07 15:12:28,212 - Analyzer - INFO - Saving verbose plotting of stats for 2024-02-29_9_360Hz_ICN_intra_analyzed
+2024-08-07 15:14:17,045 - Analyzer - INFO - Reading: 2024-02-29_9_360Hz_ICN_intra
+2024-08-07 15:14:20,492 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-08-07 15:14:21,019 - Analyzer - INFO - Analysis of 2024-02-29_9_360Hz_ICN_intra completed.
+2024-08-07 15:14:21,020 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-02-29_9_360Hz_ICN_intra_analyzed
+2024-08-07 15:14:21,659 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-02-29_9_360Hz_ICN_intra_analyzed
+2024-08-07 15:14:25,006 - Analyzer - INFO - Verbose plotting of stats for 2024-02-29_9_360Hz_ICN_intra_analyzed
+2024-08-07 15:14:25,095 - Analyzer - INFO - Saving verbose plotting of stats for 2024-02-29_9_360Hz_ICN_intra_analyzed
+2024-08-07 15:14:50,550 - Analyzer - INFO - Reading: 2024-02-29_9_360Hz_ICN_intra
+2024-08-07 15:14:54,177 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-08-07 15:14:54,717 - Analyzer - INFO - Analysis of 2024-02-29_9_360Hz_ICN_intra completed.
+2024-08-07 15:14:54,718 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-02-29_9_360Hz_ICN_intra_analyzed
+2024-08-07 15:14:55,348 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-02-29_9_360Hz_ICN_intra_analyzed
+2024-08-07 15:14:58,724 - Analyzer - INFO - Verbose plotting of stats for 2024-02-29_9_360Hz_ICN_intra_analyzed
+2024-08-07 15:14:58,814 - Analyzer - INFO - Saving verbose plotting of stats for 2024-02-29_9_360Hz_ICN_intra_analyzed
+2024-08-07 15:15:46,285 - Analyzer - INFO - Reading: 2024-02-29_9_360Hz_ICN_intra
+2024-08-07 15:15:49,689 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-08-07 15:15:50,238 - Analyzer - INFO - Analysis of 2024-02-29_9_360Hz_ICN_intra completed.
+2024-08-07 15:15:50,239 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-02-29_9_360Hz_ICN_intra_analyzed
+2024-08-07 15:15:50,958 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-02-29_9_360Hz_ICN_intra_analyzed
+2024-08-07 15:15:54,423 - Analyzer - INFO - Verbose plotting of stats for 2024-02-29_9_360Hz_ICN_intra_analyzed
+2024-08-07 15:15:54,513 - Analyzer - INFO - Saving verbose plotting of stats for 2024-02-29_9_360Hz_ICN_intra_analyzed
+2024-08-07 15:20:34,757 - Analyzer - INFO - Reading: 2024-02-29_9_360Hz_ICN_intra
+2024-08-07 15:20:38,347 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-08-07 15:20:38,918 - Analyzer - INFO - Analysis of 2024-02-29_9_360Hz_ICN_intra completed.
+2024-08-07 15:20:38,920 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-02-29_9_360Hz_ICN_intra_analyzed
+2024-08-07 15:20:39,569 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-02-29_9_360Hz_ICN_intra_analyzed
+2024-08-07 15:20:42,970 - Analyzer - INFO - Verbose plotting of stats for 2024-02-29_9_360Hz_ICN_intra_analyzed
+2024-08-07 15:20:43,058 - Analyzer - INFO - Saving verbose plotting of stats for 2024-02-29_9_360Hz_ICN_intra_analyzed
+2024-08-07 15:21:19,145 - Analyzer - INFO - Reading: 2024-02-29_9_360Hz_ICN_intra
+2024-08-07 15:21:22,656 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-08-07 15:21:23,178 - Analyzer - INFO - Analysis of 2024-02-29_9_360Hz_ICN_intra completed.
+2024-08-07 15:21:23,179 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-02-29_9_360Hz_ICN_intra_analyzed
+2024-08-07 15:21:23,793 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-02-29_9_360Hz_ICN_intra_analyzed
+2024-08-07 15:21:27,187 - Analyzer - INFO - Verbose plotting of stats for 2024-02-29_9_360Hz_ICN_intra_analyzed
+2024-08-07 15:21:27,286 - Analyzer - INFO - Saving verbose plotting of stats for 2024-02-29_9_360Hz_ICN_intra_analyzed
+2024-08-07 15:21:54,091 - Analyzer - INFO - Reading: 2024-02-29_9_360Hz_ICN_intra
+2024-08-07 15:21:57,559 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-08-07 15:21:58,097 - Analyzer - INFO - Analysis of 2024-02-29_9_360Hz_ICN_intra completed.
+2024-08-07 15:21:58,098 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-02-29_9_360Hz_ICN_intra_analyzed
+2024-08-07 15:21:58,766 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-02-29_9_360Hz_ICN_intra_analyzed
+2024-08-07 15:22:02,181 - Analyzer - INFO - Verbose plotting of stats for 2024-02-29_9_360Hz_ICN_intra_analyzed
+2024-08-07 15:22:02,272 - Analyzer - INFO - Saving verbose plotting of stats for 2024-02-29_9_360Hz_ICN_intra_analyzed
+2024-08-07 15:22:37,685 - Analyzer - INFO - Reading: 2024-02-29_9_360Hz_ICN_intra
+2024-08-07 15:22:41,335 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-08-07 15:22:41,850 - Analyzer - INFO - Analysis of 2024-02-29_9_360Hz_ICN_intra completed.
+2024-08-07 15:22:41,851 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-02-29_9_360Hz_ICN_intra_analyzed
+2024-08-07 15:22:42,472 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-02-29_9_360Hz_ICN_intra_analyzed
+2024-08-07 15:22:45,799 - Analyzer - INFO - Verbose plotting of stats for 2024-02-29_9_360Hz_ICN_intra_analyzed
+2024-08-07 15:22:45,886 - Analyzer - INFO - Saving verbose plotting of stats for 2024-02-29_9_360Hz_ICN_intra_analyzed
+2024-08-07 15:32:43,161 - Analyzer - INFO - Reading: 2024-02-29_9_360Hz_ICN_intra
+2024-08-07 15:32:46,705 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-08-07 15:32:47,220 - Analyzer - INFO - Analysis of 2024-02-29_9_360Hz_ICN_intra completed.
+2024-08-07 15:32:47,221 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-02-29_9_360Hz_ICN_intra_analyzed
+2024-08-07 15:32:47,850 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-02-29_9_360Hz_ICN_intra_analyzed
+2024-08-07 15:32:51,177 - Analyzer - INFO - Verbose plotting of stats for 2024-02-29_9_360Hz_ICN_intra_analyzed
+2024-08-07 15:32:51,275 - Analyzer - INFO - Saving verbose plotting of stats for 2024-02-29_9_360Hz_ICN_intra_analyzed
+2024-08-07 15:33:11,487 - Analyzer - INFO - Reading: 2024-02-29_9_360Hz_ICN_intra
+2024-08-07 15:33:15,045 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-08-07 15:33:15,562 - Analyzer - INFO - Analysis of 2024-02-29_9_360Hz_ICN_intra completed.
+2024-08-07 15:33:15,563 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-02-29_9_360Hz_ICN_intra_analyzed
+2024-08-07 15:33:16,194 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-02-29_9_360Hz_ICN_intra_analyzed
+2024-08-07 15:33:19,595 - Analyzer - INFO - Verbose plotting of stats for 2024-02-29_9_360Hz_ICN_intra_analyzed
+2024-08-07 15:33:19,685 - Analyzer - INFO - Saving verbose plotting of stats for 2024-02-29_9_360Hz_ICN_intra_analyzed
+2024-08-07 15:33:43,606 - Analyzer - INFO - Reading: 2024-02-29_9_360Hz_ICN_intra
+2024-08-07 15:33:47,020 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-08-07 15:33:47,526 - Analyzer - INFO - Analysis of 2024-02-29_9_360Hz_ICN_intra completed.
+2024-08-07 15:33:47,527 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-02-29_9_360Hz_ICN_intra_analyzed
+2024-08-07 15:33:48,197 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-02-29_9_360Hz_ICN_intra_analyzed
+2024-08-07 15:33:51,575 - Analyzer - INFO - Verbose plotting of stats for 2024-02-29_9_360Hz_ICN_intra_analyzed
+2024-08-07 15:33:51,664 - Analyzer - INFO - Saving verbose plotting of stats for 2024-02-29_9_360Hz_ICN_intra_analyzed
+2024-08-07 15:34:15,203 - Analyzer - INFO - Reading: 2024-02-29_9_360Hz_ICN_intra
+2024-08-07 15:34:18,765 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-08-07 15:34:19,287 - Analyzer - INFO - Analysis of 2024-02-29_9_360Hz_ICN_intra completed.
+2024-08-07 15:34:19,288 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-02-29_9_360Hz_ICN_intra_analyzed
+2024-08-07 15:34:19,957 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-02-29_9_360Hz_ICN_intra_analyzed
+2024-08-07 15:34:23,380 - Analyzer - INFO - Verbose plotting of stats for 2024-02-29_9_360Hz_ICN_intra_analyzed
+2024-08-07 15:34:23,469 - Analyzer - INFO - Saving verbose plotting of stats for 2024-02-29_9_360Hz_ICN_intra_analyzed
+2024-08-07 15:38:59,497 - Analyzer - INFO - Reading: 2024-06-12_8_375Hz_LIN_10pulses_prr_v2_Intra
+2024-08-07 15:39:06,216 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-08-07 15:39:06,952 - Analyzer - INFO - Analysis of 2024-06-12_8_375Hz_LIN_10pulses_prr_v2_Intra completed.
+2024-08-07 15:39:06,953 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v2_Intra_analyzed
+2024-08-07 15:39:07,691 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v2_Intra_analyzed
+2024-08-07 15:39:11,083 - Analyzer - INFO - Verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v2_Intra_analyzed
+2024-08-07 15:39:11,320 - Analyzer - INFO - Saving verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v2_Intra_analyzed
+2024-08-07 15:39:57,147 - Analyzer - INFO - Reading: 2024-06-12_8_375Hz_LIN_10pulses_prr_v2_Intra
+2024-08-07 15:40:03,577 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-08-07 15:40:04,307 - Analyzer - INFO - Analysis of 2024-06-12_8_375Hz_LIN_10pulses_prr_v2_Intra completed.
+2024-08-07 15:40:04,308 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v2_Intra_analyzed
+2024-08-07 15:40:04,969 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v2_Intra_analyzed
+2024-08-07 15:40:08,233 - Analyzer - INFO - Verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v2_Intra_analyzed
+2024-08-07 15:40:08,459 - Analyzer - INFO - Saving verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v2_Intra_analyzed
+2024-08-07 15:41:13,040 - Analyzer - INFO - Reading: 2024-06-12_8_375Hz_LIN_10pulses_prr_v2_Intra
+2024-08-07 15:41:19,766 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-08-07 15:41:20,488 - Analyzer - INFO - Analysis of 2024-06-12_8_375Hz_LIN_10pulses_prr_v2_Intra completed.
+2024-08-07 15:41:20,489 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v2_Intra_analyzed
+2024-08-07 15:41:21,163 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v2_Intra_analyzed
+2024-08-07 15:41:24,418 - Analyzer - INFO - Verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v2_Intra_analyzed
+2024-08-07 15:41:24,654 - Analyzer - INFO - Saving verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v2_Intra_analyzed
+2024-08-07 15:41:49,725 - Analyzer - INFO - Reading: 2024-06-12_8_375Hz_LIN_10pulses_prr_v2_Intra
+2024-08-07 15:41:56,508 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-08-07 15:41:57,230 - Analyzer - INFO - Analysis of 2024-06-12_8_375Hz_LIN_10pulses_prr_v2_Intra completed.
+2024-08-07 15:41:57,231 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v2_Intra_analyzed
+2024-08-07 15:41:57,925 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v2_Intra_analyzed
+2024-08-07 15:42:01,165 - Analyzer - INFO - Verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v2_Intra_analyzed
+2024-08-07 15:42:01,421 - Analyzer - INFO - Saving verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v2_Intra_analyzed
+2024-08-07 15:42:17,611 - Analyzer - INFO - Reading: 2024-06-12_8_375Hz_LIN_10pulses_prr_v2_Intra
+2024-08-07 15:42:24,092 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-08-07 15:42:24,816 - Analyzer - INFO - Analysis of 2024-06-12_8_375Hz_LIN_10pulses_prr_v2_Intra completed.
+2024-08-07 15:42:24,817 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v2_Intra_analyzed
+2024-08-07 15:42:25,485 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v2_Intra_analyzed
+2024-08-07 15:42:28,758 - Analyzer - INFO - Verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v2_Intra_analyzed
+2024-08-07 15:42:28,982 - Analyzer - INFO - Saving verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v2_Intra_analyzed
+2024-08-07 15:49:20,363 - Analyzer - INFO - Reading: 2024-06-12_8_375Hz_LIN_10pulses_prr_v2_Intra
+2024-08-07 15:49:27,167 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-08-07 15:49:27,904 - Analyzer - INFO - Analysis of 2024-06-12_8_375Hz_LIN_10pulses_prr_v2_Intra completed.
+2024-08-07 15:49:27,905 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v2_Intra_analyzed
+2024-08-07 15:49:28,599 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v2_Intra_analyzed
+2024-08-07 15:49:31,841 - Analyzer - INFO - Verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v2_Intra_analyzed
+2024-08-07 15:49:32,082 - Analyzer - INFO - Saving verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v2_Intra_analyzed
+2024-08-08 09:31:34,758 - Analyzer - INFO - Reading: 2024-06-12_8_375Hz_LIN_10pulses_prr_v2_Intra
+2024-08-08 09:31:42,515 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-08-08 09:31:43,627 - Analyzer - INFO - Analysis of 2024-06-12_8_375Hz_LIN_10pulses_prr_v2_Intra completed.
+2024-08-08 09:31:43,628 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v2_Intra_analyzed
+2024-08-08 09:31:44,720 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v2_Intra_analyzed
+2024-08-08 09:31:48,798 - Analyzer - INFO - Verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v2_Intra_analyzed
+2024-08-08 09:31:49,034 - Analyzer - INFO - Saving verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v2_Intra_analyzed
+2024-08-08 10:17:21,879 - Analyzer - INFO - Reading: 2024-02-29_9_360Hz_ICN_intra
+2024-08-08 10:17:25,554 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-08-08 10:17:26,078 - Analyzer - INFO - Analysis of 2024-02-29_9_360Hz_ICN_intra completed.
+2024-08-08 10:17:26,079 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-02-29_9_360Hz_ICN_intra_analyzed
+2024-08-08 10:17:26,699 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-02-29_9_360Hz_ICN_intra_analyzed
+2024-08-08 10:17:30,050 - Analyzer - INFO - Verbose plotting of stats for 2024-02-29_9_360Hz_ICN_intra_analyzed
+2024-08-08 10:17:30,142 - Analyzer - INFO - Saving verbose plotting of stats for 2024-02-29_9_360Hz_ICN_intra_analyzed
+2024-08-08 10:19:41,836 - Analyzer - INFO - Reading: 2024-02-29_9_360Hz_ICN_intra
+2024-08-08 10:19:45,357 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-08-08 10:19:45,862 - Analyzer - INFO - Analysis of 2024-02-29_9_360Hz_ICN_intra completed.
+2024-08-08 10:19:45,864 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-02-29_9_360Hz_ICN_intra_analyzed
+2024-08-08 10:19:46,530 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-02-29_9_360Hz_ICN_intra_analyzed
+2024-08-08 10:19:49,895 - Analyzer - INFO - Verbose plotting of stats for 2024-02-29_9_360Hz_ICN_intra_analyzed
+2024-08-08 10:19:49,994 - Analyzer - INFO - Saving verbose plotting of stats for 2024-02-29_9_360Hz_ICN_intra_analyzed
+2024-08-08 10:21:02,522 - Analyzer - INFO - Reading: 2024-02-29_9_360Hz_ICN_intra
+2024-08-08 10:21:06,138 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-08-08 10:21:06,662 - Analyzer - INFO - Analysis of 2024-02-29_9_360Hz_ICN_intra completed.
+2024-08-08 10:21:06,663 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-02-29_9_360Hz_ICN_intra_analyzed
+2024-08-08 10:21:07,303 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-02-29_9_360Hz_ICN_intra_analyzed
+2024-08-08 10:21:10,631 - Analyzer - INFO - Verbose plotting of stats for 2024-02-29_9_360Hz_ICN_intra_analyzed
+2024-08-08 10:21:10,719 - Analyzer - INFO - Saving verbose plotting of stats for 2024-02-29_9_360Hz_ICN_intra_analyzed
+2024-09-09 08:57:10,789 - Analyzer - INFO - Reading: 2024-06-12_8_375Hz_LIN_10pulses_prr_v2_Intra
+2024-09-09 08:57:17,574 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-09-09 08:57:18,356 - Analyzer - INFO - Analysis of 2024-06-12_8_375Hz_LIN_10pulses_prr_v2_Intra completed.
+2024-09-09 08:57:18,357 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v2_Intra_analyzed
+2024-09-09 08:57:19,306 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v2_Intra_analyzed
+2024-09-09 08:57:22,782 - Analyzer - INFO - Verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v2_Intra_analyzed
+2024-09-09 08:57:23,029 - Analyzer - INFO - Saving verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v2_Intra_analyzed
+2024-09-09 09:02:14,808 - Analyzer - INFO - Reading: 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra
+2024-09-09 09:02:21,275 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-09-09 09:02:21,999 - Analyzer - INFO - Analysis of 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra completed.
+2024-09-09 09:02:22,008 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 09:02:22,712 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 09:02:25,942 - Analyzer - INFO - Verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 09:02:26,128 - Analyzer - INFO - Saving verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 09:10:10,237 - Analyzer - INFO - Reading: 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra
+2024-09-09 09:10:16,686 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-09-09 09:10:17,429 - Analyzer - INFO - Analysis of 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra completed.
+2024-09-09 09:10:17,429 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 09:10:18,099 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 09:10:21,329 - Analyzer - INFO - Verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 09:10:21,552 - Analyzer - INFO - Saving verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 09:13:52,634 - Analyzer - INFO - Reading: 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra
+2024-09-09 09:13:59,487 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-09-09 09:14:00,222 - Analyzer - INFO - Analysis of 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra completed.
+2024-09-09 09:14:00,222 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 09:14:00,931 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 09:14:04,221 - Analyzer - INFO - Verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 09:14:04,432 - Analyzer - INFO - Saving verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 09:15:24,645 - Analyzer - INFO - Reading: 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra
+2024-09-09 09:15:31,232 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-09-09 09:15:31,985 - Analyzer - INFO - Analysis of 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra completed.
+2024-09-09 09:15:31,985 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 09:15:32,674 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 09:15:35,888 - Analyzer - INFO - Verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 09:15:36,112 - Analyzer - INFO - Saving verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 09:36:18,639 - Analyzer - INFO - Reading: 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra
+2024-09-09 09:36:25,427 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-09-09 09:36:26,171 - Analyzer - INFO - Analysis of 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra completed.
+2024-09-09 09:36:26,171 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 09:36:26,857 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 09:36:30,151 - Analyzer - INFO - Verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 09:36:30,395 - Analyzer - INFO - Saving verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 09:37:16,892 - Analyzer - INFO - Reading: 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra
+2024-09-09 09:37:23,543 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-09-09 09:37:24,257 - Analyzer - INFO - Analysis of 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra completed.
+2024-09-09 09:37:24,257 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 09:37:24,967 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 09:37:28,319 - Analyzer - INFO - Verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 09:37:28,539 - Analyzer - INFO - Saving verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 09:38:13,797 - Analyzer - INFO - Reading: 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra
+2024-09-09 09:38:20,644 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-09-09 09:38:21,373 - Analyzer - INFO - Analysis of 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra completed.
+2024-09-09 09:38:21,373 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 09:38:22,039 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 09:38:25,334 - Analyzer - INFO - Verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 09:38:25,557 - Analyzer - INFO - Saving verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 09:42:07,433 - Analyzer - INFO - Reading: 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra
+2024-09-09 09:42:14,430 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-09-09 09:42:15,206 - Analyzer - INFO - Analysis of 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra completed.
+2024-09-09 09:42:15,206 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 09:42:15,900 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 09:42:19,265 - Analyzer - INFO - Verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 09:42:19,511 - Analyzer - INFO - Saving verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 09:43:19,154 - Analyzer - INFO - Reading: 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra
+2024-09-09 09:43:25,748 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-09-09 09:43:26,500 - Analyzer - INFO - Analysis of 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra completed.
+2024-09-09 09:43:26,500 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 09:43:27,174 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 09:43:30,517 - Analyzer - INFO - Verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 09:43:30,737 - Analyzer - INFO - Saving verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 10:57:25,334 - Analyzer - INFO - Reading: 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra
+2024-09-09 10:57:31,968 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-09-09 10:57:32,740 - Analyzer - INFO - Analysis of 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra completed.
+2024-09-09 10:57:32,740 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 10:57:33,411 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 10:57:36,676 - Analyzer - INFO - Verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 10:57:36,921 - Analyzer - INFO - Saving verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 10:58:35,464 - Analyzer - INFO - Reading: 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra
+2024-09-09 10:58:41,958 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-09-09 10:58:42,693 - Analyzer - INFO - Analysis of 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra completed.
+2024-09-09 10:58:42,693 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 10:58:43,356 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 10:58:46,696 - Analyzer - INFO - Verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 10:58:46,932 - Analyzer - INFO - Saving verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 11:03:36,240 - Analyzer - INFO - Reading: 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra
+2024-09-09 11:03:42,769 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-09-09 11:03:43,493 - Analyzer - INFO - Analysis of 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra completed.
+2024-09-09 11:03:43,493 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 11:03:44,154 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 11:03:47,430 - Analyzer - INFO - Verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 11:03:47,662 - Analyzer - INFO - Saving verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 11:04:05,974 - Analyzer - INFO - Reading: 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra
+2024-09-09 11:04:12,601 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-09-09 11:04:13,321 - Analyzer - INFO - Analysis of 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra completed.
+2024-09-09 11:04:13,322 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 11:04:13,976 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 11:04:17,247 - Analyzer - INFO - Verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 11:04:17,481 - Analyzer - INFO - Saving verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 11:04:56,122 - Analyzer - INFO - Reading: 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra
+2024-09-09 11:05:02,763 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-09-09 11:05:03,497 - Analyzer - INFO - Analysis of 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra completed.
+2024-09-09 11:05:03,505 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 11:05:04,159 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 11:05:07,399 - Analyzer - INFO - Verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 11:05:07,622 - Analyzer - INFO - Saving verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 11:05:36,823 - Analyzer - INFO - Reading: 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra
+2024-09-09 11:05:43,389 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-09-09 11:05:44,125 - Analyzer - INFO - Analysis of 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra completed.
+2024-09-09 11:05:44,125 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 11:05:44,799 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 11:05:48,111 - Analyzer - INFO - Verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 11:05:48,318 - Analyzer - INFO - Saving verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 11:06:16,250 - Analyzer - INFO - Reading: 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra
+2024-09-09 11:06:22,922 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-09-09 11:06:23,652 - Analyzer - INFO - Analysis of 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra completed.
+2024-09-09 11:06:23,654 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 11:06:24,315 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 11:06:27,592 - Analyzer - INFO - Verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 11:06:27,822 - Analyzer - INFO - Saving verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 11:06:54,006 - Analyzer - INFO - Reading: 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra
+2024-09-09 11:07:00,692 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-09-09 11:07:01,426 - Analyzer - INFO - Analysis of 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra completed.
+2024-09-09 11:07:01,427 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 11:07:02,111 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 11:07:05,440 - Analyzer - INFO - Verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 11:07:05,646 - Analyzer - INFO - Saving verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 11:13:22,483 - Analyzer - INFO - Reading: 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra
+2024-09-09 11:13:29,183 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-09-09 11:13:29,944 - Analyzer - INFO - Analysis of 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra completed.
+2024-09-09 11:13:29,944 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 11:13:30,626 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 11:13:33,915 - Analyzer - INFO - Verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 11:13:34,013 - Analyzer - INFO - Saving verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 11:16:10,826 - Analyzer - INFO - Reading: 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra
+2024-09-09 11:16:17,386 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-09-09 11:16:18,121 - Analyzer - INFO - Analysis of 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra completed.
+2024-09-09 11:16:18,121 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 11:16:18,803 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 11:16:22,106 - Analyzer - INFO - Verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 11:16:22,195 - Analyzer - INFO - Saving verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 11:16:47,080 - Analyzer - INFO - Reading: 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra
+2024-09-09 11:16:53,724 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-09-09 11:16:54,460 - Analyzer - INFO - Analysis of 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra completed.
+2024-09-09 11:16:54,460 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 11:16:55,128 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 11:16:58,354 - Analyzer - INFO - Verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 11:16:58,585 - Analyzer - INFO - Saving verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 11:17:28,990 - Analyzer - INFO - Reading: 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra
+2024-09-09 11:17:35,512 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-09-09 11:17:36,236 - Analyzer - INFO - Analysis of 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra completed.
+2024-09-09 11:17:36,236 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 11:17:36,907 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 11:17:40,142 - Analyzer - INFO - Verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 11:17:40,230 - Analyzer - INFO - Saving verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 11:18:07,525 - Analyzer - INFO - Reading: 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra
+2024-09-09 11:18:14,182 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-09-09 11:18:14,911 - Analyzer - INFO - Analysis of 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra completed.
+2024-09-09 11:18:14,911 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 11:18:15,576 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 11:18:18,817 - Analyzer - INFO - Verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 11:18:19,029 - Analyzer - INFO - Saving verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 11:18:38,580 - Analyzer - INFO - Reading: 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra
+2024-09-09 11:18:45,044 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-09-09 11:18:45,771 - Analyzer - INFO - Analysis of 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra completed.
+2024-09-09 11:18:45,771 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 11:18:46,443 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 11:18:49,656 - Analyzer - INFO - Verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 11:18:49,859 - Analyzer - INFO - Saving verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 11:19:06,876 - Analyzer - INFO - Reading: 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra
+2024-09-09 11:19:13,714 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-09-09 11:19:14,462 - Analyzer - INFO - Analysis of 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra completed.
+2024-09-09 11:19:14,462 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 11:19:15,125 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 11:19:18,361 - Analyzer - INFO - Verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 11:19:18,594 - Analyzer - INFO - Saving verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 11:19:46,639 - Analyzer - INFO - Reading: 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra
+2024-09-09 11:19:53,410 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-09-09 11:19:54,128 - Analyzer - INFO - Analysis of 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra completed.
+2024-09-09 11:19:54,128 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 11:19:54,821 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 11:19:58,176 - Analyzer - INFO - Verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 11:19:58,402 - Analyzer - INFO - Saving verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 11:20:30,253 - Analyzer - INFO - Reading: 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra
+2024-09-09 11:20:36,756 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-09-09 11:20:37,505 - Analyzer - INFO - Analysis of 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra completed.
+2024-09-09 11:20:37,505 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 11:20:38,210 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 11:20:41,525 - Analyzer - INFO - Verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 11:20:41,736 - Analyzer - INFO - Saving verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 11:21:21,911 - Analyzer - INFO - Reading: 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra
+2024-09-09 11:21:28,489 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-09-09 11:21:29,232 - Analyzer - INFO - Analysis of 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra completed.
+2024-09-09 11:21:29,232 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 11:21:29,974 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 11:21:33,260 - Analyzer - INFO - Verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 11:21:33,350 - Analyzer - INFO - Saving verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 11:22:26,425 - Analyzer - INFO - Reading: 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra
+2024-09-09 11:22:33,243 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-09-09 11:22:34,007 - Analyzer - INFO - Analysis of 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra completed.
+2024-09-09 11:22:34,008 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 11:22:34,765 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 11:22:38,052 - Analyzer - INFO - Verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 11:22:38,141 - Analyzer - INFO - Saving verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 11:24:45,858 - Analyzer - INFO - Reading: 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra
+2024-09-09 11:24:52,963 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-09-09 11:24:53,709 - Analyzer - INFO - Analysis of 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra completed.
+2024-09-09 11:24:53,709 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 11:24:54,461 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 11:24:57,818 - Analyzer - INFO - Verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 11:24:57,909 - Analyzer - INFO - Saving verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 11:25:21,621 - Analyzer - INFO - Reading: 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra
+2024-09-09 11:25:28,099 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-09-09 11:25:28,827 - Analyzer - INFO - Analysis of 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra completed.
+2024-09-09 11:25:28,827 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 11:25:29,582 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 11:25:32,876 - Analyzer - INFO - Verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 11:25:32,965 - Analyzer - INFO - Saving verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 11:25:58,530 - Analyzer - INFO - Reading: 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra
+2024-09-09 11:26:04,957 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-09-09 11:26:05,692 - Analyzer - INFO - Analysis of 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra completed.
+2024-09-09 11:26:05,694 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 11:26:06,434 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 11:26:09,718 - Analyzer - INFO - Verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 11:26:09,818 - Analyzer - INFO - Saving verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 11:26:43,287 - Analyzer - INFO - Reading: 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra
+2024-09-09 11:26:49,887 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-09-09 11:26:50,612 - Analyzer - INFO - Analysis of 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra completed.
+2024-09-09 11:26:50,612 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 11:26:51,342 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 11:26:54,631 - Analyzer - INFO - Verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 11:26:54,712 - Analyzer - INFO - Saving verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 11:27:15,639 - Analyzer - INFO - Reading: 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra
+2024-09-09 11:27:22,185 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-09-09 11:27:22,922 - Analyzer - INFO - Analysis of 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra completed.
+2024-09-09 11:27:22,922 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 11:27:23,635 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 11:27:26,900 - Analyzer - INFO - Verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 11:27:26,986 - Analyzer - INFO - Saving verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 11:27:44,974 - Analyzer - INFO - Reading: 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra
+2024-09-09 11:27:51,565 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-09-09 11:27:52,299 - Analyzer - INFO - Analysis of 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra completed.
+2024-09-09 11:27:52,300 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 11:27:53,050 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 11:27:56,338 - Analyzer - INFO - Verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 11:27:56,456 - Analyzer - INFO - Saving verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 11:30:02,312 - Analyzer - INFO - Reading: 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra
+2024-09-09 11:30:08,882 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-09-09 11:30:09,616 - Analyzer - INFO - Analysis of 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra completed.
+2024-09-09 11:30:09,616 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 11:30:10,339 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 11:30:13,581 - Analyzer - INFO - Verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 11:30:13,680 - Analyzer - INFO - Saving verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 11:32:02,554 - Analyzer - INFO - Reading: 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra
+2024-09-09 11:32:08,998 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-09-09 11:32:09,739 - Analyzer - INFO - Analysis of 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra completed.
+2024-09-09 11:32:09,739 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 11:32:10,483 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 11:32:13,807 - Analyzer - INFO - Verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 11:32:13,908 - Analyzer - INFO - Saving verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 11:33:21,659 - Analyzer - INFO - Reading: 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra
+2024-09-09 11:33:28,417 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-09-09 11:33:29,129 - Analyzer - INFO - Analysis of 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra completed.
+2024-09-09 11:33:29,129 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 11:33:29,861 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 11:33:33,141 - Analyzer - INFO - Verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 11:33:33,237 - Analyzer - INFO - Saving verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 11:39:23,598 - Analyzer - INFO - Reading: 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra
+2024-09-09 11:39:30,243 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-09-09 11:39:30,987 - Analyzer - INFO - Analysis of 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra completed.
+2024-09-09 11:39:30,987 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 11:39:31,706 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 11:39:34,977 - Analyzer - INFO - Verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 11:39:35,079 - Analyzer - INFO - Saving verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 11:40:49,525 - Analyzer - INFO - Reading: 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra
+2024-09-09 11:40:56,166 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-09-09 11:40:56,913 - Analyzer - INFO - Analysis of 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra completed.
+2024-09-09 11:40:56,913 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 11:40:57,665 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 11:41:00,955 - Analyzer - INFO - Verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 11:41:01,043 - Analyzer - INFO - Saving verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 11:48:51,722 - Analyzer - INFO - Reading: 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra
+2024-09-09 11:48:58,264 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-09-09 11:48:59,032 - Analyzer - INFO - Analysis of 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra completed.
+2024-09-09 11:48:59,032 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 11:48:59,751 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 11:49:03,016 - Analyzer - INFO - Verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 11:49:03,113 - Analyzer - INFO - Saving verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 11:49:43,496 - Analyzer - INFO - Reading: 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra
+2024-09-09 11:49:50,179 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-09-09 11:49:50,912 - Analyzer - INFO - Analysis of 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra completed.
+2024-09-09 11:49:50,912 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 11:49:51,643 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 11:49:54,909 - Analyzer - INFO - Verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 11:49:55,002 - Analyzer - INFO - Saving verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 11:55:17,343 - Analyzer - INFO - Reading: 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra
+2024-09-09 11:55:23,769 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-09-09 11:55:24,547 - Analyzer - INFO - Analysis of 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra completed.
+2024-09-09 11:55:24,547 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 11:55:25,275 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 11:55:28,584 - Analyzer - INFO - Verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 11:55:28,673 - Analyzer - INFO - Saving verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 11:55:50,224 - Analyzer - INFO - Reading: 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra
+2024-09-09 11:55:56,769 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-09-09 11:55:57,496 - Analyzer - INFO - Analysis of 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra completed.
+2024-09-09 11:55:57,496 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 11:55:58,205 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 11:56:01,479 - Analyzer - INFO - Verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 11:56:01,574 - Analyzer - INFO - Saving verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 11:56:17,861 - Analyzer - INFO - Reading: 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra
+2024-09-09 11:56:24,363 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-09-09 11:56:25,096 - Analyzer - INFO - Analysis of 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra completed.
+2024-09-09 11:56:25,096 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 11:56:25,818 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 11:56:29,086 - Analyzer - INFO - Verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 11:56:29,168 - Analyzer - INFO - Saving verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 11:57:39,721 - Analyzer - INFO - Reading: 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra
+2024-09-09 11:57:46,259 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-09-09 11:57:46,998 - Analyzer - INFO - Analysis of 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra completed.
+2024-09-09 11:57:46,999 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 11:57:47,731 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 11:57:51,015 - Analyzer - INFO - Verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 11:57:51,106 - Analyzer - INFO - Saving verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 11:58:07,798 - Analyzer - INFO - Reading: 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra
+2024-09-09 11:58:14,538 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-09-09 11:58:15,263 - Analyzer - INFO - Analysis of 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra completed.
+2024-09-09 11:58:15,263 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 11:58:15,973 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 11:58:19,227 - Analyzer - INFO - Verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 11:58:19,318 - Analyzer - INFO - Saving verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 11:58:57,091 - Analyzer - INFO - Reading: 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra
+2024-09-09 11:59:03,835 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-09-09 11:59:04,610 - Analyzer - INFO - Analysis of 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra completed.
+2024-09-09 11:59:04,610 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 11:59:05,340 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 11:59:08,583 - Analyzer - INFO - Verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 11:59:08,683 - Analyzer - INFO - Saving verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 12:00:30,461 - Analyzer - INFO - Reading: 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra
+2024-09-09 12:00:37,207 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-09-09 12:00:37,938 - Analyzer - INFO - Analysis of 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra completed.
+2024-09-09 12:00:37,940 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 12:00:38,687 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 12:00:41,977 - Analyzer - INFO - Verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 12:00:42,064 - Analyzer - INFO - Saving verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 12:01:08,713 - Analyzer - INFO - Reading: 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra
+2024-09-09 12:01:15,252 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-09-09 12:01:15,977 - Analyzer - INFO - Analysis of 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra completed.
+2024-09-09 12:01:15,977 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 12:01:16,705 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 12:01:20,012 - Analyzer - INFO - Verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 12:01:20,103 - Analyzer - INFO - Saving verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 12:01:53,974 - Analyzer - INFO - Reading: 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra
+2024-09-09 12:02:00,627 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-09-09 12:02:01,346 - Analyzer - INFO - Analysis of 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra completed.
+2024-09-09 12:02:01,346 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 12:02:02,070 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 12:02:05,335 - Analyzer - INFO - Verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 12:02:05,431 - Analyzer - INFO - Saving verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 12:02:29,813 - Analyzer - INFO - Reading: 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra
+2024-09-09 12:02:36,455 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-09-09 12:02:37,179 - Analyzer - INFO - Analysis of 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra completed.
+2024-09-09 12:02:37,179 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 12:02:37,931 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 12:02:41,239 - Analyzer - INFO - Verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 12:02:41,337 - Analyzer - INFO - Saving verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 12:08:30,534 - Analyzer - INFO - Reading: 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra
+2024-09-09 12:08:37,089 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-09-09 12:08:37,841 - Analyzer - INFO - Analysis of 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra completed.
+2024-09-09 12:08:37,841 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 12:08:38,594 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 12:08:41,889 - Analyzer - INFO - Verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 12:08:41,984 - Analyzer - INFO - Saving verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 12:09:23,349 - Analyzer - INFO - Reading: 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra
+2024-09-09 12:09:29,929 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-09-09 12:09:30,695 - Analyzer - INFO - Analysis of 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra completed.
+2024-09-09 12:09:30,695 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 12:09:31,427 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 12:09:34,739 - Analyzer - INFO - Verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 12:09:34,843 - Analyzer - INFO - Saving verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 12:09:57,965 - Analyzer - INFO - Reading: 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra
+2024-09-09 12:10:04,624 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-09-09 12:10:05,368 - Analyzer - INFO - Analysis of 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra completed.
+2024-09-09 12:10:05,368 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 12:10:06,118 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 12:10:09,445 - Analyzer - INFO - Verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 12:10:09,551 - Analyzer - INFO - Saving verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 12:15:42,517 - Analyzer - INFO - Reading: 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra
+2024-09-09 12:15:49,223 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-09-09 12:15:49,956 - Analyzer - INFO - Analysis of 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra completed.
+2024-09-09 12:15:49,956 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 12:15:50,638 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 12:15:53,943 - Analyzer - INFO - Verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 12:15:54,148 - Analyzer - INFO - Saving verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 12:17:21,106 - Analyzer - INFO - Reading: 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra
+2024-09-09 12:17:27,696 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-09-09 12:17:28,463 - Analyzer - INFO - Analysis of 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra completed.
+2024-09-09 12:17:28,463 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 12:17:29,137 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 12:17:32,552 - Analyzer - INFO - Verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 12:17:32,772 - Analyzer - INFO - Saving verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 12:19:10,221 - Analyzer - INFO - Reading: 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra
+2024-09-09 12:19:16,991 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-09-09 12:19:17,727 - Analyzer - INFO - Analysis of 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra completed.
+2024-09-09 12:19:17,727 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 12:19:18,400 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 12:19:21,774 - Analyzer - INFO - Verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 12:19:21,990 - Analyzer - INFO - Saving verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 12:20:15,722 - Analyzer - INFO - Reading: 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra
+2024-09-09 12:20:22,659 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-09-09 12:20:23,414 - Analyzer - INFO - Analysis of 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra completed.
+2024-09-09 12:20:23,416 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 12:20:24,102 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 12:20:27,396 - Analyzer - INFO - Verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 12:20:27,603 - Analyzer - INFO - Saving verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 12:20:58,065 - Analyzer - INFO - Reading: 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra
+2024-09-09 12:21:05,026 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-09-09 12:21:05,751 - Analyzer - INFO - Analysis of 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra completed.
+2024-09-09 12:21:05,751 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 12:21:06,442 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 12:21:09,723 - Analyzer - INFO - Verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 12:21:09,933 - Analyzer - INFO - Saving verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 12:22:25,677 - Analyzer - INFO - Reading: 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra
+2024-09-09 12:22:32,150 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-09-09 12:22:32,884 - Analyzer - INFO - Analysis of 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra completed.
+2024-09-09 12:22:32,884 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 12:22:33,563 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 12:22:36,872 - Analyzer - INFO - Verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 12:22:37,087 - Analyzer - INFO - Saving verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 12:25:04,292 - Analyzer - INFO - Reading: 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra
+2024-09-09 12:25:11,097 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-09-09 12:25:11,834 - Analyzer - INFO - Analysis of 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra completed.
+2024-09-09 12:25:11,834 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 12:25:12,539 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 12:25:15,885 - Analyzer - INFO - Verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 12:25:16,080 - Analyzer - INFO - Saving verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 12:25:52,279 - Analyzer - INFO - Reading: 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra
+2024-09-09 12:25:58,955 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-09-09 12:25:59,709 - Analyzer - INFO - Analysis of 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra completed.
+2024-09-09 12:25:59,709 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 12:26:00,401 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 12:26:03,723 - Analyzer - INFO - Verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 12:26:03,822 - Analyzer - INFO - Saving verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 12:30:08,128 - Analyzer - INFO - Reading: 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra
+2024-09-09 12:30:14,941 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-09-09 12:30:15,676 - Analyzer - INFO - Analysis of 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra completed.
+2024-09-09 12:30:15,676 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 12:30:16,339 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 12:30:19,655 - Analyzer - INFO - Verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 12:30:19,744 - Analyzer - INFO - Saving verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 12:31:15,781 - Analyzer - INFO - Reading: 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra
+2024-09-09 12:31:22,404 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-09-09 12:31:23,159 - Analyzer - INFO - Analysis of 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra completed.
+2024-09-09 12:31:23,159 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 12:31:23,903 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 12:31:27,147 - Analyzer - INFO - Verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 12:31:27,238 - Analyzer - INFO - Saving verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 12:47:47,247 - Analyzer - INFO - Reading: 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra
+2024-09-09 12:47:53,840 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-09-09 12:47:54,616 - Analyzer - INFO - Analysis of 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra completed.
+2024-09-09 12:47:54,616 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 12:47:55,365 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 12:47:58,620 - Analyzer - INFO - Verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 12:47:58,722 - Analyzer - INFO - Saving verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 12:48:21,876 - Analyzer - INFO - Reading: 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra
+2024-09-09 12:48:28,376 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-09-09 12:48:29,127 - Analyzer - INFO - Analysis of 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra completed.
+2024-09-09 12:48:29,127 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 12:48:29,846 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 12:48:33,216 - Analyzer - INFO - Verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 12:48:33,301 - Analyzer - INFO - Saving verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 12:48:58,574 - Analyzer - INFO - Reading: 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra
+2024-09-09 12:49:05,214 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-09-09 12:49:05,958 - Analyzer - INFO - Analysis of 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra completed.
+2024-09-09 12:49:05,958 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 12:49:06,691 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 12:49:09,924 - Analyzer - INFO - Verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 12:49:10,017 - Analyzer - INFO - Saving verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 12:49:32,487 - Analyzer - INFO - Reading: 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra
+2024-09-09 12:49:38,985 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-09-09 12:49:39,721 - Analyzer - INFO - Analysis of 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra completed.
+2024-09-09 12:49:39,728 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 12:49:40,450 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 12:49:43,684 - Analyzer - INFO - Verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 12:49:43,775 - Analyzer - INFO - Saving verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 12:50:06,074 - Analyzer - INFO - Reading: 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra
+2024-09-09 12:50:12,579 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-09-09 12:50:13,299 - Analyzer - INFO - Analysis of 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra completed.
+2024-09-09 12:50:13,299 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 12:50:14,022 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 12:50:17,254 - Analyzer - INFO - Verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 12:50:17,350 - Analyzer - INFO - Saving verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 12:50:51,828 - Analyzer - INFO - Reading: 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra
+2024-09-09 12:50:58,415 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-09-09 12:50:59,153 - Analyzer - INFO - Analysis of 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra completed.
+2024-09-09 12:50:59,153 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 12:50:59,876 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 12:51:03,116 - Analyzer - INFO - Verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 12:51:03,212 - Analyzer - INFO - Saving verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 12:52:51,177 - Analyzer - INFO - Reading: 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra
+2024-09-09 12:52:57,727 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-09-09 12:52:58,484 - Analyzer - INFO - Analysis of 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra completed.
+2024-09-09 12:52:58,484 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 12:52:59,218 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 12:53:02,478 - Analyzer - INFO - Verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 12:53:02,572 - Analyzer - INFO - Saving verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:00:01,459 - Analyzer - INFO - Reading: 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra
+2024-09-09 13:00:08,043 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-09-09 13:00:08,834 - Analyzer - INFO - Analysis of 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra completed.
+2024-09-09 13:00:08,834 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:00:09,566 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:00:12,897 - Analyzer - INFO - Verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:00:12,995 - Analyzer - INFO - Saving verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:00:34,126 - Analyzer - INFO - Reading: 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra
+2024-09-09 13:00:40,714 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-09-09 13:00:41,447 - Analyzer - INFO - Analysis of 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra completed.
+2024-09-09 13:00:41,447 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:00:42,185 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:00:45,482 - Analyzer - INFO - Verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:00:45,567 - Analyzer - INFO - Saving verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:01:05,210 - Analyzer - INFO - Reading: 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra
+2024-09-09 13:01:12,604 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-09-09 13:01:13,431 - Analyzer - INFO - Analysis of 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra completed.
+2024-09-09 13:01:13,431 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:01:14,220 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:01:17,914 - Analyzer - INFO - Verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:01:18,012 - Analyzer - INFO - Saving verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:02:46,698 - Analyzer - INFO - Reading: 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra
+2024-09-09 13:02:53,421 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-09-09 13:02:54,172 - Analyzer - INFO - Analysis of 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra completed.
+2024-09-09 13:02:54,174 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:02:54,943 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:02:58,275 - Analyzer - INFO - Verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:02:58,367 - Analyzer - INFO - Saving verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:03:35,147 - Analyzer - INFO - Reading: 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra
+2024-09-09 13:03:42,065 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-09-09 13:03:42,810 - Analyzer - INFO - Analysis of 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra completed.
+2024-09-09 13:03:42,810 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:03:43,563 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:03:46,872 - Analyzer - INFO - Verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:03:46,968 - Analyzer - INFO - Saving verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:06:42,266 - Analyzer - INFO - Reading: 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra
+2024-09-09 13:06:49,086 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-09-09 13:06:49,826 - Analyzer - INFO - Analysis of 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra completed.
+2024-09-09 13:06:49,834 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:06:50,574 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:06:53,972 - Analyzer - INFO - Verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:06:54,065 - Analyzer - INFO - Saving verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:07:16,541 - Analyzer - INFO - Reading: 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra
+2024-09-09 13:07:22,903 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-09-09 13:07:23,665 - Analyzer - INFO - Analysis of 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra completed.
+2024-09-09 13:07:23,665 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:07:24,408 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:07:27,693 - Analyzer - INFO - Verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:07:27,783 - Analyzer - INFO - Saving verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:08:04,095 - Analyzer - INFO - Reading: 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra
+2024-09-09 13:08:10,623 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-09-09 13:08:11,368 - Analyzer - INFO - Analysis of 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra completed.
+2024-09-09 13:08:11,368 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:08:12,160 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:08:15,496 - Analyzer - INFO - Verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:08:15,589 - Analyzer - INFO - Saving verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:08:39,469 - Analyzer - INFO - Reading: 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra
+2024-09-09 13:08:46,242 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-09-09 13:08:46,983 - Analyzer - INFO - Analysis of 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra completed.
+2024-09-09 13:08:46,983 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:08:47,744 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:08:51,154 - Analyzer - INFO - Verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:08:51,247 - Analyzer - INFO - Saving verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:09:10,923 - Analyzer - INFO - Reading: 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra
+2024-09-09 13:09:17,467 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-09-09 13:09:18,207 - Analyzer - INFO - Analysis of 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra completed.
+2024-09-09 13:09:18,207 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:09:18,965 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:09:22,222 - Analyzer - INFO - Verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:09:22,312 - Analyzer - INFO - Saving verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:09:47,683 - Analyzer - INFO - Reading: 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra
+2024-09-09 13:09:54,151 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-09-09 13:09:54,887 - Analyzer - INFO - Analysis of 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra completed.
+2024-09-09 13:09:54,887 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:09:55,620 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:09:58,976 - Analyzer - INFO - Verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:09:59,069 - Analyzer - INFO - Saving verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:10:22,684 - Analyzer - INFO - Reading: 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra
+2024-09-09 13:10:29,368 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-09-09 13:10:30,130 - Analyzer - INFO - Analysis of 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra completed.
+2024-09-09 13:10:30,130 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:10:30,884 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:10:34,179 - Analyzer - INFO - Verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:10:34,269 - Analyzer - INFO - Saving verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:11:17,473 - Analyzer - INFO - Reading: 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra
+2024-09-09 13:11:23,963 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-09-09 13:11:24,710 - Analyzer - INFO - Analysis of 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra completed.
+2024-09-09 13:11:24,710 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:11:25,436 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:11:28,707 - Analyzer - INFO - Verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:11:28,803 - Analyzer - INFO - Saving verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:11:51,181 - Analyzer - INFO - Reading: 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra
+2024-09-09 13:11:57,444 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-09-09 13:11:58,169 - Analyzer - INFO - Analysis of 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra completed.
+2024-09-09 13:11:58,169 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:11:58,904 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:12:02,155 - Analyzer - INFO - Verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:12:02,252 - Analyzer - INFO - Saving verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:12:29,933 - Analyzer - INFO - Reading: 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra
+2024-09-09 13:12:36,765 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-09-09 13:12:37,497 - Analyzer - INFO - Analysis of 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra completed.
+2024-09-09 13:12:37,498 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:12:38,236 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:12:41,555 - Analyzer - INFO - Verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:12:41,646 - Analyzer - INFO - Saving verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:13:08,761 - Analyzer - INFO - Reading: 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra
+2024-09-09 13:13:15,378 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-09-09 13:13:16,111 - Analyzer - INFO - Analysis of 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra completed.
+2024-09-09 13:13:16,111 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:13:16,838 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:13:20,163 - Analyzer - INFO - Verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:13:20,252 - Analyzer - INFO - Saving verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:13:57,584 - Analyzer - INFO - Reading: 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra
+2024-09-09 13:14:04,218 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-09-09 13:14:04,985 - Analyzer - INFO - Analysis of 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra completed.
+2024-09-09 13:14:04,985 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:14:05,714 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:14:09,114 - Analyzer - INFO - Verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:14:09,204 - Analyzer - INFO - Saving verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:14:42,888 - Analyzer - INFO - Reading: 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra
+2024-09-09 13:14:49,523 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-09-09 13:14:50,256 - Analyzer - INFO - Analysis of 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra completed.
+2024-09-09 13:14:50,257 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:14:51,028 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:14:54,400 - Analyzer - INFO - Verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:14:54,493 - Analyzer - INFO - Saving verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:16:13,560 - Analyzer - INFO - Reading: 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra
+2024-09-09 13:16:20,227 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-09-09 13:16:20,972 - Analyzer - INFO - Analysis of 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra completed.
+2024-09-09 13:16:20,973 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:16:21,695 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:16:25,028 - Analyzer - INFO - Verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:16:25,119 - Analyzer - INFO - Saving verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:17:08,211 - Analyzer - INFO - Reading: 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra
+2024-09-09 13:17:14,862 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-09-09 13:17:15,586 - Analyzer - INFO - Analysis of 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra completed.
+2024-09-09 13:17:15,587 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:17:16,321 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:17:19,617 - Analyzer - INFO - Verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:17:19,704 - Analyzer - INFO - Saving verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:17:57,181 - Analyzer - INFO - Reading: 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra
+2024-09-09 13:18:03,808 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-09-09 13:18:04,547 - Analyzer - INFO - Analysis of 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra completed.
+2024-09-09 13:18:04,548 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:18:05,288 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:18:08,570 - Analyzer - INFO - Verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:18:08,657 - Analyzer - INFO - Saving verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:18:33,919 - Analyzer - INFO - Reading: 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra
+2024-09-09 13:18:40,368 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-09-09 13:18:41,105 - Analyzer - INFO - Analysis of 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra completed.
+2024-09-09 13:18:41,105 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:18:41,825 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:18:45,182 - Analyzer - INFO - Verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:18:45,273 - Analyzer - INFO - Saving verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:19:32,426 - Analyzer - INFO - Reading: 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra
+2024-09-09 13:19:38,922 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-09-09 13:19:39,676 - Analyzer - INFO - Analysis of 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra completed.
+2024-09-09 13:19:39,677 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:19:40,413 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:19:43,688 - Analyzer - INFO - Verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:19:43,777 - Analyzer - INFO - Saving verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:20:13,046 - Analyzer - INFO - Reading: 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra
+2024-09-09 13:20:19,645 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-09-09 13:20:20,370 - Analyzer - INFO - Analysis of 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra completed.
+2024-09-09 13:20:20,371 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:20:21,101 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:20:24,366 - Analyzer - INFO - Verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:20:24,467 - Analyzer - INFO - Saving verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:21:05,444 - Analyzer - INFO - Reading: 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra
+2024-09-09 13:21:12,069 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-09-09 13:21:12,813 - Analyzer - INFO - Analysis of 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra completed.
+2024-09-09 13:21:12,813 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:21:13,537 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:21:16,864 - Analyzer - INFO - Verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:21:16,958 - Analyzer - INFO - Saving verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:21:39,640 - Analyzer - INFO - Reading: 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra
+2024-09-09 13:21:46,356 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-09-09 13:21:47,099 - Analyzer - INFO - Analysis of 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra completed.
+2024-09-09 13:21:47,099 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:21:47,822 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:21:51,091 - Analyzer - INFO - Verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:21:51,180 - Analyzer - INFO - Saving verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:22:24,366 - Analyzer - INFO - Reading: 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra
+2024-09-09 13:22:30,937 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-09-09 13:22:31,672 - Analyzer - INFO - Analysis of 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra completed.
+2024-09-09 13:22:31,673 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:22:32,402 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:22:35,691 - Analyzer - INFO - Verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:22:35,779 - Analyzer - INFO - Saving verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:27:01,339 - Analyzer - INFO - Reading: 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra
+2024-09-09 13:27:08,272 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-09-09 13:27:09,043 - Analyzer - INFO - Analysis of 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra completed.
+2024-09-09 13:27:09,044 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:27:09,781 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:27:13,075 - Analyzer - INFO - Verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:27:13,162 - Analyzer - INFO - Saving verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:27:34,621 - Analyzer - INFO - Reading: 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra
+2024-09-09 13:27:41,300 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-09-09 13:27:42,058 - Analyzer - INFO - Analysis of 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra completed.
+2024-09-09 13:27:42,058 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:27:42,804 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:27:46,072 - Analyzer - INFO - Verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:27:46,161 - Analyzer - INFO - Saving verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:28:47,457 - Analyzer - INFO - Reading: 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra
+2024-09-09 13:28:53,927 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-09-09 13:28:54,668 - Analyzer - INFO - Analysis of 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra completed.
+2024-09-09 13:28:54,668 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:28:55,396 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:28:58,657 - Analyzer - INFO - Verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:28:58,745 - Analyzer - INFO - Saving verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:32:59,545 - Analyzer - INFO - Reading: 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra
+2024-09-09 13:33:06,078 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-09-09 13:33:06,849 - Analyzer - INFO - Analysis of 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra completed.
+2024-09-09 13:33:06,850 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:33:07,600 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:33:10,908 - Analyzer - INFO - Verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:33:10,998 - Analyzer - INFO - Saving verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:37:09,421 - Analyzer - INFO - Reading: 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra
+2024-09-09 13:37:15,824 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-09-09 13:37:16,531 - Analyzer - INFO - Analysis of 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra completed.
+2024-09-09 13:37:16,531 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:37:17,277 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:37:20,596 - Analyzer - INFO - Verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:37:20,680 - Analyzer - INFO - Saving verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:39:09,007 - Analyzer - INFO - Reading: 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra
+2024-09-09 13:39:15,391 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-09-09 13:39:16,074 - Analyzer - INFO - Analysis of 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra completed.
+2024-09-09 13:39:16,074 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:39:16,803 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:39:20,084 - Analyzer - INFO - Verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:39:20,175 - Analyzer - INFO - Saving verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:41:57,389 - Analyzer - INFO - Reading: 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra
+2024-09-09 13:42:03,889 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-09-09 13:42:04,591 - Analyzer - INFO - Analysis of 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra completed.
+2024-09-09 13:42:04,592 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:42:05,322 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:42:08,609 - Analyzer - INFO - Verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:42:08,694 - Analyzer - INFO - Saving verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:42:54,127 - Analyzer - INFO - Reading: 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra
+2024-09-09 13:43:00,570 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-09-09 13:43:01,253 - Analyzer - INFO - Analysis of 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra completed.
+2024-09-09 13:43:01,253 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:43:01,980 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:43:05,221 - Analyzer - INFO - Verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:43:05,303 - Analyzer - INFO - Saving verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:43:46,313 - Analyzer - INFO - Reading: 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra
+2024-09-09 13:43:52,617 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-09-09 13:43:53,351 - Analyzer - INFO - Analysis of 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra completed.
+2024-09-09 13:43:53,352 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:43:54,129 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:43:57,371 - Analyzer - INFO - Verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:43:57,455 - Analyzer - INFO - Saving verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:44:22,143 - Analyzer - INFO - Reading: 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra
+2024-09-09 13:44:28,615 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-09-09 13:44:29,291 - Analyzer - INFO - Analysis of 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra completed.
+2024-09-09 13:44:29,292 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:44:30,006 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:44:33,237 - Analyzer - INFO - Verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:44:33,319 - Analyzer - INFO - Saving verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:45:30,636 - Analyzer - INFO - Reading: 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra
+2024-09-09 13:45:37,436 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-09-09 13:45:38,140 - Analyzer - INFO - Analysis of 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra completed.
+2024-09-09 13:45:38,140 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:45:38,906 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:45:42,195 - Analyzer - INFO - Verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:45:42,284 - Analyzer - INFO - Saving verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:46:15,330 - Analyzer - INFO - Reading: 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra
+2024-09-09 13:46:21,959 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-09-09 13:46:22,674 - Analyzer - INFO - Analysis of 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra completed.
+2024-09-09 13:46:22,674 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:46:23,408 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:46:26,752 - Analyzer - INFO - Verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:46:26,853 - Analyzer - INFO - Saving verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:48:36,402 - Analyzer - INFO - Reading: 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra
+2024-09-09 13:48:43,131 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-09-09 13:48:43,844 - Analyzer - INFO - Analysis of 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra completed.
+2024-09-09 13:48:43,844 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:48:44,598 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:48:47,912 - Analyzer - INFO - Verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:48:48,003 - Analyzer - INFO - Saving verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:49:15,399 - Analyzer - INFO - Reading: 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra
+2024-09-09 13:49:21,854 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-09-09 13:49:22,544 - Analyzer - INFO - Analysis of 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra completed.
+2024-09-09 13:49:22,545 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:49:23,273 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:49:26,514 - Analyzer - INFO - Verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:49:26,597 - Analyzer - INFO - Saving verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:49:59,791 - Analyzer - INFO - Reading: 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra
+2024-09-09 13:50:06,363 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-09-09 13:50:07,060 - Analyzer - INFO - Analysis of 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra completed.
+2024-09-09 13:50:07,061 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:50:07,793 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:50:11,042 - Analyzer - INFO - Verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:50:11,124 - Analyzer - INFO - Saving verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:50:27,033 - Analyzer - INFO - Reading: 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra
+2024-09-09 13:50:33,533 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-09-09 13:50:34,210 - Analyzer - INFO - Analysis of 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra completed.
+2024-09-09 13:50:34,211 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:50:34,954 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:50:38,174 - Analyzer - INFO - Verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:50:38,255 - Analyzer - INFO - Saving verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:50:52,901 - Analyzer - INFO - Reading: 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra
+2024-09-09 13:50:59,351 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-09-09 13:51:00,035 - Analyzer - INFO - Analysis of 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra completed.
+2024-09-09 13:51:00,035 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:51:00,776 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:51:04,003 - Analyzer - INFO - Verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:51:04,091 - Analyzer - INFO - Saving verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:51:34,171 - Analyzer - INFO - Reading: 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra
+2024-09-09 13:51:40,871 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-09-09 13:51:41,534 - Analyzer - INFO - Analysis of 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra completed.
+2024-09-09 13:51:41,534 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:51:42,264 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:51:45,531 - Analyzer - INFO - Verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:51:45,613 - Analyzer - INFO - Saving verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:52:03,809 - Analyzer - INFO - Reading: 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra
+2024-09-09 13:52:10,239 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-09-09 13:52:10,916 - Analyzer - INFO - Analysis of 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra completed.
+2024-09-09 13:52:10,916 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:52:11,632 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:52:14,894 - Analyzer - INFO - Verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:52:14,975 - Analyzer - INFO - Saving verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:52:38,481 - Analyzer - INFO - Reading: 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra
+2024-09-09 13:52:44,839 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-09-09 13:52:45,513 - Analyzer - INFO - Analysis of 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra completed.
+2024-09-09 13:52:45,514 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:52:46,242 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:52:49,597 - Analyzer - INFO - Verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 13:52:49,684 - Analyzer - INFO - Saving verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 14:05:30,843 - Analyzer - INFO - Reading: 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra
+2024-09-09 14:05:37,237 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-09-09 14:05:37,834 - Analyzer - INFO - Analysis of 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra completed.
+2024-09-09 14:05:37,835 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 14:05:38,572 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 14:05:41,881 - Analyzer - INFO - Verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 14:05:41,962 - Analyzer - INFO - Saving verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 14:08:35,312 - Analyzer - INFO - Reading: 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra
+2024-09-09 14:08:41,737 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-09-09 14:08:42,356 - Analyzer - INFO - Analysis of 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra completed.
+2024-09-09 14:08:42,357 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 14:08:43,088 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 14:08:46,364 - Analyzer - INFO - Verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 14:08:46,465 - Analyzer - INFO - Saving verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 14:09:17,332 - Analyzer - INFO - Reading: 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra
+2024-09-09 14:09:23,601 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-09-09 14:09:24,239 - Analyzer - INFO - Analysis of 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra completed.
+2024-09-09 14:09:24,240 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 14:09:24,968 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 14:09:28,193 - Analyzer - INFO - Verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 14:09:28,281 - Analyzer - INFO - Saving verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 14:09:58,712 - Analyzer - INFO - Reading: 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra
+2024-09-09 14:10:05,042 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-09-09 14:10:05,633 - Analyzer - INFO - Analysis of 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra completed.
+2024-09-09 14:10:05,633 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 14:10:06,389 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 14:10:09,656 - Analyzer - INFO - Verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 14:10:09,745 - Analyzer - INFO - Saving verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 14:10:44,108 - Analyzer - INFO - Reading: 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra
+2024-09-09 14:10:50,594 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-09-09 14:10:51,180 - Analyzer - INFO - Analysis of 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra completed.
+2024-09-09 14:10:51,180 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 14:10:51,904 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 14:10:55,152 - Analyzer - INFO - Verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 14:10:55,240 - Analyzer - INFO - Saving verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 14:11:26,768 - Analyzer - INFO - Reading: 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra
+2024-09-09 14:11:33,046 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-09-09 14:11:33,615 - Analyzer - INFO - Analysis of 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra completed.
+2024-09-09 14:11:33,617 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 14:11:34,335 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 14:11:37,571 - Analyzer - INFO - Verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 14:11:37,658 - Analyzer - INFO - Saving verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 14:17:46,499 - Analyzer - INFO - Reading: 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra
+2024-09-09 14:17:52,979 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-09-09 14:17:53,553 - Analyzer - INFO - Analysis of 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra completed.
+2024-09-09 14:17:53,554 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 14:17:54,278 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 14:17:57,607 - Analyzer - INFO - Verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 14:17:57,696 - Analyzer - INFO - Saving verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 14:18:59,774 - Analyzer - INFO - Reading: 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra
+2024-09-09 14:19:06,345 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-09-09 14:19:06,928 - Analyzer - INFO - Analysis of 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra completed.
+2024-09-09 14:19:06,929 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 14:19:07,658 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 14:19:11,106 - Analyzer - INFO - Verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 14:19:11,198 - Analyzer - INFO - Saving verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 14:20:05,486 - Analyzer - INFO - Reading: 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra
+2024-09-09 14:20:12,316 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-09-09 14:20:12,932 - Analyzer - INFO - Analysis of 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra completed.
+2024-09-09 14:20:12,933 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 14:20:13,678 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 14:20:17,020 - Analyzer - INFO - Verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 14:20:17,110 - Analyzer - INFO - Saving verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 14:20:43,020 - Analyzer - INFO - Reading: 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra
+2024-09-09 14:20:49,573 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-09-09 14:20:50,143 - Analyzer - INFO - Analysis of 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra completed.
+2024-09-09 14:20:50,144 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 14:20:50,880 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 14:20:54,239 - Analyzer - INFO - Verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 14:20:54,329 - Analyzer - INFO - Saving verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 14:21:14,275 - Analyzer - INFO - Reading: 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra
+2024-09-09 14:21:20,740 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-09-09 14:21:21,327 - Analyzer - INFO - Analysis of 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra completed.
+2024-09-09 14:21:21,328 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 14:21:22,062 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 14:21:25,336 - Analyzer - INFO - Verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 14:21:25,430 - Analyzer - INFO - Saving verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 14:23:49,183 - Analyzer - INFO - Reading: 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra
+2024-09-09 14:23:55,619 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-09-09 14:23:56,197 - Analyzer - INFO - Analysis of 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra completed.
+2024-09-09 14:23:56,197 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 14:23:56,945 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 14:24:00,236 - Analyzer - INFO - Verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 14:24:00,326 - Analyzer - INFO - Saving verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 14:32:09,395 - Analyzer - INFO - Reading: 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra
+2024-09-09 14:32:16,084 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-09-09 14:32:16,698 - Analyzer - INFO - Analysis of 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra completed.
+2024-09-09 14:32:16,698 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 14:32:17,483 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 14:32:25,492 - Analyzer - INFO - Reading: 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra
+2024-09-09 14:32:31,896 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-09-09 14:32:32,503 - Analyzer - INFO - Analysis of 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra completed.
+2024-09-09 14:32:32,504 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 14:32:33,224 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 14:32:36,489 - Analyzer - INFO - Verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 14:32:36,579 - Analyzer - INFO - Saving verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 14:34:41,434 - Analyzer - INFO - Reading: 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra
+2024-09-09 14:34:47,932 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-09-09 14:34:48,547 - Analyzer - INFO - Analysis of 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra completed.
+2024-09-09 14:34:48,548 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 14:34:49,276 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 14:34:52,588 - Analyzer - INFO - Verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 14:34:52,679 - Analyzer - INFO - Saving verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 14:36:05,445 - Analyzer - INFO - Reading: 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra
+2024-09-09 14:36:11,925 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-09-09 14:36:12,530 - Analyzer - INFO - Analysis of 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra completed.
+2024-09-09 14:36:12,531 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 14:36:13,258 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 14:36:16,600 - Analyzer - INFO - Verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 14:36:16,685 - Analyzer - INFO - Saving verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 14:36:22,730 - Analyzer - INFO - Reading: 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra
+2024-09-09 14:36:29,353 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2024-09-09 14:36:29,951 - Analyzer - INFO - Analysis of 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra completed.
+2024-09-09 14:36:29,952 - Analyzer - INFO - Verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 14:36:30,692 - Analyzer - INFO - Saving verbose plotting of conductance estimations for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 14:36:33,906 - Analyzer - INFO - Verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
+2024-09-09 14:36:33,994 - Analyzer - INFO - Saving verbose plotting of stats for 2024-06-12_8_375Hz_LIN_10pulses_prr_v3_Intra_analyzed
