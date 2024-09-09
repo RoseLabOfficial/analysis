@@ -1,51 +1,22 @@
 from . import *
-import libs.signals as sigs
 from pathlib import Path
 from libs.readers import XLReader
 from libs.utils import *
 
-class NonLinearModel:
-    def __init__(self, parameters: pd.DataFrame, tstart: float, tend: float, sampling_rate: float, dtype: np.dtype = np.float64):
-        self.parameters = parameters
-        self.timeseries = sigs.TimeSeries(tstart, tend, sampling_rate, dtype)
-        self.times = self.timeseries.make_time()
-        pass
-
-    def make_voltage_grid(self):
-        nsteps = self.timeseries.get_total_samples()
-        membrane_potential = np.zeros((nsteps, self.parameters["Iinj"].shape[0]), dtype=self.timeseries.dtype)
-        for idx, _ in enumerate(self.parameters["Iinj"]):
-            membrane_potential[:, idx] = np.linspace(self.parameters["Er"][idx], self.parameters["Et"][idx], nsteps, dtype=self.timeseries.dtype)
-        return membrane_potential
-    
-    def compute_active_conductance_constants(self):
-        self.parameters["alpha"] = (1.0/self.parameters["Rin"])/(2.0*(self.parameters["Eact"] - self.parameters["Ess"]))
-        self.parameters["beta"] = self.parameters["alpha"]*(self.parameters["Et"] - self.parameters["Ess"])
-        self.parameters["alpha"] = self.parameters["alpha"]*self.parameters["xalpha"]
-        self.parameters["beta"] = self.parameters["beta"]*self.parameters["xbeta"]
-        return self.parameters
-    
-    def compute_current(self, membrane_potential: np.ndarray):
-        self.compute_active_conductance_constants()
-        alpha = self.parameters["alpha"].to_numpy()
-        beta = self.parameters["beta"].to_numpy()
-        resting_potential = self.parameters["Er"].to_numpy()
-        threshold_potential = self.parameters["Et"].to_numpy()
-        input_resistance = self.parameters["Rin"].to_numpy()
-        return -alpha*(membrane_potential - resting_potential)*(membrane_potential - threshold_potential) - \
-                    beta*(membrane_potential - resting_potential) + (1.0/input_resistance)*(membrane_potential - resting_potential)
+from typing import Dict, Optional, List, Tuple, TYPE_CHECKING
+if TYPE_CHECKING:
+    from libs.readers import FilterCfg
 
 class LowPassFilter:
-    def __init__(self, parameters, name:str = "generic"):
-        self.passband = parameters["passband"]
-        self.stopband = parameters["stopband"]
-        self.attenuation = parameters["attenuation"]
-        self.ripple = parameters["ripple"]
+    def __init__(self, passband: float, stopband: float, attenuation: float, ripple: float, name: str="generic") -> None:
+        self.passband: float = passband
+        self.stopband: float = stopband
+        self.attenuation: float = attenuation
+        self.ripple: float = ripple
         if self.stopband < self.passband:
             lpf_logger.debug(f"For {name} low pass filter stopband cannot be less than passband")
             raise ValueError(f"For {name} low pass filter stopband cannot be less than passband")
-        self.name = name
-        pass        
+        self.name: str = name
 
     def compute_minimum_order(self, sampling_rate: float, log=False):
         normalizing_frequency = sampling_rate/2
@@ -78,16 +49,29 @@ class LowPassFilter:
         return self.deppend_samples(output_signal, nappend)
 
 class WholeCellRecording:
-    def __init__(self, data: pd.DataFrame, parameters: pd.DataFrame, filter_parameters):
-        self.data = data
-        self.parameters = parameters
-        self.filters = {}
-        self.filters["membrane_potentials"] = LowPassFilter(filter_parameters["membrane_potentials"], name="membrane_potentials")
-        self.filters["membrane_currents"] = LowPassFilter(filter_parameters["membrane_currents"], name="membrane_currents")
-        self.filters["activation_currents"] = LowPassFilter(filter_parameters["activation_currents"], name="activation_currents")
+    def __init__(self, data: pd.DataFrame, parameters: pd.DataFrame, filter_parameters: Dict[str, 'FilterCfg'], current_clamps: Optional[List[float]]=None) -> None:
+        """
+        Args:
+            data: pd.DataFrame
+            parameters: pd.DataFrame
+            filter_parameters: Dict[str, FilterCfg]
+            current_clamps: Optional[List[float]]
+        Returns:
+            None
+        """
+        self.filters: Dict[str, LowPassFilter] = {key:LowPassFilter(**params.__dict__, name=key) for key, params in filter_parameters.items()}
         self.complier = Compliance()
+
+        self.data: pd.DataFrame = data
+
+        self.parameters: pd.DataFrame = parameters
+        if current_clamps is not None:        
+            if set(current_clamps) <= set(parameters["Iinj"]):
+                self.parameters = parameters[parameters["Iinj"].isin(current_clamps)]
+            else:
+                wholecell_logger.warning("Invalid current_clamps argument in WholeCellRecording initialization: not a subset of clamps in excel file. Using all clamps present in file.")
+        
         self.scale_data()
-        pass
 
     def check_compliance(self):
         if self.complier.check_compliance(self.data, self.parameters):
@@ -99,7 +83,7 @@ class WholeCellRecording:
     def scale_data(self, log=False):
         if log:
             wholecell_logger.info("Scaling membrane voltage")
-        for idx, clamp in enumerate(self.parameters["Iinj"]):
+        for idx, clamp in zip(self.parameters["Iinj"].keys(), self.parameters["Iinj"]):
             self.data[clamp] = ((self.data[clamp] - self.data[clamp][0])*1e-3)+self.parameters["Ess"][idx]
         return self.data
     
@@ -125,7 +109,7 @@ class WholeCellRecording:
     def compute_polarizations(self, log=False):
         if log:
             wholecell_logger.info("Computing polarizations")
-        for idx, clamp in enumerate(self.parameters["Iinj"]):
+        for idx, clamp in zip(self.parameters["Iinj"].keys(), self.parameters["Iinj"]):
             self.data["depolarization_"+str(clamp)] = np.where(self.data[clamp] > self.parameters["Ess"][idx], self.data[clamp] - self.parameters["Ess"][idx], 0)
             self.data["hyperpolarization_"+str(clamp)] = np.where(self.data[clamp] < self.parameters["Ess"][idx], self.data[clamp] - self.parameters["Ess"][idx], 0)
         return self.data
@@ -133,7 +117,7 @@ class WholeCellRecording:
     def compute_leakage_currents(self, log=False):
         if log:
             wholecell_logger.info("Computing leakage currents")
-        for idx, clamp in enumerate(self.parameters["Iinj"]):
+        for idx, clamp in zip(self.parameters["Iinj"].keys(), self.parameters["Iinj"]):
             self.data["Ileakage_"+str(clamp)] = (1/self.parameters["Rin"][idx])*(self.data[clamp] - self.parameters["Er"][idx])
         return self.data
     
@@ -141,19 +125,19 @@ class WholeCellRecording:
         if log:
             wholecell_logger.info("Computing activation currents")
         self.compute_activation_conductance_constants(log)
-        for idx, clamp in enumerate(self.parameters["Iinj"]):
+        for idx, clamp in zip(self.parameters["Iinj"].keys(), self.parameters["Iinj"]):
             alpha_current = self.parameters["alpha"][idx]*(self.data[clamp] - self.parameters["Ess"][idx])*(self.data[clamp] - self.parameters["Et"][idx])
             beta_current = self.parameters["beta"][idx]*(self.data[clamp] - self.parameters["Ess"][idx])
             activation_current = alpha_current + beta_current
             activation_current[self.data[clamp] < self.parameters["Ess"][idx]] = 0.0
             activation_current[self.data[clamp] > self.parameters["Et"][idx]] = 0.0
-            self.data["Iactivation_"+str(clamp)] = activation_current / 100
+            self.data["Iactivation_"+str(clamp)] = activation_current
         return self.data
     
     def compute_membrane_currents(self, log=False):
         if log:
             wholecell_logger.info("Computing membrane currents")
-        for idx, clamp in enumerate(self.parameters["Iinj"]):
+        for idx, clamp in zip(self.parameters["Iinj"].keys(), self.parameters["Iinj"]):
             self.data["Imembrane_"+str(clamp)] = self.parameters["Cm"][idx]*(self.data[clamp].diff()/self.data["times"].diff())
             self.data.at[0, "Imembrane_"+str(clamp)] = 0.0
             self.data["Imembrane_"+str(clamp)] = self.data["Imembrane_"+str(clamp)] - self.data["Imembrane_"+str(clamp)][0]
@@ -163,7 +147,7 @@ class WholeCellRecording:
         if log:
             wholecell_logger.info("Filtering membrane currents")
         sampling_rate = 1/(self.data["times"][1] - self.data["times"][0])
-        for inj in self.parameters["Iinj"]:
+        for inj in list(self.parameters["Iinj"]):
             self.data["filtered_Imembrane_"+str(inj)] = self.filters["membrane_currents"].propagate(self.data["Imembrane_"+str(inj)], sampling_rate, log)
         return self.data
     
@@ -171,9 +155,9 @@ class WholeCellRecording:
         if log:
             wholecell_logger.info("Filtering activation currents")
         sampling_rate = 1/(self.data["times"][1] - self.data["times"][0])
-        for inj in self.parameters["Iinj"]:
+        for inj in list(self.parameters["Iinj"]):
             activation_current = self.filters["activation_currents"].propagate(self.data["Iactivation_"+str(inj)], sampling_rate, log)
-            self.data["filtered_Iactivation_"+str(inj)] = activation_current
+            self.data["filtered_Iactivation_"+str(inj)] = activation_current 
         return self.data
     
     def compute_passive_conductances(self, log=False):
@@ -182,10 +166,10 @@ class WholeCellRecording:
         ntimesteps = self.data.shape[0]
         A = np.zeros((ntimesteps, 2, 2))
         B = np.zeros((ntimesteps, 2, 1))
-        membrane_potential = self.data[[x for x in self.parameters["Iinj"]]].to_numpy()
-        membrane_current = self.data[["filtered_Imembrane_"+str(x) for x in self.parameters["Iinj"]]].to_numpy()
-        activation_current = self.data[["filtered_Iactivation_"+str(x) for x in self.parameters["Iinj"]]].to_numpy()
-        leakage_current = self.data[["Ileakage_"+str(x) for x in self.parameters["Iinj"]]].to_numpy()
+        membrane_potential = self.data[[x for x in list(self.parameters["Iinj"])]].to_numpy()
+        membrane_current = self.data[["filtered_Imembrane_"+str(x) for x in list(self.parameters["Iinj"])]].to_numpy()
+        activation_current = self.data[["filtered_Iactivation_"+str(x) for x in list(self.parameters["Iinj"])]].to_numpy()
+        leakage_current = self.data[["Ileakage_"+str(x) for x in list(self.parameters["Iinj"])]].to_numpy()
         excitatory_reversal_potential = self.parameters["Ee"].to_numpy()
         inhibitory_reversal_potentail = self.parameters["Ei"].to_numpy()
         injected_current = self.parameters["Iinj"].to_numpy()
@@ -211,11 +195,11 @@ class WholeCellRecording:
         self.data.loc[self.data["resultant_inhibition"] < 0, "resultant_inhibition"] = 0.0
         return self.data
     
-    def get_clamp_near_0(self, log=False):
+    def get_clamp_near_0(self, log=False) -> Tuple[int, float]:
         if log:
             wholecell_logger.info("computing the closest clamp to resting")
-        index_of_minimum_injected_current = self.parameters["Iinj"].abs().argmin()
-        minimum_injected_current = self.parameters["Iinj"][index_of_minimum_injected_current]
+        index_of_minimum_injected_current: int = np.argmin(np.abs(self.parameters["Iinj"]))
+        minimum_injected_current: float = self.parameters["Iinj"][index_of_minimum_injected_current]
         return index_of_minimum_injected_current, minimum_injected_current
     
     def compute_stats(self, log=False):
@@ -266,7 +250,7 @@ class WholeCellRecording:
         if log:
             wholecell_logger.info("Optimizing")
         self.estimate_conductances()
-        maximum_recorded_membrane_voltage = [max_val for max_val in self.data[[x for x in self.parameters["Iinj"]]].max()]
+        maximum_recorded_membrane_voltage = [max_val for max_val in self.data[list(self.parameters["Iinj"])].max()]
         steady_state_potential = np.asarray([x for x in self.parameters["Ess"]])
         activation_potential_bounds = Bounds(steady_state_potential, maximum_recorded_membrane_voltage)
         result = minimize(self.squared_sum_of_negative_conductances, maximum_recorded_membrane_voltage, method='trust-constr', bounds=activation_potential_bounds)
@@ -275,12 +259,9 @@ class WholeCellRecording:
         return result
 
 class Analyzer:
-    def __init__(self, filepaths: Path, output_path: Path, filter_configurations: dict):
-        self.fileaddress_handler = FileAddressHandler()
-        self.filepaths = self.fileaddress_handler.split_fileaddress_list(filepaths)
-        self.output_path = output_path
-        self.filter_configurations = filter_configurations
-        pass
+    def __init__(self, filepaths: List[str], output_path: Path):
+        self.filepaths: List[str] = filepaths
+        self.output_path: str = output_path
 
     def get_paradigm_to_optimize(self, recordings):
         analysis_logger.info("Finding the best paradigm to optimize")
@@ -339,18 +320,17 @@ class Analyzer:
         overall_stats = overall_stats.sort_values(by="paradigm", ascending=True)
         return recordings, overall_stats
 
-    def analyze(self, fileaddress, optimize=0):
-        filepath = fileaddress[0]
-        filename = fileaddress[1]
-        fileformat = fileaddress[2]
-        analysis_logger.info(f"Reading: {filename}")
-        reader = XLReader(Path(filepath) / (filename + fileformat))
+    def analyze(self, filepath: str, filter_configurations: Dict[str, 'FilterCfg'], optimize: int=0, current_clamps: Optional[List[float]]=None):
+        basename: str = os.path.basename(filepath)
+        analysis_logger.info(f"Reading: {basename}")
+        reader = XLReader(filepath)
         recordings = {}
         for _, paradigm in enumerate(reader.get_paradigms()):
             recordings[paradigm] = WholeCellRecording(
                 reader.get_paradigm_data(paradigm), 
                 reader.get_paradigm_parameters(paradigm),
-                self.filter_configurations
+                filter_parameters=filter_configurations,
+                current_clamps=current_clamps
             )
         if optimize == 0:
             analysis_logger.info(f"Level 0 optimization: No optimization--using user provided values.")
@@ -364,8 +344,8 @@ class Analyzer:
             analysis_logger.info(f"Level 2 optimization: Activation potentials optimized for every paradigm.")
             recordings, overall_stats = self.estimate_optimum_activation_potential_each_paradigm(recordings)
             analysis_logger.info(f"Level 2 optimization: Complete.")
-        result_filename = self.output_path / f"{filename}_analyzed"
-        analysis_logger.info(f"Analysis of {filename} completed.")
+        result_filename = os.path.join(self.output_path, f"{os.path.splitext(basename)[0]}_analyzed")
+        analysis_logger.info(f"Analysis of {basename} completed.")
         return recordings, overall_stats, result_filename
     
     def write_to_excel(self, filepath: Path, recordings, stats):
@@ -387,16 +367,20 @@ class Analyzer:
             paradigm_data.to_excel(filepath, sheet_name=paradigm, index=False)
         pass
 
-    def plot_dev(self, recordings, filename: Path):
+    def plot_dev(self, recordings, filename: Path, current_clamps: Optional[List[float]]=None):
         analysis_logger.info(f"Verbose plotting of conductance estimations for {filename}")
         fig, axs = plt.subplots(nrows = 7, ncols = len(recordings), sharex="all", sharey="row", figsize=(15, 10), constrained_layout=True)
         for idx, paradigm in enumerate(recordings):
+            paradigm_iinj: List[float] = list(recordings[paradigm].parameters["Iinj"])
+            if current_clamps is not None:
+                paradigm_iinj = list(set(paradigm_iinj).intersection(current_clamps))
+
             if "representative" in recordings[paradigm].data:
                 rep = recordings[paradigm].data["representative"].to_numpy()
-            membrane_potential = recordings[paradigm].data[[x for x in recordings[paradigm].parameters["Iinj"]]].to_numpy()
-            membrane_current = recordings[paradigm].data[["filtered_Imembrane_"+str(x) for x in recordings[paradigm].parameters["Iinj"]]].to_numpy()
-            leakage_current = recordings[paradigm].data[["Ileakage_"+str(x) for x in recordings[paradigm].parameters["Iinj"]]].to_numpy()
-            activation_current = recordings[paradigm].data[["filtered_Iactivation_"+str(x) for x in recordings[paradigm].parameters["Iinj"]]].to_numpy()
+            membrane_potential = recordings[paradigm].data[paradigm_iinj].to_numpy()
+            membrane_current = recordings[paradigm].data[["filtered_Imembrane_"+str(x) for x in paradigm_iinj]].to_numpy()
+            leakage_current = recordings[paradigm].data[["Ileakage_"+str(x) for x in paradigm_iinj]].to_numpy()
+            activation_current = recordings[paradigm].data[["filtered_Iactivation_"+str(x) for x in paradigm_iinj]].to_numpy()
             conductances = recordings[paradigm].data[["excitation", "inhibition"]].to_numpy()
             times = recordings[paradigm].data["times"].to_numpy()
             resting_potential = times*0 + recordings[paradigm].parameters["Er"][0]
@@ -501,10 +485,14 @@ class Analyzer:
         plt.savefig(str(filename)+f"_dev_stats.png")
         pass
 
-    def run(self, optimization_level=0):
+    def run(self, filter_configurations: Dict[str, 'FilterCfg'], optimization_level: int=0, current_clamps: Optional[List[float]]=None) -> None:
         for filepath in self.filepaths:
-            recordings, stats, result_filename = self.analyze(filepath, optimize=optimization_level)
+            recordings, stats, result_filename = self.analyze(
+                filepath, 
+                optimize=optimization_level, 
+                current_clamps=current_clamps,
+                filter_configurations=filter_configurations
+            )
             # self.write_to_excel(f"{result_filename}.xlsx", recordings, stats)
-            self.plot_dev(recordings, result_filename)
+            self.plot_dev(recordings, result_filename, current_clamps=current_clamps)
             self.plot_stats_dev(recordings, result_filename)
-        pass

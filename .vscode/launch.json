@@ -4,15 +4,18 @@
     // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
-
-
         {
             "name": "BatchAnalyzer",
             "type": "debugpy",
             "request": "launch",
             "program": "./BatchAnalyzer.py",
             "console": "integratedTerminal",
-            "args": ["-si", "C:\\Users\\Admin\\Box\\Roselab\\analysis\\feriarum\\AM\\P. feriarum whole cell\\ECM_21254\\2024-06-12_8_375Hz_LIN_Intra", "-rf", "2024-06-12_8_375Hz_LIN_10pulses_prr_Intra.xlsx", "-so", "./"]
+            // "args": [
+            //     "-si", "/home/roselab/Documents/GitHub/Essays/natural_calls_paper/intra_cases/2021-09-01_2_700Hz_LIN", 
+            //     "-so", "/home/roselab/Documents/GitHub/Essays/natural_calls_paper/intra_cases/2021-09-01_2_700Hz_LIN", 
+            //     "-rf", "2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT.xlsx"
+            // ]
+            "args": ["./settings/js_cfg_nc_1.json"]
         }
     ]
 }

@@ -1,0 +1,27 @@
+{
+    "input_directory": "/home/roselab/Documents/GitHub/Essays/natural_calls_paper/intra_cases/2021-09-01_2_700Hz_LIN",
+    "output_directory": "/home/roselab/Documents/GitHub/Essays/natural_calls_paper/intra_cases/2021-09-01_2_700Hz_LIN",
+    "filters": {
+        "membrane_potentials": {
+            "passband": 200,
+            "ripple": 0.01,
+            "stopband": 400,
+            "attenuation": 80
+        },
+        "membrane_currents": {
+            "passband": 20,
+            "ripple": 0.01,
+            "stopband": 40,
+            "attenuation": 80
+        },
+        "activation_currents": {
+            "passband": 40,
+            "ripple": 0.01,
+            "stopband": 60,
+            "attenuation": 80
+        }
+    },
+    "run": "2016-09-01_2_LIN_VDC_5-10-20-40-60pps_-36dB_700Hz_10p_15msPD_0.2RT.xlsx",
+    "optimization_level": 0,
+    "use_clamps": [0.0, -5e-11]
+}
