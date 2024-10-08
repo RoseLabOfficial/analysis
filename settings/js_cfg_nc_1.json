@@ -3,21 +3,21 @@
     "output_directory": "/home/roselab/Documents/GitHub/Essays/natural_calls_paper/intra_cases/2021-09-01_2_700Hz_LIN",
     "filters": {
         "membrane_potentials": {
-            "passband": 200,
+            "passband": 400,
+            "ripple": 0.01,
+            "stopband": 1000,
+            "attenuation": 80
+        },
+        "membrane_currents": {
+            "passband": 100,
             "ripple": 0.01,
             "stopband": 400,
             "attenuation": 80
         },
-        "membrane_currents": {
-            "passband": 20,
-            "ripple": 0.01,
-            "stopband": 40,
-            "attenuation": 80
-        },
         "activation_currents": {
-            "passband": 40,
+            "passband": 200,
             "ripple": 0.01,
-            "stopband": 60,
+            "stopband": 400,
             "attenuation": 80
         }
     },
