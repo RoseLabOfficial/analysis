@@ -15,6 +15,7 @@ if __name__ == "__main__":
         parser: ArgumentParser = ArgumentParser(description="Passing named arguments to analyzer")
         parser.add_argument("--set_inputdir", "-si", type=str, default='./inputs', help="set input directory in configurations")
         parser.add_argument("--set_outputdir", "-so", type=str, default='./outputs', help="set output directory in configurations")
+        parser.add_argument("--filetype", "-ft", type=str, default='png', help='image file extension for graphical output')
         parser.add_argument("--run", "-r", action="store_true", help="Run all the files in a dictory and put the results in outputs")
         parser.add_argument("--run_file", "-rf", type=str, default='ALL', help="run a single file")
         parser.add_argument("--optimization_level", "-o", type=int, default=0, help="0: User-specified values of Eact, 1: Compute Eact based on PR with max depolarization, 2: Compute Eact for each PR")
@@ -24,12 +25,13 @@ if __name__ == "__main__":
         cfg_kwargs = dict(
             input_directory=args.set_inputdir, 
             output_directory=args.set_outputdir, 
+            filetype=args.filetype,
             run=args.run_file, 
             optimization_level=args.optimization_level
         )
     
     else:
-        with open('./settings/js_configs.json', 'r') as f:
+        with open('./settings/am_.json', 'r') as f:
             cfg_kwargs = json.load(f)
 
     cfg: Configs = Configs.new(**cfg_kwargs)
