@@ -1,0 +1,27 @@
+{
+    "input_directory": "C:\\Users\\Admin\\Box\\Roselab\\analysis\\feriarum\\AM\\P. feriarum whole cell\\ECM_21137\\2024-07-03_5_190Hz_ICN_intra",
+    "output_directory": "./",
+    "filetype": "emf",
+    "filters": {
+        "membrane_potentials": {
+            "passband": 100,
+            "ripple": 0.01,
+            "stopband": 200,
+            "attenuation": 80
+        },
+        "membrane_currents": {
+            "passband": 10,
+            "ripple": 0.01,
+            "stopband": 60,
+            "attenuation": 80
+        },
+        "activation_currents": {
+            "passband": 100,
+            "ripple": 0.01,
+            "stopband": 200,
+            "attenuation": 80
+        }
+    },
+    "run": "2024-07-03_5_190Hz_ICN_30pulses_intra.xlsx",
+    "optimization_level": 0
+}

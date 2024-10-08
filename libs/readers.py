@@ -2,7 +2,7 @@ from . import *
 from libs.utils import SystemOperations
 
 from dataclasses import dataclass
-from typing import Dict, List, Optional, Tuple
+from typing import *
 
 @dataclass(frozen=True)
 class FilterCfg:
@@ -15,6 +15,7 @@ class FilterCfg:
 class Configs:
     input_directory: str 
     output_directory: str 
+    filetype: Optional[str]
 
     filters: Dict[str, FilterCfg]
 
@@ -24,31 +25,34 @@ class Configs:
 
     @classmethod
     def new(
-        cls, input_directory: Optional[str]=None, output_directory: Optional[str]=None,
+        cls, input_directory: Optional[str]=None, output_directory: Optional[str]=None, filetype: Optional[str]=None,
         filters: Optional[Dict[str, Dict[str, float]]]=None, run: Optional[str | List[str]]=None, 
         optimization_level: int=0, use_clamps: Optional[List[float]]=None
     ) -> 'Configs':
-        input_directory = './inputs' if input_directory is None else input_directory
-        output_directory = './outputs' if output_directory is None else output_directory
+        input_directory: str = './inputs' if input_directory is None else input_directory
+        output_directory: str = './outputs' if output_directory is None else output_directory
+        filetype: str = 'png' if filetype is None else filetype
+        assert filetype in {'png', 'emf'}
 
-        filters = {
+        filters: Dict[str, Any] = {
             "membrane_potentials": {"passband": 200, "ripple": 0.01, "stopband": 400, "attenuation": 80},
             "membrane_currents": {"passband": 40, "ripple": 0.01, "stopband": 60, "attenuation": 80},
             "activation_currents": {"passband": 40, "ripple": 0.01, "stopband": 60, "attenuation": 80}
         } if filters is None else filters
         filtercfgs: Dict[str, FilterCfg] = {key:FilterCfg(**val) for key, val in filters.items()}
 
-        run = 'ALL' if run is None else run
-        optimization_level = 0.0 if optimization_level is None else optimization_level
+        run: str = 'ALL' if run is None else run
+        optimization_level: float = 0.0 if optimization_level is None else optimization_level
 
-        return Configs(input_directory, output_directory, filtercfgs, run, optimization_level, use_clamps)
+        return Configs(input_directory, output_directory, filetype, filtercfgs, run, optimization_level, use_clamps)
     
     @property
     def analyzer_run_kwargs(self) -> Dict[str, int | Optional[List[float]] | Dict[str, FilterCfg]]:
         return {
             "optimization_level": self.optimization_level,
             "current_clamps": self.use_clamps, 
-            "filter_configurations": self.filters
+            "filter_configurations": self.filters,
+            "filetype": self.filetype
         }
 
     @property

@@ -1,5 +1,7 @@
-from . import *
 from pathlib import Path
+from pyhelpers.store import save_fig
+
+from . import *
 from libs.readers import XLReader
 from libs.utils import *
 
@@ -367,7 +369,7 @@ class Analyzer:
             paradigm_data.to_excel(filepath, sheet_name=paradigm, index=False)
         pass
 
-    def plot_dev(self, recordings, filename: Path, current_clamps: Optional[List[float]]=None):
+    def plot_dev(self, recordings, filename: Path, filetype: str="png", current_clamps: Optional[List[float]]=None):
         analysis_logger.info(f"Verbose plotting of conductance estimations for {filename}")
         fig, axs = plt.subplots(nrows = 7, ncols = len(recordings), sharex="all", sharey="row", figsize=(15, 10), constrained_layout=True)
         for idx, paradigm in enumerate(recordings):
@@ -424,8 +426,14 @@ class Analyzer:
             axs[6, idx].set_xlabel("times(sec)")
             axs[6, idx].grid(True)
         analysis_logger.info(f"Saving verbose plotting of conductance estimations for {filename}")
-        plt.savefig(str(filename)+f"_dev_traces.png")
-        pass
+        filename: str = f"{str(filename)}_dev_traces."
+        if filetype == "png":
+            plt.savefig(f"{filename}{filetype}")
+        elif filetype == "emf":
+            save_fig(f"{filename}svg", dpi=300, conv_svg_to_emf=True, verbose=True)
+        else:
+            raise ValueError(f"The filetype requested ({filetype}) is not yet implemented :) Please consult James or Rishi.")
+        plt.show()
 
     def set_stats_scale(self, ax, scale_max, margin=0.1):
         scale_max = scale_max + margin*scale_max
@@ -485,7 +493,7 @@ class Analyzer:
         plt.savefig(str(filename)+f"_dev_stats.png")
         pass
 
-    def run(self, filter_configurations: Dict[str, 'FilterCfg'], optimization_level: int=0, current_clamps: Optional[List[float]]=None) -> None:
+    def run(self, filter_configurations: Dict[str, 'FilterCfg'], optimization_level: int=0, current_clamps: Optional[List[float]]=None, filetype: str="png") -> None:
         for filepath in self.filepaths:
             recordings, stats, result_filename = self.analyze(
                 filepath, 
@@ -494,5 +502,5 @@ class Analyzer:
                 filter_configurations=filter_configurations
             )
             # self.write_to_excel(f"{result_filename}.xlsx", recordings, stats)
-            self.plot_dev(recordings, result_filename, current_clamps=current_clamps)
+            self.plot_dev(recordings, result_filename, filetype=filetype, current_clamps=current_clamps)
             self.plot_stats_dev(recordings, result_filename)
