@@ -415,20 +415,20 @@ classdef WholeCellRecording
         end
 
         function mean_stats = compute_mean_stats(app)
-            means = [app.means];
-            pps = [means.rates];
-            pulses = [means.npulses];
-            sps = [means.spikes_per_stimulus];
-            depol = [means.depolarization];
-            hyperpol = [means.hyperpolarization];
-            ge = [means.excitation];
-            gi = [means.inhibition];
-            net_ge = [means.resultant_excitation];
-            net_gi = [means.resultant_inhibition];
-            Ie = [means.excitatory_current];
-            Ii = [means.inhibitory_current];
-            Iact = [means.activation_current];
-            Im = [means.membrane_current];
+            temp_means = [app.means];
+            pps = [temp_means.rates];
+            pulses = [temp_means.npulses];
+            sps = [temp_means.spikes_per_stimulus];
+            depol = [temp_means.depolarization];
+            hyperpol = [temp_means.hyperpolarization];
+            ge = [temp_means.excitation];
+            gi = [temp_means.inhibition];
+            net_ge = [temp_means.resultant_excitation];
+            net_gi = [temp_means.resultant_inhibition];
+            Ie = [temp_means.excitatory_current];
+            Ii = [temp_means.inhibitory_current];
+            Iact = [temp_means.activation_current];
+            Im = [temp_means.membrane_current];
             Eth_cross = [app.threshold_crossing];
             mean_stats = [pps; pulses; sps; depol; hyperpol; ge; gi; net_ge; net_gi; Ie; Ii; Iact; Im; Eth_cross];
         end
@@ -437,10 +437,10 @@ classdef WholeCellRecording
             if nargin < 2
                 save = 0;
             end
-            paradigms = [app.paradigms];
+            temp_paradigms = [app.paradigms];
             row_names = ["rate"; "pulses"; "sps"; "depol"; "hyperpol"; "ge"; "gi"; "net_ge"; "net_gi"; "Ie"; "Ii"; "Iact"; "Im"; "EthCross"];
             computed_stats = app.compute_mean_stats();
-            meta_stats = array2table(computed_stats, "RowNames", row_names, "VariableNames",paradigms);
+            meta_stats = array2table(computed_stats, "RowNames", row_names, "VariableNames",temp_paradigms);
             if save == 1
                 writetable(meta_stats, app(1).filename, "Sheet", "stats", "WriteRowNames", true);
             end
