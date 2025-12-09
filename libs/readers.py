@@ -2,7 +2,7 @@ from . import *
 from libs.utils import SystemOperations
 
 from dataclasses import dataclass
-from typing import *
+from typing import * #type: ignore
 
 @dataclass(frozen=True)
 class FilterCfg:
@@ -21,13 +21,13 @@ class Configs:
 
     run: str | List[str]='ALL' # ALL runs all files in input directory. Single str runs just that file. List[str] runs all specified files.
     optimization_level: int=0 # 0: No optimization 1: Calculate Eact based on max depolarization paradigm 2: Calculate Eact for each paradigm.
-    use_clamps: Optional[List[float]]=None # If None, uses all current clamps. If List[float], uses specified clamps
+    use_clamps: Optional[List[float] | List[List[float]]]=None # If None, uses all current clamps. If List[float], uses specified clamps
 
     @classmethod
     def new(
         cls, input_directory: Optional[str]=None, output_directory: Optional[str]=None, filetype: Optional[str]=None,
         filters: Optional[Dict[str, Dict[str, float]]]=None, run: Optional[str | List[str]]=None, 
-        optimization_level: int=0, use_clamps: Optional[List[float]]=None
+        optimization_level: int=0, use_clamps: Optional[List[float] | List[List[float]]]=None
     ) -> 'Configs':
         input_directory: str = './inputs' if input_directory is None else input_directory
         output_directory: str = './outputs' if output_directory is None else output_directory
@@ -57,12 +57,16 @@ class Configs:
 
     @property
     def full_run_paths(self) -> List[str]:
-        if self.run.upper() == 'ALL':
-            filenames: List[str] = os.listdir(self.input_directory)
-        elif isinstance(self.run, list):
-            filenames = self.run
+        filenames: List[str]
+        if isinstance(self.run, str):
+            if self.run.upper() == 'ALL':
+                filenames = os.listdir(self.input_directory)
+                filenames = list(filter(lambda x: os.path.splitext(x)[1] == ".xlsx", filenames))
+            else:
+                filenames = [self.run]
         else:
-            filenames = [self.run]
+            assert isinstance(self.run, list)
+            filenames = self.run
         return [os.path.join(self.input_directory, i) for i in filenames]
 
 class XLReader:
@@ -70,23 +74,29 @@ class XLReader:
         self.filepath = filepath
         _, filename_with_extension = os.path.split(self.filepath)
         self.filename, _ = os.path.splitext(filename_with_extension)
-        self.data_pointer = pd.ExcelFile(self.filepath)
-        pass
+        self.data_pointer = pd.ExcelFile(self.filepath, engine="openpyxl")
 
     def get_sheet_names(self):
         return self.data_pointer.sheet_names
 
     def get_paradigms(self):
         sheet_names = self.get_sheet_names()
-        return [sheet_name for sheet_name in sheet_names if "parameters" not in sheet_name if "stats" not in sheet_name]
+        return [sheet_name for sheet_name in sheet_names if ("parameters" not in sheet_name.lower() and "stats" not in sheet_name.lower())]
 
-    def get_paradigm_data(self, paradigm: str):
-        return pd.read_excel(self.filepath, sheet_name=paradigm, header=0)
+    def get_paradigm_data(self, paradigm: str) -> pd.DataFrame:
+        data: pd.DataFrame = pd.read_excel(self.filepath, sheet_name=paradigm, header=0)
+        assert "times" in data, f"No 'times' column present in {paradigm} sheet." 
+        for key in data.keys():
+            if key != "times":
+                data.rename(columns={key: f"{float(key):.3e}"}, inplace=True)                
+        return data
     
     def get_paradigm_parameters(self, paradigm: str):
-        paradigm = "parameters_"+paradigm
+        paradigm = f"parameters_{paradigm}"
         df = pd.read_excel(self.filepath, sheet_name=paradigm, header=0)
         df = df.dropna(how='all').dropna(axis=1, how='all')
+        df = df.dropna(how='any')
+        assert all(df["Eact"] > df["Ess"]), f"Fix spreadsheet '{paradigm}': Eact must be greater than Ess"
         return df
 
 class AnalysisConfigurations:

@@ -31,7 +31,7 @@ if __name__ == "__main__":
         )
     
     else:
-        with open('./settings/am_.json', 'r') as f:
+        with open('./settings/settings.json', 'r') as f:
             cfg_kwargs = json.load(f)
 
     cfg: Configs = Configs.new(**cfg_kwargs)
