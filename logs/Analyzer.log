@@ -614,271 +614,29 @@
 2025-12-09 13:10:24,680 - Analyzer - INFO - Saving verbose plotting of conductance estimations for /home/jsteele/Documents/Local/PRR/Figures/2022-12-07_1_baseline_analyzed
 2025-12-09 13:10:39,451 - Analyzer - INFO - Verbose plotting of stats for /home/jsteele/Documents/Local/PRR/Figures/2022-12-07_1_baseline_analyzed
 2025-12-09 13:10:39,711 - Analyzer - INFO - Saving verbose plotting of stats for /home/jsteele/Documents/Local/PRR/Figures/2022-12-07_1_baseline_analyzed
-2025-12-09 18:44:54,979 - Analyzer - INFO - Reading: 2021-12-17_1.xlsx
-2025-12-09 18:44:56,327 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
-2025-12-09 18:44:56,532 - Analyzer - INFO - Analysis of 2021-12-17_1.xlsx completed.
-2025-12-09 18:44:56,532 - Analyzer - INFO - Verbose plotting of conductance estimations for c:\Users\james\Box\PRR\PRR\WholeCellAnalysis\2021-12-17_1\resultfiles\2021-12-17_1_analyzed
-2025-12-09 18:44:56,979 - Analyzer - INFO - Saving verbose plotting of conductance estimations for c:\Users\james\Box\PRR\PRR\WholeCellAnalysis\2021-12-17_1\resultfiles\2021-12-17_1_analyzed
-2025-12-09 18:45:40,930 - Analyzer - INFO - Verbose plotting of stats for c:\Users\james\Box\PRR\PRR\WholeCellAnalysis\2021-12-17_1\resultfiles\2021-12-17_1_analyzed
-2025-12-09 18:45:41,043 - Analyzer - INFO - Saving verbose plotting of stats for c:\Users\james\Box\PRR\PRR\WholeCellAnalysis\2021-12-17_1\resultfiles\2021-12-17_1_analyzed
-2025-12-09 18:45:54,109 - Analyzer - INFO - Reading: 2021-12-17_1.xlsx
-2025-12-09 18:45:55,526 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
-2025-12-09 18:45:55,718 - Analyzer - INFO - Analysis of 2021-12-17_1.xlsx completed.
-2025-12-09 18:45:55,718 - Analyzer - INFO - Verbose plotting of conductance estimations for c:\Users\james\Box\PRR\PRR\WholeCellAnalysis\2021-12-17_1\resultfiles\2021-12-17_1_analyzed
-2025-12-09 18:45:56,004 - Analyzer - INFO - Saving verbose plotting of conductance estimations for c:\Users\james\Box\PRR\PRR\WholeCellAnalysis\2021-12-17_1\resultfiles\2021-12-17_1_analyzed
-2025-12-09 18:48:46,394 - Analyzer - INFO - Verbose plotting of stats for c:\Users\james\Box\PRR\PRR\WholeCellAnalysis\2021-12-17_1\resultfiles\2021-12-17_1_analyzed
-2025-12-09 18:48:46,507 - Analyzer - INFO - Saving verbose plotting of stats for c:\Users\james\Box\PRR\PRR\WholeCellAnalysis\2021-12-17_1\resultfiles\2021-12-17_1_analyzed
-2025-12-09 18:48:56,365 - Analyzer - INFO - Reading: 2021-12-17_1.xlsx
-2025-12-09 18:48:57,710 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
-2025-12-09 18:48:57,888 - Analyzer - INFO - Analysis of 2021-12-17_1.xlsx completed.
-2025-12-09 18:48:57,889 - Analyzer - INFO - Verbose plotting of conductance estimations for c:\Users\james\Box\PRR\PRR\WholeCellAnalysis\2021-12-17_1\resultfiles\2021-12-17_1_analyzed
-2025-12-09 18:48:58,179 - Analyzer - INFO - Saving verbose plotting of conductance estimations for c:\Users\james\Box\PRR\PRR\WholeCellAnalysis\2021-12-17_1\resultfiles\2021-12-17_1_analyzed
-2025-12-09 18:49:04,596 - Analyzer - INFO - Verbose plotting of stats for c:\Users\james\Box\PRR\PRR\WholeCellAnalysis\2021-12-17_1\resultfiles\2021-12-17_1_analyzed
-2025-12-09 18:49:04,702 - Analyzer - INFO - Saving verbose plotting of stats for c:\Users\james\Box\PRR\PRR\WholeCellAnalysis\2021-12-17_1\resultfiles\2021-12-17_1_analyzed
-2025-12-09 18:51:11,346 - Analyzer - INFO - Reading: 2021-12-17_1.xlsx
-2025-12-09 18:51:12,435 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
-2025-12-09 18:51:12,591 - Analyzer - INFO - Analysis of 2021-12-17_1.xlsx completed.
-2025-12-09 18:51:12,591 - Analyzer - INFO - Verbose plotting of conductance estimations for c:\Users\james\Box\PRR\PRR\WholeCellAnalysis\2021-12-17_1\resultfiles\2021-12-17_1_analyzed
-2025-12-09 18:51:12,874 - Analyzer - INFO - Saving verbose plotting of conductance estimations for c:\Users\james\Box\PRR\PRR\WholeCellAnalysis\2021-12-17_1\resultfiles\2021-12-17_1_analyzed
-2025-12-09 18:51:38,309 - Analyzer - INFO - Verbose plotting of stats for c:\Users\james\Box\PRR\PRR\WholeCellAnalysis\2021-12-17_1\resultfiles\2021-12-17_1_analyzed
-2025-12-09 18:51:38,413 - Analyzer - INFO - Saving verbose plotting of stats for c:\Users\james\Box\PRR\PRR\WholeCellAnalysis\2021-12-17_1\resultfiles\2021-12-17_1_analyzed
-2025-12-10 16:28:25,462 - Analyzer - INFO - Reading: 2021-12-17_1.xlsx
-2025-12-10 16:28:26,555 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
-2025-12-10 16:28:26,716 - Analyzer - INFO - Analysis of 2021-12-17_1.xlsx completed.
-2025-12-10 16:28:26,716 - Analyzer - INFO - Verbose plotting of conductance estimations for c:\Users\james\Box\PRR\PRR\WholeCellAnalysis\2021-12-17_1\resultfiles\2021-12-17_1_analyzed
-2025-12-10 16:28:27,216 - Analyzer - INFO - Saving verbose plotting of conductance estimations for c:\Users\james\Box\PRR\PRR\WholeCellAnalysis\2021-12-17_1\resultfiles\2021-12-17_1_analyzed
-2025-12-10 16:29:12,490 - Analyzer - INFO - Verbose plotting of stats for c:\Users\james\Box\PRR\PRR\WholeCellAnalysis\2021-12-17_1\resultfiles\2021-12-17_1_analyzed
-2025-12-10 16:29:12,602 - Analyzer - INFO - Saving verbose plotting of stats for c:\Users\james\Box\PRR\PRR\WholeCellAnalysis\2021-12-17_1\resultfiles\2021-12-17_1_analyzed
-2025-12-10 16:29:48,974 - Analyzer - INFO - Reading: 2021-12-17_1.xlsx
-2025-12-10 16:29:50,062 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
-2025-12-10 16:29:50,211 - Analyzer - INFO - Analysis of 2021-12-17_1.xlsx completed.
-2025-12-10 16:29:50,211 - Analyzer - INFO - Verbose plotting of conductance estimations for c:\Users\james\Box\PRR\PRR\WholeCellAnalysis\2021-12-17_1\resultfiles\2021-12-17_1_analyzed
-2025-12-10 16:29:50,477 - Analyzer - INFO - Saving verbose plotting of conductance estimations for c:\Users\james\Box\PRR\PRR\WholeCellAnalysis\2021-12-17_1\resultfiles\2021-12-17_1_analyzed
-2025-12-10 16:30:01,878 - Analyzer - INFO - Verbose plotting of stats for c:\Users\james\Box\PRR\PRR\WholeCellAnalysis\2021-12-17_1\resultfiles\2021-12-17_1_analyzed
-2025-12-10 16:30:01,980 - Analyzer - INFO - Saving verbose plotting of stats for c:\Users\james\Box\PRR\PRR\WholeCellAnalysis\2021-12-17_1\resultfiles\2021-12-17_1_analyzed
-2025-12-10 16:41:49,017 - Analyzer - INFO - Reading: 2021-12-17_1.xlsx
-2025-12-10 16:41:50,134 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
-2025-12-10 16:42:52,436 - Analyzer - INFO - Reading: 2021-12-17_1.xlsx
-2025-12-10 16:42:53,568 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
-2025-12-10 16:42:53,731 - Analyzer - INFO - Analysis of 2021-12-17_1.xlsx completed.
-2025-12-10 16:42:53,731 - Analyzer - INFO - Verbose plotting of conductance estimations for c:\Users\james\Box\PRR\PRR\WholeCellAnalysis\2021-12-17_1\resultfiles\2021-12-17_1_analyzed
-2025-12-10 16:42:54,184 - Analyzer - INFO - Saving verbose plotting of conductance estimations for c:\Users\james\Box\PRR\PRR\WholeCellAnalysis\2021-12-17_1\resultfiles\2021-12-17_1_analyzed
-2025-12-10 16:43:04,168 - Analyzer - INFO - Verbose plotting of stats for c:\Users\james\Box\PRR\PRR\WholeCellAnalysis\2021-12-17_1\resultfiles\2021-12-17_1_analyzed
-2025-12-10 16:43:04,270 - Analyzer - INFO - Saving verbose plotting of stats for c:\Users\james\Box\PRR\PRR\WholeCellAnalysis\2021-12-17_1\resultfiles\2021-12-17_1_analyzed
-2025-12-10 16:43:23,930 - Analyzer - INFO - Reading: 2021-12-17_1.xlsx
-2025-12-10 16:43:24,998 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
-2025-12-10 16:43:25,156 - Analyzer - INFO - Analysis of 2021-12-17_1.xlsx completed.
-2025-12-10 16:43:25,156 - Analyzer - INFO - Verbose plotting of conductance estimations for c:\Users\james\Box\PRR\PRR\WholeCellAnalysis\2021-12-17_1\resultfiles\2021-12-17_1_analyzed
-2025-12-10 16:43:25,425 - Analyzer - INFO - Saving verbose plotting of conductance estimations for c:\Users\james\Box\PRR\PRR\WholeCellAnalysis\2021-12-17_1\resultfiles\2021-12-17_1_analyzed
-2025-12-10 16:44:03,764 - Analyzer - INFO - Verbose plotting of stats for c:\Users\james\Box\PRR\PRR\WholeCellAnalysis\2021-12-17_1\resultfiles\2021-12-17_1_analyzed
-2025-12-10 16:44:03,866 - Analyzer - INFO - Saving verbose plotting of stats for c:\Users\james\Box\PRR\PRR\WholeCellAnalysis\2021-12-17_1\resultfiles\2021-12-17_1_analyzed
-2025-12-10 16:44:41,241 - Analyzer - INFO - Reading: 2021-12-17_1.xlsx
-2025-12-10 16:44:42,402 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
-2025-12-10 16:44:42,566 - Analyzer - INFO - Analysis of 2021-12-17_1.xlsx completed.
-2025-12-10 16:44:42,567 - Analyzer - INFO - Verbose plotting of conductance estimations for c:\Users\james\Box\PRR\PRR\WholeCellAnalysis\2021-12-17_1\resultfiles\2021-12-17_1_analyzed
-2025-12-10 16:44:42,859 - Analyzer - INFO - Saving verbose plotting of conductance estimations for c:\Users\james\Box\PRR\PRR\WholeCellAnalysis\2021-12-17_1\resultfiles\2021-12-17_1_analyzed
-2025-12-10 16:46:06,593 - Analyzer - INFO - Verbose plotting of stats for c:\Users\james\Box\PRR\PRR\WholeCellAnalysis\2021-12-17_1\resultfiles\2021-12-17_1_analyzed
-2025-12-10 16:46:06,697 - Analyzer - INFO - Saving verbose plotting of stats for c:\Users\james\Box\PRR\PRR\WholeCellAnalysis\2021-12-17_1\resultfiles\2021-12-17_1_analyzed
-2025-12-10 16:49:18,568 - Analyzer - INFO - Reading: 2021-12-17_1.xlsx
-2025-12-10 16:49:19,644 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
-2025-12-10 16:49:19,802 - Analyzer - INFO - Analysis of 2021-12-17_1.xlsx completed.
-2025-12-10 16:49:19,803 - Analyzer - INFO - Verbose plotting of conductance estimations for c:\Users\james\Box\PRR\PRR\WholeCellAnalysis\2021-12-17_1\resultfiles\2021-12-17_1_analyzed
-2025-12-10 16:49:20,078 - Analyzer - INFO - Saving verbose plotting of conductance estimations for c:\Users\james\Box\PRR\PRR\WholeCellAnalysis\2021-12-17_1\resultfiles\2021-12-17_1_analyzed
-2025-12-10 16:50:21,041 - Analyzer - INFO - Verbose plotting of stats for c:\Users\james\Box\PRR\PRR\WholeCellAnalysis\2021-12-17_1\resultfiles\2021-12-17_1_analyzed
-2025-12-10 16:50:21,148 - Analyzer - INFO - Saving verbose plotting of stats for c:\Users\james\Box\PRR\PRR\WholeCellAnalysis\2021-12-17_1\resultfiles\2021-12-17_1_analyzed
-2025-12-10 16:50:41,053 - Analyzer - INFO - Reading: 2021-12-17_1.xlsx
-2025-12-10 16:50:42,114 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
-2025-12-10 16:50:42,270 - Analyzer - INFO - Analysis of 2021-12-17_1.xlsx completed.
-2025-12-10 16:50:42,271 - Analyzer - INFO - Verbose plotting of conductance estimations for c:\Users\james\Box\PRR\PRR\WholeCellAnalysis\2021-12-17_1\resultfiles\2021-12-17_1_analyzed
-2025-12-10 16:50:42,540 - Analyzer - INFO - Saving verbose plotting of conductance estimations for c:\Users\james\Box\PRR\PRR\WholeCellAnalysis\2021-12-17_1\resultfiles\2021-12-17_1_analyzed
-2025-12-10 16:54:04,235 - Analyzer - INFO - Verbose plotting of stats for c:\Users\james\Box\PRR\PRR\WholeCellAnalysis\2021-12-17_1\resultfiles\2021-12-17_1_analyzed
-2025-12-10 16:54:04,345 - Analyzer - INFO - Saving verbose plotting of stats for c:\Users\james\Box\PRR\PRR\WholeCellAnalysis\2021-12-17_1\resultfiles\2021-12-17_1_analyzed
-2025-12-10 16:54:08,441 - Analyzer - INFO - Reading: 2021-12-17_1.xlsx
-2025-12-10 16:54:09,502 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
-2025-12-10 16:54:09,661 - Analyzer - INFO - Analysis of 2021-12-17_1.xlsx completed.
-2025-12-10 16:54:09,661 - Analyzer - INFO - Verbose plotting of conductance estimations for c:\Users\james\Box\PRR\PRR\WholeCellAnalysis\2021-12-17_1\resultfiles\2021-12-17_1_analyzed
-2025-12-10 16:54:09,929 - Analyzer - INFO - Saving verbose plotting of conductance estimations for c:\Users\james\Box\PRR\PRR\WholeCellAnalysis\2021-12-17_1\resultfiles\2021-12-17_1_analyzed
-2025-12-10 16:55:52,963 - Analyzer - INFO - Verbose plotting of stats for c:\Users\james\Box\PRR\PRR\WholeCellAnalysis\2021-12-17_1\resultfiles\2021-12-17_1_analyzed
-2025-12-10 16:55:53,072 - Analyzer - INFO - Saving verbose plotting of stats for c:\Users\james\Box\PRR\PRR\WholeCellAnalysis\2021-12-17_1\resultfiles\2021-12-17_1_analyzed
-2025-12-10 16:56:26,212 - Analyzer - INFO - Reading: 2021-12-17_1.xlsx
-2025-12-10 16:56:27,287 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
-2025-12-10 16:56:27,444 - Analyzer - INFO - Analysis of 2021-12-17_1.xlsx completed.
-2025-12-10 16:56:27,444 - Analyzer - INFO - Verbose plotting of conductance estimations for c:\Users\james\Box\PRR\PRR\WholeCellAnalysis\2021-12-17_1\resultfiles\2021-12-17_1_analyzed
-2025-12-10 16:56:27,715 - Analyzer - INFO - Saving verbose plotting of conductance estimations for c:\Users\james\Box\PRR\PRR\WholeCellAnalysis\2021-12-17_1\resultfiles\2021-12-17_1_analyzed
-2025-12-10 16:57:00,210 - Analyzer - INFO - Verbose plotting of stats for c:\Users\james\Box\PRR\PRR\WholeCellAnalysis\2021-12-17_1\resultfiles\2021-12-17_1_analyzed
-2025-12-10 16:57:00,312 - Analyzer - INFO - Saving verbose plotting of stats for c:\Users\james\Box\PRR\PRR\WholeCellAnalysis\2021-12-17_1\resultfiles\2021-12-17_1_analyzed
-2025-12-10 16:57:29,670 - Analyzer - INFO - Reading: 2021-12-17_1.xlsx
-2025-12-10 16:57:30,723 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
-2025-12-10 16:57:30,881 - Analyzer - INFO - Analysis of 2021-12-17_1.xlsx completed.
-2025-12-10 16:57:30,881 - Analyzer - INFO - Verbose plotting of conductance estimations for c:\Users\james\Box\PRR\PRR\WholeCellAnalysis\2021-12-17_1\resultfiles\2021-12-17_1_analyzed
-2025-12-10 16:57:31,152 - Analyzer - INFO - Saving verbose plotting of conductance estimations for c:\Users\james\Box\PRR\PRR\WholeCellAnalysis\2021-12-17_1\resultfiles\2021-12-17_1_analyzed
-2025-12-10 16:58:56,687 - Analyzer - INFO - Verbose plotting of stats for c:\Users\james\Box\PRR\PRR\WholeCellAnalysis\2021-12-17_1\resultfiles\2021-12-17_1_analyzed
-2025-12-10 16:58:56,800 - Analyzer - INFO - Saving verbose plotting of stats for c:\Users\james\Box\PRR\PRR\WholeCellAnalysis\2021-12-17_1\resultfiles\2021-12-17_1_analyzed
-2025-12-10 16:59:00,806 - Analyzer - INFO - Reading: 2021-12-17_1.xlsx
-2025-12-10 16:59:01,869 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
-2025-12-10 16:59:02,027 - Analyzer - INFO - Analysis of 2021-12-17_1.xlsx completed.
-2025-12-10 16:59:02,027 - Analyzer - INFO - Verbose plotting of conductance estimations for c:\Users\james\Box\PRR\PRR\WholeCellAnalysis\2021-12-17_1\resultfiles\2021-12-17_1_analyzed
-2025-12-10 16:59:02,299 - Analyzer - INFO - Saving verbose plotting of conductance estimations for c:\Users\james\Box\PRR\PRR\WholeCellAnalysis\2021-12-17_1\resultfiles\2021-12-17_1_analyzed
-2025-12-10 16:59:27,620 - Analyzer - INFO - Verbose plotting of stats for c:\Users\james\Box\PRR\PRR\WholeCellAnalysis\2021-12-17_1\resultfiles\2021-12-17_1_analyzed
-2025-12-10 16:59:27,728 - Analyzer - INFO - Saving verbose plotting of stats for c:\Users\james\Box\PRR\PRR\WholeCellAnalysis\2021-12-17_1\resultfiles\2021-12-17_1_analyzed
-2025-12-10 16:59:31,636 - Analyzer - INFO - Reading: 2021-12-17_1.xlsx
-2025-12-10 16:59:32,691 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
-2025-12-10 16:59:32,850 - Analyzer - INFO - Analysis of 2021-12-17_1.xlsx completed.
-2025-12-10 16:59:32,850 - Analyzer - INFO - Verbose plotting of conductance estimations for c:\Users\james\Box\PRR\PRR\WholeCellAnalysis\2021-12-17_1\resultfiles\2021-12-17_1_analyzed
-2025-12-10 16:59:33,122 - Analyzer - INFO - Saving verbose plotting of conductance estimations for c:\Users\james\Box\PRR\PRR\WholeCellAnalysis\2021-12-17_1\resultfiles\2021-12-17_1_analyzed
-2025-12-10 17:03:38,717 - Analyzer - INFO - Verbose plotting of stats for c:\Users\james\Box\PRR\PRR\WholeCellAnalysis\2021-12-17_1\resultfiles\2021-12-17_1_analyzed
-2025-12-10 17:03:38,834 - Analyzer - INFO - Saving verbose plotting of stats for c:\Users\james\Box\PRR\PRR\WholeCellAnalysis\2021-12-17_1\resultfiles\2021-12-17_1_analyzed
-2025-12-10 17:03:43,112 - Analyzer - INFO - Reading: 2021-12-17_1.xlsx
-2025-12-10 17:04:27,679 - Analyzer - INFO - Reading: 2021-12-17_1.xlsx
-2025-12-10 17:04:28,789 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
-2025-12-10 17:04:28,950 - Analyzer - INFO - Analysis of 2021-12-17_1.xlsx completed.
-2025-12-10 17:04:28,951 - Analyzer - INFO - Verbose plotting of conductance estimations for c:\Users\james\Box\PRR\PRR\WholeCellAnalysis\2021-12-17_1\resultfiles\2021-12-17_1_analyzed
-2025-12-10 17:04:29,222 - Analyzer - INFO - Saving verbose plotting of conductance estimations for c:\Users\james\Box\PRR\PRR\WholeCellAnalysis\2021-12-17_1\resultfiles\2021-12-17_1_analyzed
-2025-12-10 17:09:39,035 - Analyzer - INFO - Verbose plotting of stats for c:\Users\james\Box\PRR\PRR\WholeCellAnalysis\2021-12-17_1\resultfiles\2021-12-17_1_analyzed
-2025-12-10 17:09:39,146 - Analyzer - INFO - Saving verbose plotting of stats for c:\Users\james\Box\PRR\PRR\WholeCellAnalysis\2021-12-17_1\resultfiles\2021-12-17_1_analyzed
-2025-12-10 17:09:43,305 - Analyzer - INFO - Reading: 2021-12-17_1.xlsx
-2025-12-10 17:09:44,379 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
-2025-12-10 17:09:44,539 - Analyzer - INFO - Analysis of 2021-12-17_1.xlsx completed.
-2025-12-10 17:09:44,539 - Analyzer - INFO - Verbose plotting of conductance estimations for c:\Users\james\Box\PRR\PRR\WholeCellAnalysis\2021-12-17_1\resultfiles\2021-12-17_1_analyzed
-2025-12-10 17:09:44,810 - Analyzer - INFO - Saving verbose plotting of conductance estimations for c:\Users\james\Box\PRR\PRR\WholeCellAnalysis\2021-12-17_1\resultfiles\2021-12-17_1_analyzed
-2025-12-10 17:11:44,728 - Analyzer - INFO - Verbose plotting of stats for c:\Users\james\Box\PRR\PRR\WholeCellAnalysis\2021-12-17_1\resultfiles\2021-12-17_1_analyzed
-2025-12-10 17:11:44,837 - Analyzer - INFO - Saving verbose plotting of stats for c:\Users\james\Box\PRR\PRR\WholeCellAnalysis\2021-12-17_1\resultfiles\2021-12-17_1_analyzed
-2025-12-10 17:11:50,862 - Analyzer - INFO - Reading: 2021-12-17_1.xlsx
-2025-12-10 17:11:52,013 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
-2025-12-10 17:11:52,185 - Analyzer - INFO - Analysis of 2021-12-17_1.xlsx completed.
-2025-12-10 17:11:52,186 - Analyzer - INFO - Verbose plotting of conductance estimations for c:\Users\james\Box\PRR\PRR\WholeCellAnalysis\2021-12-17_1\resultfiles\2021-12-17_1_analyzed
-2025-12-10 17:11:52,468 - Analyzer - INFO - Saving verbose plotting of conductance estimations for c:\Users\james\Box\PRR\PRR\WholeCellAnalysis\2021-12-17_1\resultfiles\2021-12-17_1_analyzed
-2025-12-10 17:13:57,273 - Analyzer - INFO - Verbose plotting of stats for c:\Users\james\Box\PRR\PRR\WholeCellAnalysis\2021-12-17_1\resultfiles\2021-12-17_1_analyzed
-2025-12-10 17:13:57,388 - Analyzer - INFO - Saving verbose plotting of stats for c:\Users\james\Box\PRR\PRR\WholeCellAnalysis\2021-12-17_1\resultfiles\2021-12-17_1_analyzed
-2025-12-10 17:14:01,776 - Analyzer - INFO - Reading: 2021-12-17_1.xlsx
-2025-12-10 17:14:02,838 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
-2025-12-10 17:14:02,996 - Analyzer - INFO - Analysis of 2021-12-17_1.xlsx completed.
-2025-12-10 17:14:02,997 - Analyzer - INFO - Verbose plotting of conductance estimations for c:\Users\james\Box\PRR\PRR\WholeCellAnalysis\2021-12-17_1\resultfiles\2021-12-17_1_analyzed
-2025-12-10 17:14:03,272 - Analyzer - INFO - Saving verbose plotting of conductance estimations for c:\Users\james\Box\PRR\PRR\WholeCellAnalysis\2021-12-17_1\resultfiles\2021-12-17_1_analyzed
-2025-12-10 17:14:16,210 - Analyzer - INFO - Verbose plotting of stats for c:\Users\james\Box\PRR\PRR\WholeCellAnalysis\2021-12-17_1\resultfiles\2021-12-17_1_analyzed
-2025-12-10 17:14:16,316 - Analyzer - INFO - Saving verbose plotting of stats for c:\Users\james\Box\PRR\PRR\WholeCellAnalysis\2021-12-17_1\resultfiles\2021-12-17_1_analyzed
-2025-12-10 17:14:37,138 - Analyzer - INFO - Reading: 2021-12-17_1.xlsx
-2025-12-10 17:14:38,204 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
-2025-12-10 17:14:38,364 - Analyzer - INFO - Analysis of 2021-12-17_1.xlsx completed.
-2025-12-10 17:14:38,364 - Analyzer - INFO - Verbose plotting of conductance estimations for c:\Users\james\Box\PRR\PRR\WholeCellAnalysis\2021-12-17_1\resultfiles\2021-12-17_1_analyzed
-2025-12-10 17:14:38,633 - Analyzer - INFO - Saving verbose plotting of conductance estimations for c:\Users\james\Box\PRR\PRR\WholeCellAnalysis\2021-12-17_1\resultfiles\2021-12-17_1_analyzed
-2025-12-10 17:14:46,578 - Analyzer - INFO - Verbose plotting of stats for c:\Users\james\Box\PRR\PRR\WholeCellAnalysis\2021-12-17_1\resultfiles\2021-12-17_1_analyzed
-2025-12-10 17:14:46,684 - Analyzer - INFO - Saving verbose plotting of stats for c:\Users\james\Box\PRR\PRR\WholeCellAnalysis\2021-12-17_1\resultfiles\2021-12-17_1_analyzed
-2025-12-10 17:15:28,946 - Analyzer - INFO - Reading: 2021-12-17_1.xlsx
-2025-12-10 17:15:30,006 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
-2025-12-10 17:15:30,160 - Analyzer - INFO - Analysis of 2021-12-17_1.xlsx completed.
-2025-12-10 17:15:30,160 - Analyzer - INFO - Verbose plotting of conductance estimations for c:\Users\james\Box\PRR\PRR\WholeCellAnalysis\2021-12-17_1\resultfiles\2021-12-17_1_analyzed
-2025-12-10 17:15:30,431 - Analyzer - INFO - Saving verbose plotting of conductance estimations for c:\Users\james\Box\PRR\PRR\WholeCellAnalysis\2021-12-17_1\resultfiles\2021-12-17_1_analyzed
-2025-12-10 18:13:00,134 - Analyzer - INFO - Reading: 2021-12-17_1.xlsx
-2025-12-10 18:13:01,207 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
-2025-12-10 18:13:01,359 - Analyzer - INFO - Analysis of 2021-12-17_1.xlsx completed.
-2025-12-10 18:13:01,359 - Analyzer - INFO - Verbose plotting of conductance estimations for c:\Users\james\Box\PRR\PRR\WholeCellAnalysis\2021-12-17_1\resultfiles\2021-12-17_1_analyzed
-2025-12-10 18:13:01,634 - Analyzer - INFO - Saving verbose plotting of conductance estimations for c:\Users\james\Box\PRR\PRR\WholeCellAnalysis\2021-12-17_1\resultfiles\2021-12-17_1_analyzed
-2025-12-10 18:34:24,114 - Analyzer - INFO - Verbose plotting of stats for c:\Users\james\Box\PRR\PRR\WholeCellAnalysis\2021-12-17_1\resultfiles\2021-12-17_1_analyzed
-2025-12-10 18:34:24,244 - Analyzer - INFO - Saving verbose plotting of stats for c:\Users\james\Box\PRR\PRR\WholeCellAnalysis\2021-12-17_1\resultfiles\2021-12-17_1_analyzed
-2025-12-10 18:34:28,436 - Analyzer - INFO - Reading: 2021-12-17_1.xlsx
-2025-12-10 18:34:48,374 - Analyzer - INFO - Reading: 2021-12-17_1.xlsx
-2025-12-10 18:34:49,433 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
-2025-12-10 18:34:49,585 - Analyzer - INFO - Analysis of 2021-12-17_1.xlsx completed.
-2025-12-10 18:34:49,586 - Analyzer - INFO - Verbose plotting of conductance estimations for c:\Users\james\Box\PRR\PRR\WholeCellAnalysis\2021-12-17_1\resultfiles\2021-12-17_1_analyzed
-2025-12-10 18:34:49,857 - Analyzer - INFO - Saving verbose plotting of conductance estimations for c:\Users\james\Box\PRR\PRR\WholeCellAnalysis\2021-12-17_1\resultfiles\2021-12-17_1_analyzed
-2025-12-10 18:40:01,062 - Analyzer - INFO - Verbose plotting of stats for c:\Users\james\Box\PRR\PRR\WholeCellAnalysis\2021-12-17_1\resultfiles\2021-12-17_1_analyzed
-2025-12-10 18:40:01,170 - Analyzer - INFO - Saving verbose plotting of stats for c:\Users\james\Box\PRR\PRR\WholeCellAnalysis\2021-12-17_1\resultfiles\2021-12-17_1_analyzed
-2025-12-14 12:47:35,081 - Analyzer - INFO - Reading: 2021-12-17_1.xlsx
-2025-12-14 12:47:36,187 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
-2025-12-14 12:47:36,344 - Analyzer - INFO - Analysis of 2021-12-17_1.xlsx completed.
-2025-12-14 12:47:36,345 - Analyzer - INFO - Verbose plotting of conductance estimations for c:\Users\james\Box\PRR\PRR\WholeCellAnalysis\2021-12-17_1\resultfiles\2021-12-17_1_analyzed
-2025-12-14 12:47:36,859 - Analyzer - INFO - Saving verbose plotting of conductance estimations for c:\Users\james\Box\PRR\PRR\WholeCellAnalysis\2021-12-17_1\resultfiles\2021-12-17_1_analyzed
-2025-12-14 13:21:25,944 - Analyzer - INFO - Verbose plotting of stats for c:\Users\james\Box\PRR\PRR\WholeCellAnalysis\2021-12-17_1\resultfiles\2021-12-17_1_analyzed
-2025-12-14 13:21:26,070 - Analyzer - INFO - Saving verbose plotting of stats for c:\Users\james\Box\PRR\PRR\WholeCellAnalysis\2021-12-17_1\resultfiles\2021-12-17_1_analyzed
-2025-12-14 15:10:46,016 - Analyzer - INFO - Reading: 2021-12-17_1.xlsx
-2025-12-14 15:10:47,117 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
-2025-12-14 15:12:41,678 - Analyzer - INFO - Reading: 2021-12-17_1.xlsx
-2025-12-14 15:12:42,781 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
-2025-12-14 15:13:49,755 - Analyzer - INFO - Reading: 2021-12-17_1.xlsx
-2025-12-14 15:13:50,845 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
-2025-12-14 15:14:22,432 - Analyzer - INFO - Reading: 2021-12-17_1.xlsx
-2025-12-14 15:14:23,514 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
-2025-12-14 15:15:00,425 - Analyzer - INFO - Reading: 2021-12-17_1.xlsx
-2025-12-14 15:15:01,511 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
-2025-12-14 15:15:25,669 - Analyzer - INFO - Reading: 2021-12-17_1.xlsx
-2025-12-14 15:15:26,757 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
-2025-12-14 15:16:09,293 - Analyzer - INFO - Reading: 2021-12-17_1.xlsx
-2025-12-14 15:16:10,379 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
-2025-12-14 15:17:23,067 - Analyzer - INFO - Reading: 2021-12-17_1.xlsx
-2025-12-14 15:17:24,211 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
-2025-12-14 15:19:28,571 - Analyzer - INFO - Reading: 2021-12-17_1.xlsx
-2025-12-14 15:19:29,655 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
-2025-12-14 15:19:45,649 - Analyzer - INFO - Reading: 2021-12-17_1.xlsx
-2025-12-14 15:19:46,733 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
-2025-12-14 15:21:44,229 - Analyzer - INFO - Reading: 2021-12-17_1.xlsx
-2025-12-14 15:21:45,323 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
-2025-12-14 15:22:34,144 - Analyzer - INFO - Reading: 2021-12-17_1.xlsx
-2025-12-14 15:22:35,242 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
-2025-12-14 15:23:20,029 - Analyzer - INFO - Reading: 2021-12-17_1.xlsx
-2025-12-14 15:23:21,099 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
-2025-12-14 15:23:47,302 - Analyzer - INFO - Reading: 2021-12-17_1.xlsx
-2025-12-14 15:23:48,394 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
-2025-12-14 15:24:12,400 - Analyzer - INFO - Reading: 2021-12-17_1.xlsx
-2025-12-14 15:24:13,488 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
-2025-12-14 15:24:13,654 - Analyzer - INFO - Analysis of 2021-12-17_1.xlsx completed.
-2025-12-14 15:24:13,654 - Analyzer - INFO - Verbose plotting of conductance estimations for c:\Users\james\Box\PRR\PRR\WholeCellAnalysis\2021-12-17_1\resultfiles\2021-12-17_1_analyzed
-2025-12-14 15:24:48,592 - Analyzer - INFO - Reading: 2021-12-17_1.xlsx
-2025-12-14 15:24:49,674 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
-2025-12-14 15:24:49,845 - Analyzer - INFO - Analysis of 2021-12-17_1.xlsx completed.
-2025-12-14 15:24:49,845 - Analyzer - INFO - Verbose plotting of conductance estimations for c:\Users\james\Box\PRR\PRR\WholeCellAnalysis\2021-12-17_1\resultfiles\2021-12-17_1_analyzed
-2025-12-14 15:24:50,149 - Analyzer - INFO - Saving verbose plotting of conductance estimations for c:\Users\james\Box\PRR\PRR\WholeCellAnalysis\2021-12-17_1\resultfiles\2021-12-17_1_analyzed
-2025-12-14 15:25:04,558 - Analyzer - INFO - Verbose plotting of stats for c:\Users\james\Box\PRR\PRR\WholeCellAnalysis\2021-12-17_1\resultfiles\2021-12-17_1_analyzed
-2025-12-14 15:25:04,679 - Analyzer - INFO - Saving verbose plotting of stats for c:\Users\james\Box\PRR\PRR\WholeCellAnalysis\2021-12-17_1\resultfiles\2021-12-17_1_analyzed
-2025-12-14 15:25:49,761 - Analyzer - INFO - Reading: 2021-12-17_1.xlsx
-2025-12-14 15:25:50,840 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
-2025-12-14 15:25:51,008 - Analyzer - INFO - Analysis of 2021-12-17_1.xlsx completed.
-2025-12-14 15:25:51,008 - Analyzer - INFO - Verbose plotting of conductance estimations for c:\Users\james\Box\PRR\PRR\WholeCellAnalysis\2021-12-17_1\resultfiles\2021-12-17_1_analyzed
-2025-12-14 15:25:51,300 - Analyzer - INFO - Saving verbose plotting of conductance estimations for c:\Users\james\Box\PRR\PRR\WholeCellAnalysis\2021-12-17_1\resultfiles\2021-12-17_1_analyzed
-2025-12-14 15:29:00,950 - Analyzer - INFO - Verbose plotting of stats for c:\Users\james\Box\PRR\PRR\WholeCellAnalysis\2021-12-17_1\resultfiles\2021-12-17_1_analyzed
-2025-12-14 15:29:01,065 - Analyzer - INFO - Saving verbose plotting of stats for c:\Users\james\Box\PRR\PRR\WholeCellAnalysis\2021-12-17_1\resultfiles\2021-12-17_1_analyzed
-2025-12-14 15:31:14,100 - Analyzer - INFO - Reading: 2021-12-17_1.xlsx
-2025-12-14 15:31:15,174 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
-2025-12-14 15:31:15,340 - Analyzer - INFO - Analysis of 2021-12-17_1.xlsx completed.
-2025-12-14 15:31:15,340 - Analyzer - INFO - Verbose plotting of conductance estimations for c:\Users\james\Box\PRR\PRR\WholeCellAnalysis\2021-12-17_1\resultfiles\2021-12-17_1_analyzed
-2025-12-14 15:31:15,641 - Analyzer - INFO - Saving verbose plotting of conductance estimations for c:\Users\james\Box\PRR\PRR\WholeCellAnalysis\2021-12-17_1\resultfiles\2021-12-17_1_analyzed
-2025-12-14 15:31:25,971 - Analyzer - INFO - Verbose plotting of stats for c:\Users\james\Box\PRR\PRR\WholeCellAnalysis\2021-12-17_1\resultfiles\2021-12-17_1_analyzed
-2025-12-14 15:31:26,074 - Analyzer - INFO - Saving verbose plotting of stats for c:\Users\james\Box\PRR\PRR\WholeCellAnalysis\2021-12-17_1\resultfiles\2021-12-17_1_analyzed
-2025-12-14 15:31:38,480 - Analyzer - INFO - Reading: 2021-12-17_1.xlsx
-2025-12-14 15:31:39,568 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
-2025-12-14 15:31:39,734 - Analyzer - INFO - Analysis of 2021-12-17_1.xlsx completed.
-2025-12-14 15:31:39,734 - Analyzer - INFO - Verbose plotting of conductance estimations for c:\Users\james\Box\PRR\PRR\WholeCellAnalysis\2021-12-17_1\resultfiles\2021-12-17_1_analyzed
-2025-12-14 15:31:40,031 - Analyzer - INFO - Saving verbose plotting of conductance estimations for c:\Users\james\Box\PRR\PRR\WholeCellAnalysis\2021-12-17_1\resultfiles\2021-12-17_1_analyzed
-2025-12-14 15:31:58,079 - Analyzer - INFO - Verbose plotting of stats for c:\Users\james\Box\PRR\PRR\WholeCellAnalysis\2021-12-17_1\resultfiles\2021-12-17_1_analyzed
-2025-12-14 15:31:58,198 - Analyzer - INFO - Saving verbose plotting of stats for c:\Users\james\Box\PRR\PRR\WholeCellAnalysis\2021-12-17_1\resultfiles\2021-12-17_1_analyzed
-2025-12-14 15:32:06,006 - Analyzer - INFO - Reading: 2021-12-17_1.xlsx
-2025-12-14 15:32:07,092 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
-2025-12-14 15:32:07,258 - Analyzer - INFO - Analysis of 2021-12-17_1.xlsx completed.
-2025-12-14 15:32:07,258 - Analyzer - INFO - Verbose plotting of conductance estimations for c:\Users\james\Box\PRR\PRR\WholeCellAnalysis\2021-12-17_1\resultfiles\2021-12-17_1_analyzed
-2025-12-14 15:32:07,554 - Analyzer - INFO - Saving verbose plotting of conductance estimations for c:\Users\james\Box\PRR\PRR\WholeCellAnalysis\2021-12-17_1\resultfiles\2021-12-17_1_analyzed
-2025-12-14 15:32:13,832 - Analyzer - INFO - Verbose plotting of stats for c:\Users\james\Box\PRR\PRR\WholeCellAnalysis\2021-12-17_1\resultfiles\2021-12-17_1_analyzed
-2025-12-14 15:32:13,946 - Analyzer - INFO - Saving verbose plotting of stats for c:\Users\james\Box\PRR\PRR\WholeCellAnalysis\2021-12-17_1\resultfiles\2021-12-17_1_analyzed
-2025-12-14 15:32:22,920 - Analyzer - INFO - Reading: 2021-12-17_1.xlsx
-2025-12-14 15:32:24,030 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
-2025-12-14 15:32:24,202 - Analyzer - INFO - Analysis of 2021-12-17_1.xlsx completed.
-2025-12-14 15:32:24,202 - Analyzer - INFO - Verbose plotting of conductance estimations for c:\Users\james\Box\PRR\PRR\WholeCellAnalysis\2021-12-17_1\resultfiles\2021-12-17_1_analyzed
-2025-12-14 15:32:24,527 - Analyzer - INFO - Saving verbose plotting of conductance estimations for c:\Users\james\Box\PRR\PRR\WholeCellAnalysis\2021-12-17_1\resultfiles\2021-12-17_1_analyzed
-2025-12-14 15:32:29,443 - Analyzer - INFO - Verbose plotting of stats for c:\Users\james\Box\PRR\PRR\WholeCellAnalysis\2021-12-17_1\resultfiles\2021-12-17_1_analyzed
-2025-12-14 15:32:29,566 - Analyzer - INFO - Saving verbose plotting of stats for c:\Users\james\Box\PRR\PRR\WholeCellAnalysis\2021-12-17_1\resultfiles\2021-12-17_1_analyzed
-2025-12-14 15:32:48,204 - Analyzer - INFO - Reading: 2021-12-17_1.xlsx
-2025-12-14 15:32:49,312 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
-2025-12-14 15:33:33,319 - Analyzer - INFO - Analysis of 2021-12-17_1.xlsx completed.
-2025-12-14 15:33:33,319 - Analyzer - INFO - Verbose plotting of conductance estimations for c:\Users\james\Box\PRR\PRR\WholeCellAnalysis\2021-12-17_1\resultfiles\2021-12-17_1_analyzed
-2025-12-14 15:33:33,608 - Analyzer - INFO - Saving verbose plotting of conductance estimations for c:\Users\james\Box\PRR\PRR\WholeCellAnalysis\2021-12-17_1\resultfiles\2021-12-17_1_analyzed
-2025-12-14 15:33:38,178 - Analyzer - INFO - Verbose plotting of stats for c:\Users\james\Box\PRR\PRR\WholeCellAnalysis\2021-12-17_1\resultfiles\2021-12-17_1_analyzed
-2025-12-14 15:33:38,282 - Analyzer - INFO - Saving verbose plotting of stats for c:\Users\james\Box\PRR\PRR\WholeCellAnalysis\2021-12-17_1\resultfiles\2021-12-17_1_analyzed
-2025-12-14 15:34:33,583 - Analyzer - INFO - Reading: 2021-12-17_1.xlsx
-2025-12-14 15:34:34,657 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
-2025-12-14 15:35:05,059 - Analyzer - INFO - Reading: 2021-12-17_1.xlsx
-2025-12-14 15:35:06,154 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
-2025-12-14 15:39:02,196 - Analyzer - INFO - Reading: 2021-12-17_1.xlsx
-2025-12-14 15:39:03,287 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
-2025-12-14 15:39:55,744 - Analyzer - INFO - Reading: 2021-12-17_1.xlsx
-2025-12-14 15:39:56,834 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
-2025-12-14 15:43:28,842 - Analyzer - INFO - Reading: 2021-12-17_1.xlsx
-2025-12-14 15:43:29,921 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2025-12-15 09:53:39,240 - Analyzer - INFO - Reading: 2021-12-10_4_NBQX.xlsx
+2025-12-15 09:57:38,324 - Analyzer - INFO - Reading: 2021-12-10_4_NBQX.xlsx
+2025-12-15 09:59:23,660 - Analyzer - INFO - Reading: 2021-12-10_4_NBQX.xlsx
+2025-12-15 10:00:20,420 - Analyzer - INFO - Reading: 2021-12-10_4_NBQX.xlsx
+2025-12-15 10:02:15,522 - Analyzer - INFO - Reading: 2021-12-10_4_NBQX.xlsx
+2025-12-15 10:02:15,542 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2025-12-15 10:02:35,904 - Analyzer - INFO - Reading: 2021-12-10_4_NBQX.xlsx
+2025-12-15 10:02:35,923 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2025-12-15 10:05:52,424 - Analyzer - INFO - Reading: 2021-12-10_4_NBQX.xlsx
+2025-12-15 10:05:52,443 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2025-12-15 10:10:03,156 - Analyzer - INFO - Reading: 2021-12-10_4_NBQX.xlsx
+2025-12-15 10:11:08,589 - Analyzer - INFO - Reading: 2021-12-10_4_NBQX.xlsx
+2025-12-15 10:11:38,708 - Analyzer - INFO - Reading: 2021-12-10_4_NBQX.xlsx
+2025-12-15 10:11:42,221 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2025-12-15 10:11:42,580 - Analyzer - INFO - Analysis of 2021-12-10_4_NBQX.xlsx completed.
+2025-12-15 10:11:42,580 - Analyzer - INFO - Verbose plotting of conductance estimations for /home/jsteele/Documents/Local/PRR/Figures/2021-12-10_4_NBQX_analyzed
+2025-12-15 10:11:43,374 - Analyzer - INFO - Saving verbose plotting of conductance estimations for /home/jsteele/Documents/Local/PRR/Figures/2021-12-10_4_NBQX_analyzed
+2025-12-15 10:12:12,468 - Analyzer - INFO - Verbose plotting of stats for /home/jsteele/Documents/Local/PRR/Figures/2021-12-10_4_NBQX_analyzed
+2025-12-15 10:12:12,762 - Analyzer - INFO - Saving verbose plotting of stats for /home/jsteele/Documents/Local/PRR/Figures/2021-12-10_4_NBQX_analyzed
+2025-12-15 10:12:13,133 - Analyzer - INFO - Reading: 2021-12-10_4_baseline.xlsx
+2025-12-15 10:12:16,959 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2025-12-15 10:12:17,324 - Analyzer - INFO - Analysis of 2021-12-10_4_baseline.xlsx completed.
+2025-12-15 10:12:17,326 - Analyzer - INFO - Verbose plotting of conductance estimations for /home/jsteele/Documents/Local/PRR/Figures/2021-12-10_4_baseline_analyzed
+2025-12-15 10:12:17,858 - Analyzer - INFO - Saving verbose plotting of conductance estimations for /home/jsteele/Documents/Local/PRR/Figures/2021-12-10_4_baseline_analyzed
+2025-12-15 10:12:26,123 - Analyzer - INFO - Verbose plotting of stats for /home/jsteele/Documents/Local/PRR/Figures/2021-12-10_4_baseline_analyzed
+2025-12-15 10:12:26,344 - Analyzer - INFO - Saving verbose plotting of stats for /home/jsteele/Documents/Local/PRR/Figures/2021-12-10_4_baseline_analyzed

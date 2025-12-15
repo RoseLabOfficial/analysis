@@ -1,5 +1,5 @@
 {
-    "input_directory": "/home/jsteele/Documents/Local/PRR/ReconstructionSpreadsheetsPRR",
+    "input_directory": "/home/jsteele/Documents/Local/PRR/ReconstructionSpreadsheets",
     "output_directory": "/home/jsteele/Documents/Local/PRR/Figures",
     "filetype": "png",
     "filters": {
@@ -7,7 +7,7 @@
         "membrane_currents": {"passband": 100, "ripple": 0.01, "stopband": 600, "attenuation": 30},
         "activation_currents": {"passband": 100, "ripple": 0.01, "stopband": 600, "attenuation": 30}
     },
-    "run": ["2022-12-07_1_NBQX.xlsx", "2022-12-07_1_baseline.xlsx"],
+    "run": ["2021-12-10_4_NBQX.xlsx", "2021-12-10_4_baseline.xlsx"],
     "optimization_level": 0,
     "use_clamps": null
 }

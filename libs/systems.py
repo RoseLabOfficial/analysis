@@ -1,49 +1,50 @@
 from pathlib import Path
 from pyhelpers.store import save_fig
 
-from . import *
 from libs.readers import XLReader
 from libs.utils import *
 
 from typing import Dict, Optional, List, Tuple, TYPE_CHECKING
 if TYPE_CHECKING:
-    from libs.readers import FilterCfg
+    from libs.readers import FilterCfg, AnalyzerCfg
 
 class LowPassFilter:
     def __init__(self, passband: float, stopband: float, attenuation: float, ripple: float, name: str="generic") -> None:
+        assert 0 < passband < stopband
+        assert attenuation <= 0
+        assert ripple >= 0
+
         self.passband: float = passband
         self.stopband: float = stopband
         self.attenuation: float = attenuation
         self.ripple: float = ripple
-        if self.stopband < self.passband:
-            lpf_logger.debug(f"For {name} low pass filter stopband cannot be less than passband")
-            raise ValueError(f"For {name} low pass filter stopband cannot be less than passband")
         self.name: str = name
 
-    def compute_minimum_order(self, sampling_rate: float, log=False):
-        normalizing_frequency = sampling_rate/2
-        normalized_passband = self.passband/normalizing_frequency
-        normalized_stopband = self.stopband/normalizing_frequency
-        if log:
+    def compute_minimum_order(self, fs: float, log: bool=False) -> Tuple[int, float]:
+        assert fs > 0
+
+        nyquist_freq: float = fs / 2
+        normalized_passband = self.passband / nyquist_freq
+        normalized_stopband = self.stopband / nyquist_freq
+        order, normalized_cutoff_frequency = filters.buttord(normalized_passband, normalized_stopband, self.ripple, self.attenuation)
+        assert isinstance(normalized_cutoff_frequency, float)
+
+        if log: 
             lpf_logger.info(f"{self.name} low pass filter ")
-        order, normalized_cutoff_frequency = filters.buttord(normalized_passband, 
-                                                            normalized_stopband, 
-                                                            self.ripple, 
-                                                            self.attenuation)
-        if log:
             lpf_logger.info(f"{self.name} low pass filter computed minimum order: {order} with transition gap: {self.stopband - self.passband}")
+
         return order, normalized_cutoff_frequency
     
-    def append_samples(self, signal):
-        nsamples = signal.shape[0]
-        nappend = int(nsamples/2)
+    def append_samples(self, signal: np.ndarray) -> Tuple[np.ndarray, int]:
+        nsamples: int = signal.shape[0]
+        nappend: int = int(nsamples / 2)
         append_samples = np.zeros((nappend,), dtype=signal.dtype)+signal[0]
         return np.concatenate([append_samples, signal, append_samples], axis=0), nappend
     
-    def deppend_samples(self, signal, nappend):
+    def deppend_samples(self, signal: np.ndarray, nappend: int) -> np.ndarray:
         return signal[nappend:-nappend, ...]
     
-    def propagate(self, input: float, sampling_rate: float, log=False):
+    def propagate(self, input: np.ndarray, sampling_rate: float, log=False):
         order, normalized_frequency = self.compute_minimum_order(sampling_rate, log)
         second_order_sections = filters.butter(order, normalized_frequency, output="sos")
         input_signal, nappend = self.append_samples(input)
@@ -94,7 +95,7 @@ class WholeCellRecording:
             wholecell_logger.info("Filtering membrane potentials")
         sampling_rate = 1/(self.data["times"][1] - self.data["times"][0])
         for inj in self.parameters["Iinj"]:
-            self.data[f"{inj:.3e}"] = self.filters["membrane_potentials"].propagate(self.data[f"{inj:.3e}"], sampling_rate, log)
+            self.data[f"{inj:.3e}"] = self.filters["membrane_potentials"].propagate(self.data[f"{inj:.3e}"].to_numpy(), sampling_rate, log)
         return self.data
     
     def compute_activation_conductance_constants(self, log=False):
@@ -286,9 +287,8 @@ class WholeCellRecording:
         return result
 
 class Analyzer:
-    def __init__(self, filepaths: List[str], output_path: Path):
-        self.filepaths: List[str] = filepaths
-        self.output_path: str = output_path
+    def __init__(self, cfg: AnalyzerCfg):
+        self.cfg: AnalyzerCfg = cfg
 
     def get_paradigm_to_optimize(self, recordings):
         analysis_logger.info("Finding the best paradigm to optimize")
@@ -335,7 +335,9 @@ class Analyzer:
         overall_stats = overall_stats.sort_values(by="paradigm", ascending=True)
         return recordings, overall_stats
     
-    def estimation_without_optim_activation_potential(self, recordings):
+    def estimation_without_optim_activation_potential(self, recordings: Dict[str, WholeCellRecording]):
+        assert len(recordings) > 0
+
         for idx, paradigm in enumerate(recordings):
             recordings[paradigm].estimate_conductances()
             recordings[paradigm].stats.insert(0, "paradigm", paradigm)
@@ -351,7 +353,7 @@ class Analyzer:
         basename: str = os.path.basename(filepath)
         analysis_logger.info(f"Reading: {basename}")
         reader = XLReader(filepath)
-        recordings = {}
+        recordings: Dict[str, WholeCellRecording] = {}
         for _, paradigm in enumerate(reader.get_paradigms()):
             recordings[paradigm] = WholeCellRecording(
                 reader.get_paradigm_data(paradigm), 
