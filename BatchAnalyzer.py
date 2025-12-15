@@ -1,5 +1,5 @@
 from libs.systems import Analyzer
-from libs.readers import Configs
+from libs.readers import AnalyzerCfg
 
 import json, os, sys
 from argparse import ArgumentParser
@@ -34,8 +34,7 @@ if __name__ == "__main__":
         with open('./settings/settings.json', 'r') as f:
             cfg_kwargs = json.load(f)
 
-    cfg: Configs = Configs.new(**cfg_kwargs)
-    assert all([os.path.exists(i) for i in cfg.full_run_paths])
+    cfg: AnalyzerCfg = AnalyzerCfg.new(**cfg_kwargs)
 
-    analyzer = Analyzer(cfg.full_run_paths, cfg.output_directory)
-    analyzer.run(**cfg.analyzer_run_kwargs)
+    analyzer = Analyzer(cfg)
+    analyzer.run()

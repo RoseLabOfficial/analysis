@@ -614,3 +614,29 @@
 2025-12-09 13:10:24,680 - Analyzer - INFO - Saving verbose plotting of conductance estimations for /home/jsteele/Documents/Local/PRR/Figures/2022-12-07_1_baseline_analyzed
 2025-12-09 13:10:39,451 - Analyzer - INFO - Verbose plotting of stats for /home/jsteele/Documents/Local/PRR/Figures/2022-12-07_1_baseline_analyzed
 2025-12-09 13:10:39,711 - Analyzer - INFO - Saving verbose plotting of stats for /home/jsteele/Documents/Local/PRR/Figures/2022-12-07_1_baseline_analyzed
+2025-12-15 09:53:39,240 - Analyzer - INFO - Reading: 2021-12-10_4_NBQX.xlsx
+2025-12-15 09:57:38,324 - Analyzer - INFO - Reading: 2021-12-10_4_NBQX.xlsx
+2025-12-15 09:59:23,660 - Analyzer - INFO - Reading: 2021-12-10_4_NBQX.xlsx
+2025-12-15 10:00:20,420 - Analyzer - INFO - Reading: 2021-12-10_4_NBQX.xlsx
+2025-12-15 10:02:15,522 - Analyzer - INFO - Reading: 2021-12-10_4_NBQX.xlsx
+2025-12-15 10:02:15,542 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2025-12-15 10:02:35,904 - Analyzer - INFO - Reading: 2021-12-10_4_NBQX.xlsx
+2025-12-15 10:02:35,923 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2025-12-15 10:05:52,424 - Analyzer - INFO - Reading: 2021-12-10_4_NBQX.xlsx
+2025-12-15 10:05:52,443 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2025-12-15 10:10:03,156 - Analyzer - INFO - Reading: 2021-12-10_4_NBQX.xlsx
+2025-12-15 10:11:08,589 - Analyzer - INFO - Reading: 2021-12-10_4_NBQX.xlsx
+2025-12-15 10:11:38,708 - Analyzer - INFO - Reading: 2021-12-10_4_NBQX.xlsx
+2025-12-15 10:11:42,221 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2025-12-15 10:11:42,580 - Analyzer - INFO - Analysis of 2021-12-10_4_NBQX.xlsx completed.
+2025-12-15 10:11:42,580 - Analyzer - INFO - Verbose plotting of conductance estimations for /home/jsteele/Documents/Local/PRR/Figures/2021-12-10_4_NBQX_analyzed
+2025-12-15 10:11:43,374 - Analyzer - INFO - Saving verbose plotting of conductance estimations for /home/jsteele/Documents/Local/PRR/Figures/2021-12-10_4_NBQX_analyzed
+2025-12-15 10:12:12,468 - Analyzer - INFO - Verbose plotting of stats for /home/jsteele/Documents/Local/PRR/Figures/2021-12-10_4_NBQX_analyzed
+2025-12-15 10:12:12,762 - Analyzer - INFO - Saving verbose plotting of stats for /home/jsteele/Documents/Local/PRR/Figures/2021-12-10_4_NBQX_analyzed
+2025-12-15 10:12:13,133 - Analyzer - INFO - Reading: 2021-12-10_4_baseline.xlsx
+2025-12-15 10:12:16,959 - Analyzer - INFO - Level 0 optimization: No optimization--using user provided values.
+2025-12-15 10:12:17,324 - Analyzer - INFO - Analysis of 2021-12-10_4_baseline.xlsx completed.
+2025-12-15 10:12:17,326 - Analyzer - INFO - Verbose plotting of conductance estimations for /home/jsteele/Documents/Local/PRR/Figures/2021-12-10_4_baseline_analyzed
+2025-12-15 10:12:17,858 - Analyzer - INFO - Saving verbose plotting of conductance estimations for /home/jsteele/Documents/Local/PRR/Figures/2021-12-10_4_baseline_analyzed
+2025-12-15 10:12:26,123 - Analyzer - INFO - Verbose plotting of stats for /home/jsteele/Documents/Local/PRR/Figures/2021-12-10_4_baseline_analyzed
+2025-12-15 10:12:26,344 - Analyzer - INFO - Saving verbose plotting of stats for /home/jsteele/Documents/Local/PRR/Figures/2021-12-10_4_baseline_analyzed
