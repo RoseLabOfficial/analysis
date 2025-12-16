@@ -2,12 +2,6 @@
     "spreadsheets_input_dir": "c:\\Users\\james\\Box\\PRR\\PRR\\ReconstructionSpreadsheets",
     "image_save_dir": "c:\\Users\\james\\Box\\PRR\\PRR\\Figures",
     "image_save_type": "png",
-    "timeseries_filter_cfgs": {
-        "membrane_potentials": {"passband": 100, "ripple": 0.01, "stopband": 600, "attenuation": 30},
-        "membrane_currents": {"passband": 100, "ripple": 0.01, "stopband": 600, "attenuation": 30},
-        "activation_currents": {"passband": 100, "ripple": 0.01, "stopband": 600, "attenuation": 30}
-    },
     "files_to_analyze": null,
-    "optimization_level": 0,
     "iinj_clamps_to_use": null
 }

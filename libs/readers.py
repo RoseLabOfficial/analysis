@@ -1,70 +1,52 @@
 import pandas as pd
 import os
-from dataclasses import dataclass
-from typing import List, Optional, Dict
-
-@dataclass(frozen=True)
-class FilterCfg:
-    passband: float 
-    ripple: float 
-    stopband: float 
-    attenuation: float
+import json
+from pathlib import Path
+from dataclasses import dataclass, fields
+from typing import List, Optional, Dict, Any
 
 @dataclass(frozen=True)
 class AnalyzerCfg:
-    spreadsheets_input_dir: str 
-    image_save_dir: str 
-    image_save_type: Optional[str]
-    timeseries_filter_cfgs: Dict[str, FilterCfg]
-    files_to_analyze: Optional[List[str]]=None # ALL runs all files in input directory. Single str runs just that file. List[str] runs all specified files.
-    optimization_level: int=0 # 0: No optimization 1: Calculate Eact based on max depolarization paradigm 2: Calculate Eact for each paradigm.
-    iinj_clamps_to_use: Optional[List[List[float]]]=None # If None, uses all current clamps. If List[float], uses specified clamps
+    spreadsheets_input_dir: Path 
+    image_save_dir: Path
+    image_save_type: str
+    files_to_analyze: Optional[List[str]]=None
+    iinj_clamps_to_use: Optional[List[List[float]]]=None
 
     @classmethod
-    def new(
-        cls, 
-        spreadsheets_input_dir: Optional[str]=None, 
-        image_save_dir: Optional[str]=None, 
-        image_save_type: Optional[str]=None,
-        timeseries_filter_cfgs: Optional[Dict[str, Dict[str, float]]]=None, 
-        files_to_analyze: Optional[List[str]]=None, 
-        optimization_level: int=0, 
-        iinj_clamps_to_use: Optional[List[float] | List[List[float]]]=None
-    ) -> 'AnalyzerCfg':
-        # Default values: (can't implement in usual default kwarg value because args are set equal to None in initialzation rather than being omitted)
-        spreadsheets_input_dir = './inputs' if spreadsheets_input_dir is None else spreadsheets_input_dir
-        image_save_dir = './outputs' if image_save_dir is None else image_save_dir
-        image_save_type = 'png' if image_save_type is None else image_save_type
-        timeseries_filter_cfgs = {
-            "membrane_potentials": {"passband": 200, "ripple": 0.01, "stopband": 400, "attenuation": 80},
-            "membrane_currents": {"passband": 40, "ripple": 0.01, "stopband": 60, "attenuation": 80},
-            "activation_currents": {"passband": 40, "ripple": 0.01, "stopband": 60, "attenuation": 80}
-        } if timeseries_filter_cfgs is None else timeseries_filter_cfgs
-        optimization_level = 0 if optimization_level is None else optimization_level
+    def from_json(cls, path_to_json: Path) -> 'AnalyzerCfg':
+        with open(path_to_json, "r") as f:
+            kwargs: Dict[str, Any] = json.load(f)
+
+        assert set(x.name for x in fields(cls)) == set(kwargs.keys()), "Mismatch between analyzercfg kwargs and those provided in json settings."
+        
+        spreadsheets_input_dir: Path = Path(kwargs["spreadsheets_input_dir"])
+        image_save_dir: Path = Path(kwargs["image_save_dir"])
 
         assert os.path.isdir(spreadsheets_input_dir)
         assert os.path.isdir(image_save_dir)
-        assert image_save_type in {'png', 'emf'}
-        if files_to_analyze is not None:
-            assert isinstance(files_to_analyze, list)
-            assert all(isinstance(x, str) for x in files_to_analyze)
-            assert len(files_to_analyze) > 0
-            assert all(os.path.splitext(x)[1] == ".xlsx" for x in files_to_analyze)
-        assert optimization_level in {0, 1, 2}
+        assert kwargs["image_save_type"] in {'png', 'emf'}
+        if kwargs["files_to_analyze"] is not None:
+            assert isinstance(kwargs["files_to_analyze"], list)
+            assert all(isinstance(x, str) for x in kwargs["files_to_analyze"])
+            assert len(kwargs["files_to_analyze"]) > 0
+            assert all(os.path.splitext(x)[1] == ".xlsx" for x in kwargs["files_to_analyze"])
+            assert all((spreadsheets_input_dir / x).is_file() for x in kwargs["files_to_analyze"])
+        if kwargs["iinj_clamps_to_use"] is not None:
+            assert isinstance(kwargs["iinj_clamps_to_use"], list)
+            assert all(isinstance(x, list) for x in kwargs["iinj_clamps_to_use"])
+            assert all(len(x) >= 2 for x in kwargs["iinj_clamps_to_use"])
+            assert all(isinstance(y, float) for x in kwargs["iinj_clamps_to_use"] for y in x)
 
-        filtercfgs: Dict[str, FilterCfg] = {key:FilterCfg(**val) for key, val in timeseries_filter_cfgs.items()}
-
-        return AnalyzerCfg(spreadsheets_input_dir, image_save_dir, image_save_type, filtercfgs, files_to_analyze, optimization_level, iinj_clamps_to_use)
+        return AnalyzerCfg(spreadsheets_input_dir, image_save_dir, kwargs["image_save_type"], kwargs["files_to_analyze"], kwargs["iinj_clamps_to_use"])
 
     @property
-    def paths_to_all_analysis_spreadsheets(self) -> List[str]:
-        filenames: List[str]
-        if self.files_to_analyze is not None:
-            filenames = self.files_to_analyze
+    def paths_to_spreadsheets(self) -> List[Path]:
+        paths_to_spreadsheets: List[Path]
+        if self.files_to_analyze is None:
+            paths_to_spreadsheets = [x for x in self.spreadsheets_input_dir.iterdir() if x.suffix == ".xlsx"]
         else:
-            filenames = list(filter(lambda x: os.path.splitext(x)[1] == ".xlsx", os.listdir(self.spreadsheets_input_dir)))
-        
-        paths_to_spreadsheets: List[str] = [os.path.join(self.spreadsheets_input_dir, i) for i in filenames]
+            paths_to_spreadsheets = [self.spreadsheets_input_dir / x for x in self.files_to_analyze]
         
         assert all([os.path.exists(i) for i in paths_to_spreadsheets])
         assert len(paths_to_spreadsheets) > 0
@@ -73,10 +55,8 @@ class AnalyzerCfg:
 
 
 class XLReader:
-    def __init__(self, filepath: str):
-        self.filepath = filepath
-        _, filename_with_extension = os.path.split(self.filepath)
-        self.filename, _ = os.path.splitext(filename_with_extension)
+    def __init__(self, filepath: Path):
+        self.filepath: Path = filepath
         self.data_pointer = pd.ExcelFile(self.filepath, engine="openpyxl")
 
     @property
@@ -86,6 +66,7 @@ class XLReader:
         return self.data_pointer.sheet_names #type: ignore (type checker can't infer that this is List[str], but above assertions do guarantee this)
 
     def get_paradigms(self) -> List[str]:
+
         paradigms: List[str] = list(filter(lambda x: not any(y in x.lower() for y in ["parameters", "stats", "results"]), self.sheet_names))
         assert len(paradigms) > 0
         return paradigms
@@ -103,6 +84,6 @@ class XLReader:
         df = pd.read_excel(self.filepath, sheet_name=paradigm, header=0)
         df = df.dropna(how='all').dropna(axis=1, how='all')
         df = df.dropna(how='any')
-        assert all(df["Eact"] > df["Ess"]), f"Fix spreadsheet '{paradigm}': Eact must be greater than Ess"
+        assert all(df["Eact"] > df["Ess"]), f"Fix spreadsheet {self.filepath} {paradigm}: Eact must be greater than Ess"
         return df
     
