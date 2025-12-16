@@ -1,13 +1,13 @@
 {
-    "input_directory": "/home/jsteele/Documents/Local/PRR/ReconstructionSpreadsheets",
-    "output_directory": "/home/jsteele/Documents/Local/PRR/Figures",
-    "filetype": "png",
-    "filters": {
+    "spreadsheets_input_dir": "/home/jsteele/Documents/Local/PRR/ReconstructionSpreadsheets",
+    "image_save_dir": "/home/jsteele/Documents/Local/PRR/Figures",
+    "image_save_type": "png",
+    "timeseries_filter_cfgs": {
         "membrane_potentials": {"passband": 100, "ripple": 0.01, "stopband": 600, "attenuation": 30},
         "membrane_currents": {"passband": 100, "ripple": 0.01, "stopband": 600, "attenuation": 30},
         "activation_currents": {"passband": 100, "ripple": 0.01, "stopband": 600, "attenuation": 30}
     },
-    "run": ["2021-12-10_4_NBQX.xlsx", "2021-12-10_4_baseline.xlsx"],
+    "files_to_analyze": ["2021-12-10_4_NBQX.xlsx", "2021-12-10_4_baseline.xlsx"],
     "optimization_level": 0,
-    "use_clamps": null
+    "iinj_clamps_to_use": null
 }

@@ -1,17 +1,17 @@
 from pathlib import Path
 from pyhelpers.store import save_fig
 
-from libs.readers import XLReader
+from scipy.optimize import nnls
+
+from libs.readers import XLReader, FilterCfg, AnalyzerCfg
 from libs.utils import *
 
-from typing import Dict, Optional, List, Tuple, TYPE_CHECKING
-if TYPE_CHECKING:
-    from libs.readers import FilterCfg, AnalyzerCfg
+from typing import Dict, Optional, List, Tuple
 
 class LowPassFilter:
     def __init__(self, passband: float, stopband: float, attenuation: float, ripple: float, name: str="generic") -> None:
         assert 0 < passband < stopband
-        assert attenuation <= 0
+        assert attenuation >= 0
         assert ripple >= 0
 
         self.passband: float = passband
@@ -163,70 +163,134 @@ class WholeCellRecording:
             self.data[f"filtered_Iactivation_{inj:.3e}"] = activation_current 
         return self.data
     
-    def compute_passive_conductances(self, log=False):
+    def compute_passive_conductances(self, bin_ms: float=5.0, log: bool=False, include_beta: bool=False):
+        """
+        Level-1 conductance estimation:
+        - Voltage-domain via bin-integrated membrane equation (no dv/dt)
+        - Piecewise-constant (boxcar) ge, gi per bin
+        - Nonnegativity via NNLS
+        - No extra regularizers/priors
+
+        Writes per-timestep ge/gi by expanding bin estimates back to the full timeline.
+        """
+
         if log:
-            wholecell_logger.info("Estimating conductances")
+            wholecell_logger.info("Estimating conductances (Level 1: integrated + NNLS)")
 
-        membrane_potential = self.data[[f"{x:.3e}" for x in list(self.parameters["Iinj"])]].to_numpy()
-        membrane_current = self.data[[f"filtered_Imembrane_{x:.3e}" for x in list(self.parameters["Iinj"])]].to_numpy()
-        activation_current = self.data[[f"filtered_Iactivation_{x:.3e}" for x in list(self.parameters["Iinj"])]].to_numpy()
-        leakage_current = self.data[[f"Ileakage_{x:.3e}" for x in list(self.parameters["Iinj"])]].to_numpy()
-        excitatory_reversal_potential = self.parameters["Ee"].to_numpy()
-        inhibitory_reversal_potentail = self.parameters["Ei"].to_numpy()
-        injected_current = self.parameters["Iinj"].to_numpy()
+        # --- pull parameters ---
+        Iinj_levels = list(self.parameters["Iinj"])
+        colnames_v = [f"{x:.3e}" for x in Iinj_levels]
 
-        ntimesteps: int = self.data.shape[0]
-        nclamps: int = len(self.parameters["Iinj"])
+        v = self.data[colnames_v].to_numpy()  # shape: (T, N)
+        T, N = v.shape
 
-        # X ~ Synaptic Driving Forces: (E_reversal - V)
-        X = np.empty((ntimesteps, nclamps, 2))
-        X[:, :, 0] = excitatory_reversal_potential - membrane_potential
-        X[:, :, 1] = inhibitory_reversal_potentail - membrane_potential
+        dt = self.data["times"][1] - self.data["times"][0]
 
-        # y ~ Inferred synaptic currents
-        y = np.empty((ntimesteps, nclamps, 1))
-        y[:, :, 0] = membrane_current - activation_current - injected_current + leakage_current
+        # constants
+        C = float(self.parameters["Cm"][0])         # Farads
+        gl = 1 / float(self.parameters["Rin"][0])   # Siemens
+        Er = float(self.parameters["Er"][0])        # Volts
+        Ee = float(self.parameters["Ee"][0])        # Volts
+        Ei = float(self.parameters["Ei"][0])        # Volts
 
-        # Normal equations: g = (X^T X)^+ X^T y
-        A = np.einsum('tni,tnj->tij', X, X)
-        B = np.einsum('tni,tnk->tik', X, y)
+        beta = float(self.parameters["alpha"][0])
+        Et = float(self.parameters["Et"][0])
 
-        try:
-            conductances = np.linalg.pinv(A) @ B
-        except Exception as e:
-            optimizer_logger.debug(f"pinv msg: {e}")
-        
-        pred = np.einsum('tni,tik->tnk', X, conductances)  # (T,N,1)
-        self.data["best_fit_squared_error"] = np.sum((pred - y)**2, axis=(1,2))
+        # injected currents per clamp (assume constant in time for now)
+        Iinj = np.asarray(self.parameters["Iinj"].to_numpy(), dtype=float)  # shape: (N,)
 
-        _, min_iinj = self.get_clamp_near_0()
-        membrane_potential_at_min_iinj = self.data[f"{min_iinj:.3e}"]
-        activation_current_at_min_iinj = self.data[f"filtered_Iactivation_{min_iinj:.3e}"].to_numpy()
-        leakage_current_at_min_iinj = self.data[f"Ileakage_{min_iinj:.3e}"].to_numpy()
-        self.data["predicted_membrane_potential"] = np.trapezoid(conductances[:, 0, 0] * (excitatory_reversal_potential[0] - membrane_potential_at_min_iinj) + conductances[:, 1, 0] * (inhibitory_reversal_potentail[0] - membrane_potential_at_min_iinj) + activation_current_at_min_iinj + min_iinj - leakage_current_at_min_iinj, axis=-1)
-        print(self.data["predicted_membrane_potential"].to_numpy().shape)
-        plt.plot(self.data["predicted_membrane_potential"])
-        plt.show()
+        # binning
+        bin_s = bin_ms / 1000.0
+        bin_len = max(1, int(round(bin_s / dt)))
+        nbins = int(np.ceil(T / bin_len))
+        print(bin_s, bin_len, nbins)
 
-        self.data["excitation"] = conductances[:, 0, 0]
-        self.data["inhibition"] = conductances[:, 1, 0]
+        ge_bins = np.zeros(nbins)
+        gi_bins = np.zeros(nbins)
+        resnorm_bins = np.full(nbins, np.nan)
+        cond_bins = np.full(nbins, np.nan)
 
-        self.data["positive_excitation"] = self.data["excitation"]
-        self.data["positive_inhibition"] = self.data["inhibition"]
-        self.data.loc[self.data["positive_excitation"] < 0, "positive_excitation"] = 0.0
-        self.data.loc[self.data["positive_inhibition"] < 0, "positive_inhibition"] = 0.0
+        # precompute terms that get integrated
+        # leak integrand: gl*(Er - v)
+        leak = gl * (Er - v)  # (T, N)
 
-        self.data["resultant_excitation"] = self.data["positive_excitation"] - self.data["positive_inhibition"]
-        self.data["resultant_inhibition"] = self.data["positive_inhibition"] - self.data["positive_excitation"]
-        self.data.loc[self.data["resultant_excitation"] < 0, "resultant_excitation"] = 0.0
-        self.data.loc[self.data["resultant_inhibition"] < 0, "resultant_inhibition"] = 0.0
+        # injected current integrand: Iinj (constant over time)
+        inj = np.tile(Iinj.reshape(1, -1), (T, 1))  # (T, N)
+
+        if include_beta and beta != 0.0:
+            # active current term: -beta(Er - v)(Et - v) appears on RHS in your original.
+            # In our rearranged y we add +beta * integral((Er - v)(Et - v)) if using the form in earlier math.
+            quad = (Er - v) * (Et - v)  # (T, N)
+        else:
+            quad = None
+
+        # helper for trapezoid integral over [a:b] for each clamp column
+        def trapz_segment(arr, a, b):
+            # arr shape (T, N)
+            # integrate per column over indices [a, b) using trapezoid rule
+            seg = arr[a:b, :]
+            if seg.shape[0] < 2:
+                # fall back: rectangle
+                return seg.sum(axis=0) * dt
+            return np.trapz(seg, dx=dt, axis=0)
+
+        # main loop: build y_k and X_k and solve NNLS
+        for k in range(nbins):
+            a = k * bin_len
+            b = min((k + 1) * bin_len, T)
+            if b - a < 1:
+                continue
+
+            # y_i,k = C*(v_i(b)-v_i(a)) - ∫[ gl(Er-v) + Iinj ] dt  (+ beta ∫ quad dt if include_beta)
+            dv = v[b - 1, :] - v[a, :]  # (N,)
+            yk = C * dv - (trapz_segment(leak + inj, a, b))
+
+            if quad is not None:
+                yk = yk + beta * trapz_segment(quad, a, b)
+
+            # X columns: Ae_i,k = ∫(Ee - v_i)dt ; Ai_i,k = ∫(Ei - v_i)dt
+            Ae = trapz_segment((Ee - v), a, b)  # (N,)
+            Ai = trapz_segment((Ei - v), a, b)  # (N,)
+
+            Xk: np.ndarray = np.column_stack([Ae, Ai])  # (N, 2)
+
+            # conditioning diagnostic (optional but highly recommended)
+            try:
+                XtX = Xk.T @ Xk
+                cond_bins[k] = np.linalg.cond(XtX)
+            except Exception:
+                cond_bins[k] = np.nan
+
+            # NNLS solve (nonnegative ge, gi)
+            # Note: if Xk is near-rank-deficient, NNLS will still return *a* solution;
+            # that's why cond_bins matters.
+            gk, rnorm = nnls(Xk, yk)
+            ge_bins[k], gi_bins[k] = gk
+            resnorm_bins[k] = rnorm
+
+        # expand bins back to timesteps
+        ge = np.repeat(ge_bins, bin_len)[:T]
+        gi = np.repeat(gi_bins, bin_len)[:T]
+
+        self.data["excitation"] = ge
+        self.data["inhibition"] = gi
+
+        # (Optional) store diagnostics
+        self.data["bin_index"] = np.repeat(np.arange(nbins), bin_len)[:T]
+        self.data["bin_resnorm"] = np.repeat(resnorm_bins, bin_len)[:T]
+        self.data["bin_cond_XtX"] = np.repeat(cond_bins, bin_len)[:T]
+
+        # remove all the post-hoc clipping logic; NNLS already enforces positivity
+        # If you still want resultant E/I "dominance" signals, compute them cleanly:
+        self.data["resultant_excitation"] = (self.data["excitation"] - self.data["inhibition"]).clip(lower=0.0)
+        self.data["resultant_inhibition"] = (self.data["inhibition"] - self.data["excitation"]).clip(lower=0.0)
 
         return self.data
-    
+        
     def get_clamp_near_0(self, log=False) -> Tuple[int, float]:
         if log:
             wholecell_logger.info("computing the closest clamp to resting")
-        index_of_minimum_injected_current: int = np.argmin(np.abs(self.parameters["Iinj"]))
+        index_of_minimum_injected_current: np.intp = np.argmin(np.abs(self.parameters["Iinj"]))
         minimum_injected_current: float = self.parameters["Iinj"][index_of_minimum_injected_current]
         return index_of_minimum_injected_current, minimum_injected_current
     
@@ -241,8 +305,8 @@ class WholeCellRecording:
         stats["Imembrane"] = paradigm_all_var_stats[f"filtered_Imembrane_{minimum_injected_current:.3e}"]
         stats["Ileakage"] = paradigm_all_var_stats[f"Ileakage_{minimum_injected_current:.3e}"]
         stats["Iactivation"] = paradigm_all_var_stats[f"filtered_Iactivation_{minimum_injected_current:.3e}"]
-        stats["mean_excitation"] = paradigm_all_var_stats["positive_excitation"]
-        stats["mean_inhibition"] = paradigm_all_var_stats["positive_inhibition"]
+        stats["mean_excitation"] = paradigm_all_var_stats["excitation"]
+        stats["mean_inhibition"] = paradigm_all_var_stats["inhibition"]
         stats["net_excitation"] = paradigm_all_var_stats["resultant_excitation"]
         stats["net_inhibition"] = paradigm_all_var_stats["resultant_inhibition"]
         stats["spikes_per_stimulus_repetition"] = self.parameters["sps"][index_of_minimum_injected_current]
@@ -256,7 +320,7 @@ class WholeCellRecording:
         self.compute_leakage_currents(log)
         self.compute_membrane_currents(log)
         self.filter_membrane_currents(log)
-        self.compute_passive_conductances(log)
+        self.compute_passive_conductances(log=log)
         self.stats = self.compute_stats(log)
         return self.data
     
@@ -266,7 +330,7 @@ class WholeCellRecording:
         self.parameters["Eact"] = solution
         self.compute_activation_currents(log)
         self.filter_activation_currents(log)
-        self.compute_passive_conductances(log)
+        self.compute_passive_conductances(log=log)
         self.compute_stats(log)
         negative_going_excitation = self.data["excitation"][self.data["excitation"] < 0]
         negative_going_excitation = negative_going_excitation/np.amin(negative_going_excitation)
@@ -373,28 +437,9 @@ class Analyzer:
             analysis_logger.info(f"Level 2 optimization: Activation potentials optimized for every paradigm.")
             recordings, overall_stats = self.estimate_optimum_activation_potential_each_paradigm(recordings)
             analysis_logger.info(f"Level 2 optimization: Complete.")
-        result_filename = os.path.join(self.output_path, f"{os.path.splitext(basename)[0]}_analyzed")
+        result_filename = os.path.join(self.cfg.image_save_dir, f"{os.path.splitext(basename)[0]}_analyzed")
         analysis_logger.info(f"Analysis of {basename} completed.")
         return recordings, overall_stats, result_filename
-    
-    def write_to_excel(self, filepath: Path, recordings, stats):
-        if not self.sysops.check_directory(filepath):
-            pd.DataFrame().to_excel(filepath)
-        with pd.ExcelWriter(filepath, mode='a', engine='openpyxl', if_sheet_exists='new') as writer:
-            for paradigm in recordings:
-                recordings[paradigm].data.to_excel(writer, sheet_name=paradigm, index=False)
-                recordings[paradigm].parameters.to_excel(writer, sheet_name="parameters_"+paradigm, index = False)
-            stats.to_excel(writer, sheet_name="stats", index=False)
-        pass
-
-    def write_analysis_to_excel(self, filepath: Path, paradigm: str, paradigm_data: pd.DataFrame):
-        if self.sysops.check_directory(filepath):
-            with pd.ExcelWriter(filepath, mode='a', engine='openpyxl', if_sheet_exists='replace') as writer:
-                paradigm_data.to_excel(writer, sheet_name=paradigm, index=False)
-        else:
-            # File does not exist, create a new file
-            paradigm_data.to_excel(filepath, sheet_name=paradigm, index=False)
-        pass
 
     def plot_dev(self, recordings, filename: Path, filetype: str="png", current_clamps: Optional[List[float]]=None):
         analysis_logger.info(f"Verbose plotting of conductance estimations for {filename}")
@@ -409,13 +454,13 @@ class Analyzer:
                 rep = recordings[paradigm].data["representative"].to_numpy()
             membrane_potential = recordings[paradigm].data[[f"{x:.3e}" for x in paradigm_iinj]].to_numpy()
 
-            predicted_membrane_potential = recordings[paradigm].data["predicted_membrane_potential"]
+            # predicted_membrane_potential = recordings[paradigm].data["predicted_membrane_potential"]
 
             membrane_current = recordings[paradigm].data[[f"filtered_Imembrane_{x:.3e}" for x in paradigm_iinj]].to_numpy()
             leakage_current = recordings[paradigm].data[[f"Ileakage_{x:.3e}" for x in paradigm_iinj]].to_numpy()
             activation_current = recordings[paradigm].data[[f"filtered_Iactivation_{x:.3e}" for x in paradigm_iinj]].to_numpy()
             conductances = recordings[paradigm].data[["excitation", "inhibition"]].to_numpy()
-            errors = recordings[paradigm].data["best_fit_squared_error"].to_numpy()
+            # errors = recordings[paradigm].data["best_fit_squared_error"].to_numpy()
             times = recordings[paradigm].data["times"].to_numpy()
             resting_potential = times*0 + recordings[paradigm].parameters["Er"][0]
             threshold_potential = times*0 + recordings[paradigm].parameters["Et"][0]
@@ -429,7 +474,7 @@ class Analyzer:
             axs[0, idx].set_ylabel("Rep. Vm (V)")
             axs[0, idx].set_title(paradigm)
             axs[0, idx].grid(True)
-            axs[1, idx].plot(times, predicted_membrane_potential, '--k')
+            # axs[1, idx].plot(times, predicted_membrane_potential, '--k')
             curves = axs[1, idx].plot(times, membrane_potential)
             colors = [x.get_color() for x in curves]
             axs[1, idx].plot(times, resting_potential, '--k')
@@ -454,7 +499,7 @@ class Analyzer:
             axs[5, idx].set_ylabel("G (S)")
             axs[5, idx].grid(True)
             
-            axs[6, idx].plot(times, errors, '--k')
+            # axs[6, idx].plot(times, errors, '--k')
             axs[6, idx].set_ylabel("Err")
             axs[6, idx].grid(True)
 
@@ -531,15 +576,15 @@ class Analyzer:
         plt.savefig(str(filename)+f"_dev_stats.png")
         pass
 
-    def run(self, filter_configurations: Dict[str, 'FilterCfg'], optimization_level: int=0, current_clamps: Optional[List[float] | List[List[float]]]=None, filetype: str="png") -> None:
-        for i in range(len(self.filepaths)):
-            ccs = (current_clamps if current_clamps is None or isinstance(current_clamps[i], float) else current_clamps[i])
+    def run(self) -> None:
+        for i in range(len(self.cfg.paths_to_all_analysis_spreadsheets)):
+            iinj_clamps_to_use: Optional[List[List[float]]] = self.cfg.iinj_clamps_to_use if self.cfg.iinj_clamps_to_use is None else self.cfg.iinj_clamps_to_use[i]
             recordings, stats, result_filename = self.analyze(
-                self.filepaths[i], 
-                optimize=optimization_level, 
-                current_clamps=ccs,
-                filter_configurations=filter_configurations
+                self.cfg.paths_to_all_analysis_spreadsheets[i], 
+                optimize=self.cfg.optimization_level, 
+                current_clamps=iinj_clamps_to_use,
+                filter_configurations=self.cfg.timeseries_filter_cfgs
             )
             # self.write_to_excel(f"{result_filename}.xlsx", recordings, stats)
-            self.plot_dev(recordings, result_filename, filetype=filetype, current_clamps=ccs)
+            self.plot_dev(recordings, result_filename, filetype=self.cfg.image_save_type, current_clamps=iinj_clamps_to_use)
             self.plot_stats_dev(recordings, result_filename)
