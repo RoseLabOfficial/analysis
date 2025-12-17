@@ -280,6 +280,7 @@ class Analyzer:
                 axs[0, idx].plot(times, vpred[:, j], linestyle=":", color=colors[j])  # dotted Vpred
 
             # Pull reference voltages from parameters
+            
             Er = float(rec.parameters["Er"][0])
             Ee = float(rec.parameters["Ee"][0])
             Ei = float(rec.parameters["Ei"][0])
