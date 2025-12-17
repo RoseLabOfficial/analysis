@@ -1,7 +1,6 @@
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt 
-import os
 
 from scipy.optimize import nnls
 from pyhelpers.store import save_fig
@@ -9,143 +8,255 @@ from pathlib import Path
 
 from libs.readers import XLReader, AnalyzerCfg
 
-from typing import Dict, Optional, List, Tuple
+from typing import Dict, Optional, List
 
 class WholeCellRecording:
-    def __init__(self, data: pd.DataFrame, parameters: pd.DataFrame, current_clamps: Optional[List[float]]=None) -> None:
+    def __init__(self, data: pd.DataFrame, parameters: pd.DataFrame, current_clamps: Optional[List[float]]) -> None:
         self.data: pd.DataFrame = data
         self.parameters: pd.DataFrame = parameters
 
+        # Mask parameters to only include those corresponding to selected usable Iinj levels
         if current_clamps is not None:
             assert isinstance(current_clamps, list)
             assert all(isinstance(x, float) for x in current_clamps)
-
             assert all(x in parameters["Iinj"] for x in self.parameters) 
-            
             self.parameters = parameters[parameters["Iinj"].isin(current_clamps)]
-    
-    def compute_passive_conductances(self, bin_s: float = 5e-3):
-        # --- timebase ---
-        t = self.data["times"].to_numpy()
-        dt = float(t[1] - t[0])
-        if bin_s < dt:
-            raise ValueError("bin_s must be >= dt")
 
-        # --- clamp levels and voltage matrix ---
-        Iinj: np.ndarray = np.asarray(self.parameters["Iinj"].to_numpy(), dtype=float)  # (Nclamps,)
+        # Scale voltages from millivolts to volts
+        for iinj in self.parameters["Iinj"]:
+            self.data[f"{iinj:.3d}"] *= 1e3
+            
+    def estimate_conductances(self, bin_s: float = 5e-3):
+        """
+        Estimate excitatory and inhibitory synaptic conductances from whole-cell
+        current-clamp recordings using a bin-integrated, voltage-domain formulation.
+
+        --------------------------------------------------------------------------
+        1. Biophysical model
+        --------------------------------------------------------------------------
+
+        For each injected current level i, the membrane potential v_i(t) is assumed
+        to obey a single-compartment current balance equation:
+
+            C_m * dv_i(t)/dt =
+                g_e(t) * (E_e - v_i(t))
+            + g_i(t) * (E_i - v_i(t))
+            + g_l * (E_r - v_i(t))
+            + I_inj,i
+
+        where:
+            C_m     membrane capacitance (F)
+            g_e(t)  excitatory synaptic conductance (S)
+            g_i(t)  inhibitory synaptic conductance (S)
+            g_l     leak conductance (S)
+            E_e     excitatory reversal potential (V)
+            E_i     inhibitory reversal potential (V)
+            E_r     resting (leak) reversal potential (V)
+            I_inj,i injected current for clamp i (A)
+
+        The synaptic conductances g_e(t) and g_i(t) are assumed to be identical across
+        current-clamp levels for a given stimulus (i.e., the neuron receives the same
+        synaptic input regardless of injected current), and to be non-negative.
+
+        No assumptions are made about spike-generating currents; the analysis is
+        intended for subthreshold membrane dynamics.
+
+        --------------------------------------------------------------------------
+        2. Numerical formulation and solution
+        --------------------------------------------------------------------------
+
+        Time is partitioned into contiguous bins of duration bin_s. Within each bin
+        k, synaptic conductances are assumed to be constant:
+
+            g_e(t) = g_e^(k),   g_i(t) = g_i^(k)    for t in bin k.
+
+        The membrane equation is integrated over each bin [t_k, t_{k+1}] for each
+        current clamp i, yielding:
+
+            C_m * (v_i(t_{k+1}) - v_i(t_k)) =
+                g_e^(k) * ∫_{t_k}^{t_{k+1}} (E_e - v_i(t)) dt
+            + g_i^(k) * ∫_{t_k}^{t_{k+1}} (E_i - v_i(t)) dt
+            + ∫_{t_k}^{t_{k+1}} [ g_l (E_r - v_i(t)) + I_inj,i ] dt
+
+        Rearranging gives a linear system for each bin k:
+
+            y_{i,k} = g_e^(k) * A_{e,i,k} + g_i^(k) * A_{i,i,k}
+
+        where:
+            y_{i,k}     = C_m * Δv_{i,k}
+                        - ∫_{t_k}^{t_{k+1}} [ g_l (E_r - v_i(t)) + I_inj,i ] dt
+            A_{e,i,k}   = ∫_{t_k}^{t_{k+1}} (E_e - v_i(t)) dt
+            A_{i,i,k}   = ∫_{t_k}^{t_{k+1}} (E_i - v_i(t)) dt
+
+        For each bin, the system is solved across all current clamps i using
+        non-negative least squares (NNLS):
+
+            minimize || X_k g_k - y_k ||_2
+            subject to g_k >= 0
+
+        where g_k = [g_e^(k), g_i^(k)]^T and X_k has columns A_e and A_i.
+
+        All integrals are computed using prefix (cumulative) trapezoidal integration
+        on the uniformly sampled voltage traces. This avoids numerical differentiation
+        of v(t) and yields stable estimates of bin-wise conductances.
+
+        The resulting bin-level conductances are expanded back to the original time
+        grid as piecewise-constant time series.
+
+        In addition to conductances, the function computes:
+            - the leak current I_l(t) = g_l (E_r - v(t))
+            - a bin-consistent estimate of capacitive membrane current
+            I_m(t) = C_m * Δv / Δt_bin
+            - a forward-simulated membrane potential V_pred(t), obtained by
+            numerically integrating the membrane equation using the inferred
+            conductances
+
+        Per-bin diagnostics are also stored, including:
+            - the NNLS residual norm
+            - the condition number of X_k^T X_k (a measure of identifiability of
+            excitatory vs inhibitory contributions)
+
+        These diagnostics can be used for model validation and for unsupervised
+        selection of reversal potentials in higher-level optimization loops.
+
+        --------------------------------------------------------------------------
+        Assumptions and limitations
+        --------------------------------------------------------------------------
+
+        - Conductances are assumed constant within bins.
+        - Synaptic inputs are assumed identical across current-clamp levels.
+        - Conductances are constrained to be non-negative.
+        - Reversal potentials are treated as fixed inputs to this function.
+        - The method does not enforce sparsity or smoothness priors on conductances;
+        any such criteria should be applied only at the hyperparameter selection
+        stage.
+
+        Parameters
+        ----------
+        bin_s : float
+            Duration of each time bin in seconds.
+
+        Returns
+        -------
+        self.data : pandas.DataFrame
+            Updated data table containing estimated conductances, reconstructed
+            currents, predicted membrane potential, and diagnostic time series.
+        """
+
+        """ === DATA FETCHING & SETUP === """
+        # --- timebase ---
+        dt: float = float(self.data["times"][1] - self.data["times"][0])
+        assert bin_s >= dt, f"Bin size ({bin_s}) cannot be smaller than sampling rate ({dt})."
+
+        # --- Experimental Controlled & Measured Variables: Current Injection & Membrane Potential ---
+        Iinj: np.ndarray = np.asarray(self.parameters["Iinj"].to_numpy(), dtype=float) # shape: (Nclamps,), units: Amperes   
         Iinj_colnames: List[str] = [f"{x:.3e}" for x in Iinj]
 
-        v_mV = self.data[Iinj_colnames].to_numpy()          # (Nsamples, Nclamps) in mV
-        v = v_mV * 1e-3                                     # convert to V
-        Nsamples, Nclamps = v.shape
+        Vm: np.ndarray = self.data[Iinj_colnames].to_numpy() # shape: (Nsamples, Nclamps), units: Volts
+        Nsamples, Nclamps = Vm.shape
 
-        # --- constants (assuming stored per clamp colname) ---
-        Cm = float(self.parameters["Cm"][0])             # F
-        gl = 1.0 / float(self.parameters["Rin"][0])      # S
-        Er = float(self.parameters["Er"][0])             # V
-        Ee = float(self.parameters["Ee"][0])             # V
-        Ei = float(self.parameters["Ei"][0])             # V
+        # --- PARAMTERS ---
+        # --- Measurables ---
+        Cm: float = float(self.parameters["Cm"][0])         # units: Farads
+        gl: float = 1.0 / float(self.parameters["Rin"][0])  # units: Siemens
+        Er: float = float(self.parameters["Er"][0])         # units: Volts
+        
+        # --- Hyperparameters ---
+        Ee: float = float(self.parameters["Ee"][0])         # units: Volts
+        Ei: float = float(self.parameters["Ei"][0])         # units: Volts
 
-        # --- binning indices ---
-        bin_len = int(round(bin_s / dt))
-        bin_len = max(1, bin_len)
-        t0 = np.arange(0, Nsamples, bin_len)                 # (Nbins,)
-        tf = np.minimum(t0 + bin_len, Nsamples)              # (Nbins,)
-        Nbins = t0.size
+        # --- BINNING CONVENTIONS ---
+        bin_len: int = int(round(bin_s / dt))
+        left_edges: np.ndarray = np.arange(0, Nsamples, bin_len)                # shape: (Nbins,)
+        right_edges: np.ndarray = np.minimum(left_edges + bin_len, Nsamples)    # shape: (Nbins,)
+        Nbins: int = left_edges.size
 
-        # --- helper: cumulative trapezoid integral along time for each clamp column ---
-        # prefix[k] = integral from 0 to time index k (exclusive-ish; see below)
-        def cumtrapz_prefix(arr: np.ndarray) -> np.ndarray:
-            # arr: (Nsamples, Nclamps)
-            # returns pref: (Nsamples, Nclamps) where pref[j] = ∫_{0}^{j} arr(t) dt with trapezoid
-            # implement via trapezoid areas per interval
-            # area[j] corresponds to interval (j-1 -> j)
-            area = 0.5 * (arr[1:, :] + arr[:-1, :]) * dt              # (Nsamples-1, Nclamps)
-            pref = np.zeros_like(arr)
+        # --- Integration Helper ---
+        def trapez_prefix_integral(arr: np.ndarray) -> np.ndarray:
+            """
+            In main loop, instead of computing each bin integral individually 
+            (∫_{t_i}^{t_{i+1}} for each i) we compute the full integral function
+            (prefix[k] = ∫_{t_k}^{t_{k+1}}) and compute bin integrals by subtraction
+            ∫_{t_i}^{t_{i+1}} = prefix[i+1] - prefix[i]. Faster & simpler. 
+            """
+            area: np.ndarray = 0.5 * (arr[1:, :] + arr[:-1, :]) * dt    # shape: (Nsamples-1, Nclamps)
+            pref: np.ndarray = np.zeros_like(arr)                       # shape: (Nsamples, Nclamps)
             pref[1:, :] = np.cumsum(area, axis=0)
             return pref
+        
 
-        # Better: define pref such that pref[j] = ∫_0^{j} arr dt using samples 0..j with trapezoid
-        # With the construction above, pref[idx] is ∫_0^{idx} arr dt over intervals up to idx.
-        # Then ∫_{t0}^{tf-1} arr dt = pref[tf-1] - pref[t0]
-        # For our bin integrals over [t0, tf) we want ∫_{t0}^{tf} (continuous) approx via trapezoid,
-        # which corresponds to pref[tf-1] - pref[t0] plus the last half-interval isn't included.
-        # Easiest/robust: compute pref over intervals and use tf-1 indexing; bins of length >=2 behave well.
-
+        """" === MAIN COMPUTATIONS === """
         # --- build needed integrands ---
-        leak = gl * (Er - v)                                  # (Nsamples, Nclamps)
-        inj = np.tile(Iinj.reshape(1, -1), (Nsamples, 1))     # (Nsamples, Nclamps)
-
-        Ae_arr = (Ee - v)                                     # (Nsamples, Nclamps)
-        Ai_arr = (Ei - v)                                     # (Nsamples, Nclamps)
+        Il: np.ndarray = gl * (Er - Vm)                                 # shape: (Nsamples, Nclamps), units: Amperes
+        Iinj: np.ndarray = np.tile(Iinj.reshape(1, -1), (Nsamples, 1))  # shape: (Nsamples, Nclamps), units: Amperes
 
         # --- prefix integrals ---
-        pref_leak_inj = cumtrapz_prefix(leak + inj)
-        pref_Ae = cumtrapz_prefix(Ae_arr)
-        pref_Ai = cumtrapz_prefix(Ai_arr)
+        pref_leak_inj: np.ndarray = trapez_prefix_integral(Il + Iinj)   # shape: (Nsamples, Nclamps), units: Coulombs
+        pref_epotential: np.ndarray = trapez_prefix_integral(Ee - Vm)   # shape: (Nsamples, Nclamps), units: Webers (Volt * Second)
+        pref_ipotential: np.ndarray = trapez_prefix_integral(Ei - Vm)   # shape: (Nsamples, Nclamps), units: Webers (Volt * Second)
 
         # --- bin integrals using prefix differences ---
-        # ∫_{t0}^{tf-1} f dt approximated
-        int_leak_inj = pref_leak_inj[tf - 1, :] - pref_leak_inj[t0, :]   # (Nbins, Nclamps)
-        int_Ae = pref_Ae[tf - 1, :] - pref_Ae[t0, :]                     # (Nbins, Nclamps)
-        int_Ai = pref_Ai[tf - 1, :] - pref_Ai[t0, :]                     # (Nbins, Nclamps)
+        int_leak_inj: np.ndarray = pref_leak_inj[right_edges - 1, :] - pref_leak_inj[left_edges, :]         # shape: (Nbins, Nclamps), units: Coulombs
+        int_epotential: np.ndarray = pref_epotential[right_edges - 1, :] - pref_epotential[left_edges, :]   # shape: (Nbins, Nclamps), units: Webers (Volt * Second)
+        int_ipotential: np.ndarray = pref_ipotential[right_edges - 1, :] - pref_ipotential[left_edges, :]   # shape: (Nbins, Nclamps), units: Webers (Volt * Second)
 
         # --- Δv per bin per clamp ---
-        dv = v[tf - 1, :] - v[t0, :]                                     # (Nbins, Nclamps)
+        dv: np.ndarray = Vm[right_edges - 1, :] - Vm[left_edges, :] # shape: (Nbins, Nclamps), units: Volts
 
         # --- y per bin per clamp ---
-        y = Cm * dv - int_leak_inj                                       # (Nbins, Nclamps)
+        y: np.ndarray = Cm * dv - int_leak_inj # (Nbins, Nclamps), units: Coulombs
 
         # --- solve per bin with NNLS ---
-        ge_bins = np.zeros(Nbins)
-        gi_bins = np.zeros(Nbins)
-        resnorm_bins = np.full(Nbins, np.nan)
-        cond_bins = np.full(Nbins, np.nan)
+        ge_bins: np.ndarray = np.empty(Nbins)       # shape: (Nbins,), units: Siemens
+        gi_bins: np.ndarray = np.empty(Nbins)       # shape: (Nbins,), units: Siemens
+        resnorm_bins: np.ndarray = np.empty(Nbins)  # shape: (Nbins,), units: Coulombs
+        cond_bins: np.ndarray = np.empty(Nbins)     # shape: (Nbins,)
 
         for k in range(Nbins):
-            Xk = np.column_stack([int_Ae[k, :], int_Ai[k, :]])           # (Nclamps, 2)
-            yk = y[k, :]                                                 # (Nclamps,)
+            Xk: np.ndarray = np.column_stack([int_epotential[k, :], int_ipotential[k, :]])  # shape: (Nclamps, 2), units: Webers (Volt * Second)
+            yk: np.ndarray = y[k, :]                                                        # shape: (Nclamps,), units: Coulombs
 
             # conditioning diagnostic
-            XtX = Xk.T @ Xk
+            XtX: np.ndarray = Xk.T @ Xk # shape: (2, 2), units: Webers^2 
             cond_bins[k] = np.linalg.cond(XtX) if np.all(np.isfinite(XtX)) else np.nan
 
             gk, rnorm = nnls(Xk, yk)
             ge_bins[k], gi_bins[k] = gk
             resnorm_bins[k] = rnorm
+        
 
+        """ SAVE RESULTS """
         # --- expand ge/gi to sample grid ---
-        ge = np.repeat(ge_bins, bin_len)[:Nsamples]  # (Nsamples,)
-        gi = np.repeat(gi_bins, bin_len)[:Nsamples]  # (Nsamples,)
+        ge: np.ndarray = np.repeat(ge_bins, bin_len)[:Nsamples]  # shape: (Nsamples,), units: Siemens
+        gi: np.ndarray = np.repeat(gi_bins, bin_len)[:Nsamples]  # shape: (Nsamples,), units: Siemens
 
         self.data["excitation"] = ge
         self.data["inhibition"] = gi
 
+        # --- expand & save diagnostic trances ---
         self.data["bin_resnorm"] = np.repeat(resnorm_bins, bin_len)[:Nsamples]
         self.data["bin_cond_XtX"] = np.repeat(cond_bins, bin_len)[:Nsamples]
 
         # --- per-clamp leakage current ---
-        Il = gl * (Er - v)  # (Nsamples, Nclamps), in A
         for j, col in enumerate(Iinj_colnames):
             self.data[f"Il_{col}"] = Il[:, j]
 
-        # --- per-clamp "Im" as bin-consistent capacitive current (no dv/dt noise)
-        # Im_bin[i,k] = C * Δv / Δt_bin, then expanded
-        bin_durations = (tf - t0) * dt                 # (Nbins,)
-        Im_bins = Cm * (dv / bin_durations[:, None])   # (Nbins, Nclamps), A
-        Im = np.repeat(Im_bins, bin_len, axis=0)[:Nsamples, :]  # (Nsamples, Nclamps)
+        # --- per-clamp capacitive current ---
+        Im_bins = Cm * dv / bin_s                               # shape: (Nbins, Nclamps), units: Amperes
+        Im = np.repeat(Im_bins, bin_len, axis=0)[:Nsamples, :]  # shape: (Nsamples, Nclamps), units: Amperes
         for j, col in enumerate(Iinj_colnames):
             self.data[f"Im_{col}"] = Im[:, j]
 
-        # --- forward-simulated Vpred per clamp (Euler; vectorized across clamps) ---
-        Vpred = np.empty_like(v) # (Nsamples, Nclamps), Volts
-        Vpred[0, :] = v[0, :]
+        # --- forward-simulated Vpred per clamp (RK4; vectorized across clamps) ---
+        Vpred: np.ndarray = np.empty_like(Vm) # shape: (Nsamples, Nclamps), units: Volts
+        Vpred[0, :] = Vm[0, :] # Initial Conditions
 
+        # RK4 algo
         for ti in range(Nsamples - 1):
-            ge_t = ge[ti]
-            gi_t = gi[ti]
+            ge_t: float = ge[ti]
+            gi_t: float = gi[ti]
 
-            def f(vstate):
+            def f(vstate: np.ndarray) -> np.ndarray:
                 return (
                     ge_t * (Ee - vstate) +
                     gi_t * (Ei - vstate) +
@@ -153,63 +264,29 @@ class WholeCellRecording:
                     Iinj
                 ) / Cm
 
-            k1 = f(Vpred[ti, :])
-            k2 = f(Vpred[ti, :] + 0.5 * dt * k1)
-            k3 = f(Vpred[ti, :] + 0.5 * dt * k2)
-            k4 = f(Vpred[ti, :] + dt * k3)
+            k1: np.ndarray = f(Vpred[ti, :])
+            k2: np.ndarray = f(Vpred[ti, :] + 0.5 * dt * k1)
+            k3: np.ndarray = f(Vpred[ti, :] + 0.5 * dt * k2)
+            k4: np.ndarray = f(Vpred[ti, :] + dt * k3)
 
             Vpred[ti + 1, :] = Vpred[ti, :] + (dt / 6.0) * (k1 + 2*k2 + 2*k3 + k4)
 
-        # save in mV to match original v columns (optional; just be consistent)
-        Vpred_mV = Vpred * 1e3
         for j, col in enumerate(Iinj_colnames):
-            self.data[f"Vpred_{col}"] = Vpred_mV[:, j]
+            self.data[f"Vpred_{col}"] = Vpred[:, j]
         
-    def get_clamp_near_0(self) -> Tuple[int, float]:
-        index_of_minimum_injected_current: int = int(np.argmin(np.abs(self.parameters["Iinj"])))
-        minimum_injected_current: float = self.parameters["Iinj"][index_of_minimum_injected_current]
-        return index_of_minimum_injected_current, minimum_injected_current
-
-    def estimate_conductances(self):
-        self.compute_passive_conductances()
-        return self.data
-
 class Analyzer:
     def __init__(self, cfg: AnalyzerCfg):
         self.cfg: AnalyzerCfg = cfg
-    
-    def estimation_without_optim_activation_potential(self, recordings: Dict[str, WholeCellRecording]) -> Dict[str, WholeCellRecording]:
-        assert len(recordings) > 0
 
-        for paradigm in recordings:
-            recordings[paradigm].estimate_conductances()
-            print(f"{paradigm} done")
-
-        return recordings
-
-    def analyze(self, path_to_spreadsheet: Path, current_clamps: Optional[List[float]]=None):
-        reader = XLReader(path_to_spreadsheet)
-        recordings: Dict[str, WholeCellRecording] = {}
-        for _, paradigm in enumerate(reader.get_paradigms()):
-            recordings[paradigm] = WholeCellRecording(
-                reader.get_paradigm_data(paradigm), 
-                reader.get_paradigm_parameters(paradigm),
-                current_clamps=current_clamps
-            )
-
-        recordings = self.estimation_without_optim_activation_potential(recordings)
-       
-        return recordings
-
-    def plot_dev(
+    def plot_timeseries(
         self,
         recordings,
         filename: Path,
         filetype: str = "png",
         current_clamps: Optional[List[float]] = None,
-        cond_warn: float = 1e8,
-        cond_bad: float = 1e12,
-        resnorm_factor_warn: float = 10.0,
+        cond_warn: float = 1e6,
+        cond_bad: float = 1e10,
+        resnorm_factor_warn: float = 5.0,
     ):
         """
         Rows:
@@ -382,10 +459,15 @@ class Analyzer:
         plt.show()
 
     def run(self) -> None:
-        for i in range(len(self.cfg.paths_to_spreadsheets)):
-            iinj_clamps_to_use: Optional[List[float]] = self.cfg.iinj_clamps_to_use if self.cfg.iinj_clamps_to_use is None else self.cfg.iinj_clamps_to_use[i]
-            recordings = self.analyze(
-                self.cfg.paths_to_spreadsheets[i], 
-                current_clamps=iinj_clamps_to_use
-            )
-            self.plot_dev(recordings, self.cfg.image_save_dir / self.cfg.paths_to_spreadsheets[i].name, filetype=self.cfg.image_save_type, current_clamps=iinj_clamps_to_use)
+        n_files: int = len(self.cfg.paths_to_spreadsheets)
+        iinj_clamps_to_use: list = [None] * n_files if self.cfg.iinj_clamps_to_use is None else self.cfg.iinj_clamps_to_use
+        for i in range(n_files):
+            rdr: XLReader = XLReader(self.cfg.paths_to_spreadsheets[i])
+            recordings: Dict[str, WholeCellRecording] = {}
+            for paradigm in rdr.get_paradigms():
+                recording: WholeCellRecording = WholeCellRecording(rdr.get_paradigm_data(paradigm), rdr.get_paradigm_parameters(paradigm), iinj_clamps_to_use[i])
+                recording.estimate_conductances()
+                recordings[paradigm] = recording
+                print(f"{paradigm} done")
+            
+            self.plot_timeseries(recordings, self.cfg.image_save_dir / self.cfg.paths_to_spreadsheets[i].name, filetype=self.cfg.image_save_type, current_clamps=iinj_clamps_to_use)
