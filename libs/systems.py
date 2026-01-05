@@ -1,292 +1,316 @@
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt 
-
 from scipy.optimize import nnls
 from pyhelpers.store import save_fig
 from pathlib import Path
 
 from libs.readers import XLReader, AnalyzerCfg
+from libs.test import posterior_C_batch_grid, summarize_posterior_batch
 
-from typing import Dict, Optional, List
+from typing import Dict, Optional, List, Tuple
+
+import numpy as np
+
+def weighted_median(values: np.ndarray, weights: np.ndarray, quantile: float):    
+    sort_indices = np.argsort(values)
+    
+    values_sorted = values[sort_indices]
+    weights_sorted = weights[sort_indices]  
+
+    cumsum = weights_sorted.cumsum()
+    cutoff = weights_sorted.sum() * quantile
+    
+    return values_sorted[cumsum >= cutoff][0]
 
 class WholeCellRecording:
-    def __init__(self, data: pd.DataFrame, parameters: pd.DataFrame, current_clamps: Optional[List[float]]) -> None:
-        self.data: pd.DataFrame = data
-        self.parameters: pd.DataFrame = parameters
-
-        # Mask parameters to only include those corresponding to selected usable Iinj levels
-        if current_clamps is not None:
-            assert isinstance(current_clamps, list)
-            assert all(isinstance(x, float) for x in current_clamps)
-            assert all(x in parameters["Iinj"] for x in self.parameters) 
-            self.parameters = parameters[parameters["Iinj"].isin(current_clamps)]
-
-        # Scale voltages from millivolts to volts
-        for iinj in self.parameters["Iinj"]:
-            self.data[f"{iinj:.3d}"] *= 1e3
-            
-    def estimate_conductances(self, bin_s: float = 5e-3):
-        """
-        Estimate excitatory and inhibitory synaptic conductances from whole-cell
-        current-clamp recordings using a bin-integrated, voltage-domain formulation.
-
-        --------------------------------------------------------------------------
-        1. Biophysical model
-        --------------------------------------------------------------------------
-
-        For each injected current level i, the membrane potential v_i(t) is assumed
-        to obey a single-compartment current balance equation:
-
-            C_m * dv_i(t)/dt =
-                g_e(t) * (E_e - v_i(t))
-            + g_i(t) * (E_i - v_i(t))
-            + g_l * (E_r - v_i(t))
-            + I_inj,i
-
-        where:
-            C_m     membrane capacitance (F)
-            g_e(t)  excitatory synaptic conductance (S)
-            g_i(t)  inhibitory synaptic conductance (S)
-            g_l     leak conductance (S)
-            E_e     excitatory reversal potential (V)
-            E_i     inhibitory reversal potential (V)
-            E_r     resting (leak) reversal potential (V)
-            I_inj,i injected current for clamp i (A)
-
-        The synaptic conductances g_e(t) and g_i(t) are assumed to be identical across
-        current-clamp levels for a given stimulus (i.e., the neuron receives the same
-        synaptic input regardless of injected current), and to be non-negative.
-
-        No assumptions are made about spike-generating currents; the analysis is
-        intended for subthreshold membrane dynamics.
-
-        --------------------------------------------------------------------------
-        2. Numerical formulation and solution
-        --------------------------------------------------------------------------
-
-        Time is partitioned into contiguous bins of duration bin_s. Within each bin
-        k, synaptic conductances are assumed to be constant:
-
-            g_e(t) = g_e^(k),   g_i(t) = g_i^(k)    for t in bin k.
-
-        The membrane equation is integrated over each bin [t_k, t_{k+1}] for each
-        current clamp i, yielding:
-
-            C_m * (v_i(t_{k+1}) - v_i(t_k)) =
-                g_e^(k) * ∫_{t_k}^{t_{k+1}} (E_e - v_i(t)) dt
-            + g_i^(k) * ∫_{t_k}^{t_{k+1}} (E_i - v_i(t)) dt
-            + ∫_{t_k}^{t_{k+1}} [ g_l (E_r - v_i(t)) + I_inj,i ] dt
-
-        Rearranging gives a linear system for each bin k:
-
-            y_{i,k} = g_e^(k) * A_{e,i,k} + g_i^(k) * A_{i,i,k}
-
-        where:
-            y_{i,k}     = C_m * Δv_{i,k}
-                        - ∫_{t_k}^{t_{k+1}} [ g_l (E_r - v_i(t)) + I_inj,i ] dt
-            A_{e,i,k}   = ∫_{t_k}^{t_{k+1}} (E_e - v_i(t)) dt
-            A_{i,i,k}   = ∫_{t_k}^{t_{k+1}} (E_i - v_i(t)) dt
-
-        For each bin, the system is solved across all current clamps i using
-        non-negative least squares (NNLS):
-
-            minimize || X_k g_k - y_k ||_2
-            subject to g_k >= 0
-
-        where g_k = [g_e^(k), g_i^(k)]^T and X_k has columns A_e and A_i.
-
-        All integrals are computed using prefix (cumulative) trapezoidal integration
-        on the uniformly sampled voltage traces. This avoids numerical differentiation
-        of v(t) and yields stable estimates of bin-wise conductances.
-
-        The resulting bin-level conductances are expanded back to the original time
-        grid as piecewise-constant time series.
-
-        In addition to conductances, the function computes:
-            - the leak current I_l(t) = g_l (E_r - v(t))
-            - a bin-consistent estimate of capacitive membrane current
-            I_m(t) = C_m * Δv / Δt_bin
-            - a forward-simulated membrane potential V_pred(t), obtained by
-            numerically integrating the membrane equation using the inferred
-            conductances
-
-        Per-bin diagnostics are also stored, including:
-            - the NNLS residual norm
-            - the condition number of X_k^T X_k (a measure of identifiability of
-            excitatory vs inhibitory contributions)
-
-        These diagnostics can be used for model validation and for unsupervised
-        selection of reversal potentials in higher-level optimization loops.
-
-        --------------------------------------------------------------------------
-        Assumptions and limitations
-        --------------------------------------------------------------------------
-
-        - Conductances are assumed constant within bins.
-        - Synaptic inputs are assumed identical across current-clamp levels.
-        - Conductances are constrained to be non-negative.
-        - Reversal potentials are treated as fixed inputs to this function.
-        - The method does not enforce sparsity or smoothness priors on conductances;
-        any such criteria should be applied only at the hyperparameter selection
-        stage.
-
-        Parameters
-        ----------
-        bin_s : float
-            Duration of each time bin in seconds.
-
-        Returns
-        -------
-        self.data : pandas.DataFrame
-            Updated data table containing estimated conductances, reconstructed
-            currents, predicted membrane potential, and diagnostic time series.
-        """
-
-        """ === DATA FETCHING & SETUP === """
-        # --- timebase ---
-        dt: float = float(self.data["times"][1] - self.data["times"][0])
-        assert bin_s >= dt, f"Bin size ({bin_s}) cannot be smaller than sampling rate ({dt})."
-
-        # --- Experimental Controlled & Measured Variables: Current Injection & Membrane Potential ---
-        Iinj: np.ndarray = np.asarray(self.parameters["Iinj"].to_numpy(), dtype=float) # shape: (Nclamps,), units: Amperes   
-        Iinj_colnames: List[str] = [f"{x:.3e}" for x in Iinj]
-
-        Vm: np.ndarray = self.data[Iinj_colnames].to_numpy() # shape: (Nsamples, Nclamps), units: Volts
-        Nsamples, Nclamps = Vm.shape
-
-        # --- PARAMTERS ---
-        # --- Measurables ---
-        Cm: float = float(self.parameters["Cm"][0])         # units: Farads
-        gl: float = 1.0 / float(self.parameters["Rin"][0])  # units: Siemens
-        Er: float = float(self.parameters["Er"][0])         # units: Volts
+    def __init__(self, parameters: pd.DataFrame, bin_s: float, stimuli: Dict[str, pd.DataFrame]) -> None:
+        assert len(stimuli) > 0
         
-        # --- Hyperparameters ---
-        Ee: float = float(self.parameters["Ee"][0])         # units: Volts
-        Ei: float = float(self.parameters["Ei"][0])         # units: Volts
+        self.Cm: float = parameters["Cm"][0]        # units: Farads
+        self.gl: float = 1 / parameters["Rin"][0]   # units: Siemens
+        self.Er: float = parameters["Er"][0]        # units: Volts
 
-        # --- BINNING CONVENTIONS ---
-        bin_len: int = int(round(bin_s / dt))
-        left_edges: np.ndarray = np.arange(0, Nsamples, bin_len)                # shape: (Nbins,)
-        right_edges: np.ndarray = np.minimum(left_edges + bin_len, Nsamples)    # shape: (Nbins,)
-        Nbins: int = left_edges.size
+        example_t: pd.Series = list(stimuli.values())[0]["times"] # units: Seconds, shape: (Nsamples,)
+        self.dt: float = example_t[1] - example_t[0] # time assumed sampled at constant interval; units: Seconds
 
-        # --- Integration Helper ---
-        def trapez_prefix_integral(arr: np.ndarray) -> np.ndarray:
-            """
-            In main loop, instead of computing each bin integral individually 
-            (∫_{t_i}^{t_{i+1}} for each i) we compute the full integral function
-            (prefix[k] = ∫_{t_k}^{t_{k+1}}) and compute bin integrals by subtraction
-            ∫_{t_i}^{t_{i+1}} = prefix[i+1] - prefix[i]. Faster & simpler. 
-            """
-            area: np.ndarray = 0.5 * (arr[1:, :] + arr[:-1, :]) * dt    # shape: (Nsamples-1, Nclamps)
-            pref: np.ndarray = np.zeros_like(arr)                       # shape: (Nsamples, Nclamps)
-            pref[1:, :] = np.cumsum(area, axis=0)
+        self.bin_nsamples: int = round(bin_s / self.dt)
+        self.bin_s: float = self.bin_nsamples * self.dt # units: Seconds
+
+        self.Ee: float # units: Volts
+        self.Ei: float # units: Volts
+
+        self.stimuli: Dict[str, WholeCellStimulus] = {name: WholeCellStimulus(self, data) for name, data in stimuli.items()}
+
+    def estimate_Ee_Ei(self) -> Tuple[float, float]:
+        Eeff_pool: List[float] = []
+        gsyn_pool: List[float] = []
+        for stimulus in self.stimuli.values():
+            Eeff_pool.extend(stimulus.binned_timeseries["Eeff unbiased"])
+            gsyn_pool.extend(stimulus.binned_timeseries["gsyn"])
+
+        Ei_hat: float = float(weighted_median(np.array(Eeff_pool), np.array(gsyn_pool)**2, 0.1)) # units: Volts
+        Ee_hat: float = float(weighted_median(np.array(Eeff_pool), np.array(gsyn_pool)**2, 0.9)) # units: Volts
+
+        return Ee_hat, Ei_hat
+        
+    def run_analysis(self):
+        print("Estimating reversal potentials... ")
+        for paradigm, stimulus in self.stimuli.items():
+            print(f"\t...{paradigm}")
+            stimulus.calculate_target_Qsyn()
+            stimulus.estimate_Eeff()
+        print("Done")
+        self.Ee, self.Ei = self.estimate_Ee_Ei()
+
+        print("Calculating synaptic conductances... ")
+        for paradigm, stimulus in self.stimuli.items():
+            print(f"\t...{paradigm}")
+            stimulus.estimate_ge_gi()
+            stimulus.calculate_predicted_Vm()
+        print("Done")
+        
+
+class WholeCellStimulus:
+    def __init__(self, recording: WholeCellRecording, data: pd.DataFrame) -> None:
+        self.recording: WholeCellRecording = recording
+
+        self.times: np.ndarray = data["times"].to_numpy(dtype=np.float64)
+
+        Iinj_colnames: List[str] = list(data.columns)
+        Iinj_colnames.remove("times")        
+        # (* 1e-3 is to scale Vm from millivolts to volts)
+        self.Vm: np.ndarray = data[Iinj_colnames].to_numpy(dtype=np.float64).T * 1e-3       # units: Volts, shape: [Nclamps, Nsamples]
+        self.Iinj: np.ndarray = np.array(Iinj_colnames, dtype=np.float64)[:, np.newaxis]    # units: Amperes, shape: [Nclamps, 1]
+                
+        self.Nclamps: int = self.Iinj.size
+        self.Nsamples: int = self.times.size
+        self.Nbins: int = np.ceil(self.Nsamples / self.recording.bin_nsamples)
+
+        self.timeseries: pd.DataFrame = pd.DataFrame({"times": self.times})
+
+        l_index: np.ndarray = np.arange(0, self.Nsamples, self.recording.bin_nsamples)
+        r_index: np.ndarray = np.minimum(l_index + self.recording.bin_nsamples, self.Nsamples - 1)
+        l_time: np.ndarray = l_index * self.recording.dt
+        r_time: np.ndarray = r_index * self.recording.dt
+        bin_duration: np.ndarray = r_time - l_time
+        self.binned_timeseries: pd.DataFrame = pd.DataFrame({
+            "left index": l_index,
+            "right index": r_index, 
+            "left time": l_time, 
+            "right time": r_time,
+            "bin duration": bin_duration
+        })
+
+    def calculate_target_Qsyn(self) -> None:
+        
+        def cumtrapz_prefix_integral(arr: np.ndarray) -> np.ndarray:
+            pref: np.ndarray = np.zeros((self.Nclamps, self.Nsamples + 1), dtype=arr.dtype) # shape: (Nclamps, Nsamples + 1)
+            area: np.ndarray = 0.5 * (arr[:, 1:] + arr[:, :-1]) * self.recording.dt         # shape: (Nclamps, Nsamples)
+            pref[:, 2:] = np.cumsum(area, axis=1)
             return pref
         
+        l_bin_idxs: np.ndarray = self.binned_timeseries["left index"].to_numpy(np.int32)           # shape: (Nbins,)
+        r_bin_idxs: np.ndarray = self.binned_timeseries["right index"].to_numpy(np.int32)           # shape: (Nbins,)
+        bin_duration: np.ndarray = self.binned_timeseries["bin duration"].to_numpy(np.float64)  # units: Seconds, shape: (Nbins,)
 
-        """" === MAIN COMPUTATIONS === """
-        # --- build needed integrands ---
-        Il: np.ndarray = gl * (Er - Vm)                                 # shape: (Nsamples, Nclamps), units: Amperes
-        Iinj: np.ndarray = np.tile(Iinj.reshape(1, -1), (Nsamples, 1))  # shape: (Nsamples, Nclamps), units: Amperes
+        Vm_prefix_integral: np.ndarray = cumtrapz_prefix_integral(self.Vm)  # units: Webers, shape: (Nclamps, Nsamples + 1)
+        integral_Vm: np.ndarray = Vm_prefix_integral[:, r_bin_idxs - 1] - Vm_prefix_integral[:, l_bin_idxs] # units : Webers, shape: (Nclamps, Nsamples)
 
-        # --- prefix integrals ---
-        pref_leak_inj: np.ndarray = trapez_prefix_integral(Il + Iinj)   # shape: (Nsamples, Nclamps), units: Coulombs
-        pref_epotential: np.ndarray = trapez_prefix_integral(Ee - Vm)   # shape: (Nsamples, Nclamps), units: Webers (Volt * Second)
-        pref_ipotential: np.ndarray = trapez_prefix_integral(Ei - Vm)   # shape: (Nsamples, Nclamps), units: Webers (Volt * Second)
+        Delta_Vm: np.ndarray = self.Vm[:, r_bin_idxs - 1] - self.Vm[:, l_bin_idxs] # units: Volts, shape: (Nclamps, Nsamples - 1)
 
-        # --- bin integrals using prefix differences ---
-        int_leak_inj: np.ndarray = pref_leak_inj[right_edges - 1, :] - pref_leak_inj[left_edges, :]         # shape: (Nbins, Nclamps), units: Coulombs
-        int_epotential: np.ndarray = pref_epotential[right_edges - 1, :] - pref_epotential[left_edges, :]   # shape: (Nbins, Nclamps), units: Webers (Volt * Second)
-        int_ipotential: np.ndarray = pref_ipotential[right_edges - 1, :] - pref_ipotential[left_edges, :]   # shape: (Nbins, Nclamps), units: Webers (Volt * Second)
+        integral_Il: np.ndarray = self.recording.gl * (self.recording.Er * bin_duration[np.newaxis, :] - integral_Vm) # units: Coulombs, shape: (Nclamps, Nbins)
+        integral_Iinj: np.ndarray = bin_duration[np.newaxis, :] * self.Iinj    # units: Coulombs, shape: (Nclamps, Nbins)
+        target_Qsyn: np.ndarray = self.recording.Cm * Delta_Vm - (integral_Il + integral_Iinj)      # units: Coulombs, shape: (Nclamps, Nbins)
 
-        # --- Δv per bin per clamp ---
-        dv: np.ndarray = Vm[right_edges - 1, :] - Vm[left_edges, :] # shape: (Nbins, Nclamps), units: Volts
+        self.binned_timeseries["integral Vm"] = integral_Vm.T.tolist()
+        self.binned_timeseries["integral Il"] = integral_Il.T.tolist()
+        self.binned_timeseries["integral Iinj"] = integral_Iinj.T.tolist()
+        self.binned_timeseries["target Qsyn"] = target_Qsyn.T.tolist()
 
-        # --- y per bin per clamp ---
-        y: np.ndarray = Cm * dv - int_leak_inj # (Nbins, Nclamps), units: Coulombs
+    def estimate_Eeff(self) -> None:
+        # Pull data (faster than .tolist() if these are arrays-in-cells, but keep if needed)
+        integral_Vm = np.stack(self.binned_timeseries["integral Vm"].to_numpy()).astype(np.float64).T  # (Nclamps, Nbins)
+        target_Qsyn = np.stack(self.binned_timeseries["target Qsyn"].to_numpy()).astype(np.float64).T  # (Nclamps, Nbins)
 
-        # --- solve per bin with NNLS ---
-        ge_bins: np.ndarray = np.empty(Nbins)       # shape: (Nbins,), units: Siemens
-        gi_bins: np.ndarray = np.empty(Nbins)       # shape: (Nbins,), units: Siemens
-        resnorm_bins: np.ndarray = np.empty(Nbins)  # shape: (Nbins,), units: Coulombs
-        cond_bins: np.ndarray = np.empty(Nbins)     # shape: (Nbins,)
+        Phi = integral_Vm
+        Q   = target_Qsyn
 
-        for k in range(Nbins):
-            Xk: np.ndarray = np.column_stack([int_epotential[k, :], int_ipotential[k, :]])  # shape: (Nclamps, 2), units: Webers (Volt * Second)
-            yk: np.ndarray = y[k, :]                                                        # shape: (Nclamps,), units: Coulombs
+        # Means per bin
+        Phi_m = Phi.mean(axis=0)   # (Nbins,)
+        Q_m   = Q.mean(axis=0)
 
-            # conditioning diagnostic
-            XtX: np.ndarray = Xk.T @ Xk # shape: (2, 2), units: Webers^2 
-            cond_bins[k] = np.linalg.cond(XtX) if np.all(np.isfinite(XtX)) else np.nan
+        # Centered
+        Phi_c = Phi - Phi_m[None, :]
+        Q_c   = Q - Q_m[None, :]
 
-            gk, rnorm = nnls(Xk, yk)
-            ge_bins[k], gi_bins[k] = gk
-            resnorm_bins[k] = rnorm
-        
+        # Regression slope b and intercept a for each bin
+        denom = np.sum(Phi_c * Phi_c, axis=0)         # var * (Nclamps-1) up to scale
+        numer = np.sum(Phi_c * Q_c, axis=0)
 
-        """ SAVE RESULTS """
-        # --- expand ge/gi to sample grid ---
-        ge: np.ndarray = np.repeat(ge_bins, bin_len)[:Nsamples]  # shape: (Nsamples,), units: Siemens
-        gi: np.ndarray = np.repeat(gi_bins, bin_len)[:Nsamples]  # shape: (Nsamples,), units: Siemens
+        # Handle degenerate bins where Phi has no variation across clamps
+        eps = np.finfo(np.float64).tiny
+        b = np.where(np.abs(denom) > eps, numer / denom, np.nan)   # slope (Nbins,)
+        a = Q_m - b * Phi_m                                        # intercept
 
-        self.data["excitation"] = ge
-        self.data["inhibition"] = gi
+        # Your derived params
+        gsyn = -b                                                  # Siemens
+        # Avoid divide-by-zero when gsyn ~ 0
+        gsyn_safe = np.where(np.abs(gsyn) > eps, gsyn, np.nan)
 
-        # --- expand & save diagnostic trances ---
-        self.data["bin_resnorm"] = np.repeat(resnorm_bins, bin_len)[:Nsamples]
-        self.data["bin_cond_XtX"] = np.repeat(cond_bins, bin_len)[:Nsamples]
+        Eeff = a / (gsyn_safe * float(self.recording.bin_s))       # Volts
 
-        # --- per-clamp leakage current ---
-        for j, col in enumerate(Iinj_colnames):
-            self.data[f"Il_{col}"] = Il[:, j]
+        # Diagnostics per bin
+        # Your SSE formula: sum (Q - gsyn*(Eeff - Phi))^2
+        # We can compute predicted Q directly from a + b*Phi (same fit)
+        Q_hat = a[None, :] + b[None, :] * Phi
+        resid = Q - Q_hat
+        sse = np.sum(resid * resid, axis=0)
 
-        # --- per-clamp capacitive current ---
-        Im_bins = Cm * dv / bin_s                               # shape: (Nbins, Nclamps), units: Amperes
-        Im = np.repeat(Im_bins, bin_len, axis=0)[:Nsamples, :]  # shape: (Nsamples, Nclamps), units: Amperes
-        for j, col in enumerate(Iinj_colnames):
-            self.data[f"Im_{col}"] = Im[:, j]
+        # Proper per-bin R^2: 1 - SSE / SST, SST = sum (Q - mean(Q))^2 within the bin
+        sst = np.sum((Q - Q_m[None, :]) ** 2, axis=0)
+        r2 = np.where(sst > 0, 1.0 - (sse / sst), np.nan)
 
-        # --- forward-simulated Vpred per clamp (RK4; vectorized across clamps) ---
-        Vpred: np.ndarray = np.empty_like(Vm) # shape: (Nsamples, Nclamps), units: Volts
-        Vpred[0, :] = Vm[0, :] # Initial Conditions
+        C_grid = np.linspace(-0.130, 0.060, 4001)
 
-        # RK4 algo
-        for ti in range(Nsamples - 1):
-            ge_t: float = ge[ti]
-            gi_t: float = gi[ti]
+        pdf, logpost = posterior_C_batch_grid(
+            a[:, np.newaxis], gsyn_safe[:, np.newaxis], C_grid,
+            sigma_A=5e-11, sigma_B=5e-10,
+            mu_C=self.recording.Er, tau_C=0.05,
+            mu_B=np.array([1e-9]*np.size(gsyn_safe)),  # per-problem B prior mean
+            tau_B=1e-9
+        )
+        summ = summarize_posterior_batch(C_grid, pdf, cred_mass=0.95)
 
-            def f(vstate: np.ndarray) -> np.ndarray:
-                return (
-                    ge_t * (Ee - vstate) +
-                    gi_t * (Ei - vstate) +
-                    gl   * (Er - vstate) +
-                    Iinj
-                ) / Cm
+        # Store
+        self.binned_timeseries["Eeff unbiased"] = Eeff
+        self.binned_timeseries["Eeff bayesian"] =  summ["mean"]
+        self.binned_timeseries["gsyn"] = gsyn
+        self.binned_timeseries["SSE least-squares Qsyn"] = sse
+        self.binned_timeseries["r2 least-squares Qsyn"] = r2
 
-            k1: np.ndarray = f(Vpred[ti, :])
-            k2: np.ndarray = f(Vpred[ti, :] + 0.5 * dt * k1)
-            k3: np.ndarray = f(Vpred[ti, :] + 0.5 * dt * k2)
-            k4: np.ndarray = f(Vpred[ti, :] + dt * k3)
+    def estimate_ge_gi(self) -> None:
+        bin_duration: np.ndarray = self.binned_timeseries["bin duration"].to_numpy(dtype=np.float64)                # units: Seconds, shape: (Nbins,)
+        integral_Vm: np.ndarray = np.stack(self.binned_timeseries["integral Vm"].to_numpy()).astype(np.float64).T   #type: ignore , units: Webers, shape: (Nclamps, Nbins)
+        target_Qsyn: np.ndarray  = np.stack(self.binned_timeseries["target Qsyn"].to_numpy()).astype(np.float64).T  #type: ignore , units: Coulombs, shape: (Nclamps, Nbins)
 
-            Vpred[ti + 1, :] = Vpred[ti, :] + (dt / 6.0) * (k1 + 2*k2 + 2*k3 + k4)
+        Ee: float = self.recording.Ee # units: Volts
+        Ei: float = self.recording.Ei # units: Volts
 
-        for j, col in enumerate(Iinj_colnames):
-            self.data[f"Vpred_{col}"] = Vpred[:, j]
-        
+        Phie: np.ndarray = Ee * bin_duration[np.newaxis, :] - integral_Vm # units: Webers, shape: (Nclamps, Nbins)
+        Phii: np.ndarray = Ei * bin_duration[np.newaxis, :] - integral_Vm # units: Webers, shape: (Nclamps, Nbins)
+
+        # dot products per bin (sum over clamps axis=0)
+        eTe: np.ndarray = np.sum(Phie * Phie, axis=0)                   # units: Weber^2, shape: (Nbins,)
+        iTi: np.ndarray = np.sum(Phii * Phii, axis=0)                   # units: Weber^2, shape: (Nbins,)
+        eTi: np.ndarray = np.sum(Phie * Phii, axis=0)                   # units: Weber^2, shape: (Nbins,)
+        eTq: np.ndarray = np.sum(Phie * target_Qsyn, axis=0)            # units: Joule * Second, shape: (Nbins,)
+        iTq: np.ndarray = np.sum(Phii * target_Qsyn, axis=0)            # units: Joule * Second, shape: (Nbins,)
+        qTq: np.ndarray = np.sum(target_Qsyn * target_Qsyn, axis=0)     # units: Coulomb^2, shape: (Nbins,)
+
+        det: np.ndarray = eTe * iTi - eTi * eTi # units: Weber^4
+        safe_det: np.ndarray = np.where(np.abs(det) > np.finfo(np.float64).tiny, det, np.nan)
+
+        # unconstrained LS candidate
+        ge_u: np.ndarray = ( iTi * eTq - eTi * iTq) / safe_det # units: Siemens, shape: (Nbins,)
+        gi_u: np.ndarray = (-eTi * eTq + eTe * iTq) / safe_det # units: Siemens, shape: (Nbins,)
+
+        r2_u = (
+            qTq
+            - 2.0 * ge_u * eTq
+            - 2.0 * gi_u * iTq
+            + (ge_u * ge_u) * eTe
+            + 2.0 * ge_u * gi_u * eTi
+            + (gi_u * gi_u) * iTi
+        )
+
+        # boundary candidates
+        ge_a = np.where(eTe > 0, eTq / eTe, 0.0)
+        ge_a = np.maximum(ge_a, 0.0)
+        r2_a = qTq - 2.0 * ge_a * eTq + (ge_a * ge_a) * eTe
+
+        gi_b = np.where(iTi > 0, iTq / iTi, 0.0)
+        gi_b = np.maximum(gi_b, 0.0)
+        r2_b = qTq - 2.0 * gi_b * iTq + (gi_b * gi_b) * iTi
+
+        feasible_u = (
+            (ge_u >= 0.0) & (gi_u >= 0.0) &
+            np.isfinite(ge_u) & np.isfinite(gi_u) &
+            np.isfinite(r2_u)
+        )
+
+        # pick best
+        ge = ge_a.copy()
+        gi = np.zeros_like(ge)
+        r2 = r2_a.copy()
+
+        pick_b = r2_b < r2
+        ge[pick_b] = 0.0
+        gi[pick_b] = gi_b[pick_b]
+        r2[pick_b] = r2_b[pick_b]
+
+        pick_u = feasible_u & (r2_u < r2)
+        ge[pick_u] = ge_u[pick_u]
+        gi[pick_u] = gi_u[pick_u]
+        r2[pick_u] = r2_u[pick_u]
+
+        resnorm = np.sqrt(np.maximum(r2, 0.0))
+
+        # cond(XtX) from eigenvalues of 2x2 gram matrix
+        tr = eTe + iTi
+        disc = np.sqrt((eTe - iTi) ** 2 + 4.0 * (eTi ** 2))
+        lam1 = 0.5 * (tr + disc)
+        lam2 = 0.5 * (tr - disc)
+        cond = np.where(lam2 > 0, lam1 / lam2, np.inf)
+
+        self.binned_timeseries["ge"] = ge
+        self.binned_timeseries["gi"] = gi
+        self.binned_timeseries["ge/gi residual norm"] = resnorm
+        self.binned_timeseries["ge/gi matrix conditioning"] = cond
+
+    def calculate_predicted_Vm(self) -> None:
+        Vm: np.ndarray = self.Vm        # units: Volts, shape: (Nclamps, Nsamples)
+        Iinj: np.ndarray = self.Iinj    # units: Amperes, shape: (Nclamps, 1)
+
+        Ee: float = float(self.recording.Ee)    # units: Volts
+        Ei: float = float(self.recording.Ei)    # units: Volts
+        Er: float = float(self.recording.Er)    # units: Volts
+        gl: float = float(self.recording.gl)    # units: Siemens
+        Cm: float = float(self.recording.Cm)    # units: Farads
+        dt: float = float(self.recording.dt)    # units: Seconds
+
+        l_idx: np.ndarray = self.binned_timeseries["left index"].to_numpy(dtype=np.int64)   # shape: (Nbins,)
+        r_idx: np.ndarray = self.binned_timeseries["right index"].to_numpy(dtype=np.int64)  # shape: (Nbins,)
+
+        ge_bins: np.ndarray = self.binned_timeseries["ge"].to_numpy(dtype=np.float64) # units: Siemens, shape: (Nbins,)
+        gi_bins: np.ndarray = self.binned_timeseries["gi"].to_numpy(dtype=np.float64) # units: Siemens, shape: (Nbins,)
+
+        Vpred: np.ndarray = np.empty_like(Vm, dtype=np.float64) # units: Volts, shape: (Nclamps, Nsamples)
+        Vpred[:, 0] = Vm[:, 0]  # initial condition from measured Vm
+
+        for r, l, ge, gi in zip(r_idx + 1, l_idx + 1, ge_bins, gi_bins):
+            v0: np.ndarray = Vpred[:, l - 1].reshape(-1, 1)
+            G: np.ndarray = ge + gi + gl
+            vss: np.ndarray = (ge * Ee + gi * Ei + gl * Er + Iinj) / G
+            t: np.ndarray = np.arange(1, r - l + 1) * dt
+            Vpred[:, l:r] = (v0 - vss) * np.exp(-G * t / Cm) + vss
+
+        self.timeseries[f"predicted Vm"] = Vpred.T.tolist()
+
+
 class Analyzer:
     def __init__(self, cfg: AnalyzerCfg):
         self.cfg: AnalyzerCfg = cfg
 
     def plot_timeseries(
         self,
-        recordings,
+        recording: WholeCellRecording,
         filename: Path,
         filetype: str = "png",
-        current_clamps: Optional[List[float]] = None,
         cond_warn: float = 1e6,
         cond_bad: float = 1e10,
         resnorm_factor_warn: float = 5.0,
+        display: bool = True
     ):
         """
         Rows:
@@ -298,7 +322,7 @@ class Analyzer:
         5) diagnostics: conditioning (log scale with warn/bad lines)
         """
 
-        ncols = len(recordings)
+        ncols = len(recording.stimuli)
         nrows = 6
         fig, axs = plt.subplots(
             nrows=nrows,
@@ -308,98 +332,55 @@ class Analyzer:
             figsize=(15, 10),
             constrained_layout=True,
         )
+        fig.suptitle(filename.name)
 
         if ncols == 1:
             axs = np.expand_dims(axs, axis=1)
 
-        for idx, paradigm in enumerate(recordings):
-            rec = recordings[paradigm]
-            paradigm_iinj: List[float] = list(rec.parameters["Iinj"])
+        for idx, paradigm in enumerate(recording.stimuli):
+            stimulus = recording.stimuli[paradigm]
 
-            if current_clamps is not None and set(current_clamps) <= set(paradigm_iinj):
-                paradigm_iinj = list(set(paradigm_iinj).intersection(current_clamps))
-                assert len(paradigm_iinj) > 0, (
-                    "Cannot plot. Specified current clamps have no intersection with "
-                    "current clamps listed in parameters."
-                )
+            times: np.ndarray = stimulus.times
+            bin_times: np.ndarray = stimulus.binned_timeseries["left time"].to_numpy(np.float64)
 
-            Iinj_cols = [f"{x:.3e}" for x in paradigm_iinj]
-            times = rec.data["times"].to_numpy()
+            Vpred: np.ndarray = np.stack(stimulus.timeseries["predicted Vm"].to_numpy()).astype(np.float64).T
 
-            # measured Vm
-            v = rec.data[Iinj_cols].to_numpy() * 1e-3
+            Eeff: np.ndarray = stimulus.binned_timeseries["Eeff bayesian"].to_numpy(np.float64) 
+            gsyn: np.ndarray = stimulus.binned_timeseries["gsyn"].to_numpy(np.float64)
 
-            # predicted Vm
-            vpred_cols = [f"Vpred_{c}" for c in Iinj_cols]
-            vpred = rec.data[vpred_cols].to_numpy() * 1e-3
-
-            # Im and Il
-            im_cols = [f"Im_{c}" for c in Iinj_cols]
-            il_cols = [f"Il_{c}" for c in Iinj_cols]
-            Im = rec.data[im_cols].to_numpy()
-            Il = rec.data[il_cols].to_numpy()
-
-            # conductances
-            ge = rec.data["excitation"].to_numpy()
-            gi = rec.data["inhibition"].to_numpy()
-
+            ge = stimulus.binned_timeseries["ge"].to_numpy(np.float64)
+            gi = stimulus.binned_timeseries["gi"].to_numpy(np.float64)
+            
             # diagnostics
-            resnorm = rec.data["bin_resnorm"].to_numpy() if "bin_resnorm" in rec.data else None
-            cond = rec.data["bin_cond_XtX"].to_numpy() if "bin_cond_XtX" in rec.data else None
+            resnorm = stimulus.binned_timeseries["ge/gi residual norm"].to_numpy()
+            cond = stimulus.binned_timeseries["ge/gi matrix conditioning"].to_numpy()
 
             axs[0, idx].set_title(paradigm)
 
             # ---- Row 0: Vm + Vpred (same colors) ----
-            curves = axs[0, idx].plot(times, v)  # solid Vm traces
+            curves = axs[0, idx].plot(times, stimulus.Vm.T)  # solid Vm traces
             colors = [line.get_color() for line in curves]
 
-            for j in range(v.shape[1]):
-                axs[0, idx].plot(times, vpred[:, j], linestyle=":", color=colors[j])  # dotted Vpred
-
-            # Pull reference voltages from parameters
-            
-            Er = float(rec.parameters["Er"][0])
-            Ee = float(rec.parameters["Ee"][0])
-            Ei = float(rec.parameters["Ei"][0])
-
-            Ess = rec.parameters["Ess"]
-            Ess = np.asarray(Ess.to_numpy(), dtype=float)
-            # if Vss includes more clamps than we're plotting, subset by the paradigm_iinj indices
-            # (assumes same ordering as rec.parameters["Iinj"])
-            all_cols = [f"{x:.3e}" for x in list(rec.parameters["Iinj"])]
-            idxs = [all_cols.index(c) for c in Iinj_cols]
-            Ess = Ess[idxs]
-
-            # Horizontal reference lines: Er, Ee, Ei (fixed colors)
-            axs[0, idx].axhline(Er, linestyle="--", color="k", linewidth=1, label="Er" if idx == 0 else None)
-            axs[0, idx].axhline(Ee, linestyle="--", color="r", linewidth=1, label="Ee" if idx == 0 else None)
-            axs[0, idx].axhline(Ei, linestyle="--", color="b", linewidth=1, label="Ei" if idx == 0 else None)
-
-            # Horizontal Vss lines: per clamp, same color as that clamp trace
-            for j in range(v.shape[1]):
-                axs[0, idx].axhline(Ess[j], linestyle="--", color=colors[j], linewidth=0.8)
+            for j in range(stimulus.Nclamps):
+                axs[0, idx].plot(times, Vpred[j, :], linestyle=":", color=colors[j])  # dotted Vpred
 
             axs[0, idx].set_ylabel("Vm (V)")
             axs[0, idx].grid(True)
             if idx == 0:
                 axs[0, idx].legend(loc="upper right")
 
-            # ---- Row 1: Im ----
-            for j in range(Im.shape[1]):
-                axs[1, idx].plot(times, Im[:, j], color=colors[j])
-            axs[1, idx].set_ylabel("Im (A)")
-            axs[1, idx].grid(True)
-
-            # ---- Row 2: Il ----
-            for j in range(Il.shape[1]):
-                axs[2, idx].plot(times, Il[:, j], color=colors[j])
-            axs[2, idx].set_ylabel("Il (A)")
-            axs[2, idx].grid(True)
+            # ---- Row 1: Eeff ----
+            # axs[1, idx].plot(bin_times, Eeff, c="black")
+            axs[1, idx].plot(bin_times, (1e9 * Eeff + stimulus.recording.Er / gsyn) / (1e9 + 1 / gsyn), c="black")
+            axs[1, idx].axhline(recording.Er, linestyle="--", color="k", linewidth=1, label="Er" if idx == 0 else None)
+            axs[1, idx].axhline(recording.Ee, linestyle="--", color="r", linewidth=1, label="Ee" if idx == 0 else None)
+            axs[1, idx].axhline(recording.Ei, linestyle="--", color="b", linewidth=1, label="Ei" if idx == 0 else None)
 
             # ---- Row 3: conductances ----
-            axs[3, idx].plot(times, ge, c="r", label="ge")
-            axs[3, idx].plot(times, gi, c="b", label="gi")
-            axs[3, idx].plot(times, times * 0, "--k", linewidth=1)
+            axs[3, idx].plot(bin_times, ge, c="r", label="ge")
+            axs[3, idx].plot(bin_times, gi, c="b", label="gi")
+            
+            axs[3, idx].plot(bin_times, bin_times * 0, "--k", linewidth=1)
             axs[3, idx].set_ylabel("G (S)")
             axs[3, idx].grid(True)
             if idx == 0:
@@ -410,21 +391,20 @@ class Analyzer:
             ax_r.grid(True)
             ax_r.set_ylabel("resnorm")
 
-            if resnorm is not None:
-                ax_r.plot(times, resnorm, linewidth=1)
+            ax_r.plot(bin_times, resnorm, linewidth=1)
 
-                # robust baseline and warning line
-                finite_r = resnorm[np.isfinite(resnorm)]
-                if finite_r.size > 0:
-                    baseline = np.median(finite_r)
-                    warn_line = resnorm_factor_warn * baseline
-                    ax_r.axhline(warn_line, linestyle="--", linewidth=1)
-                    ax_r.text(
-                        0.01, 0.95,
-                        f"warn > {resnorm_factor_warn:g}×median",
-                        transform=ax_r.transAxes,
-                        va="top",
-                    )
+            # robust baseline and warning line
+            finite_r = resnorm[np.isfinite(resnorm)]
+            if finite_r.size > 0:
+                baseline = np.median(finite_r)
+                warn_line = resnorm_factor_warn * baseline
+                ax_r.axhline(warn_line, linestyle="--", linewidth=1)
+                ax_r.text(
+                    0.01, 0.95,
+                    f"warn > {resnorm_factor_warn:g}×median",
+                    transform=ax_r.transAxes,
+                    va="top",
+                )
 
             # ---- Row 5: conditioning + warning/bad thresholds ----
             ax_c = axs[5, idx]
@@ -432,19 +412,18 @@ class Analyzer:
             ax_c.set_ylabel("cond(XᵀX)")
             ax_c.set_yscale("log")
 
-            if cond is not None:
-                cond_plot = np.where(np.isfinite(cond) & (cond > 0), cond, np.nan)
-                ax_c.plot(times, cond_plot, linewidth=1)
+            cond_plot = np.where(np.isfinite(cond) & (cond > 0), cond, np.nan)
+            ax_c.plot(bin_times, cond_plot, linewidth=1)
 
-                # thresholds
-                ax_c.axhline(cond_warn, linestyle="--", linewidth=1)
-                ax_c.axhline(cond_bad, linestyle=":", linewidth=1)
-                ax_c.text(
-                    0.01, 0.95,
-                    f"warn>{cond_warn:.0e}  bad>{cond_bad:.0e}",
-                    transform=ax_c.transAxes,
-                    va="top",
-                )
+            # thresholds
+            ax_c.axhline(cond_warn, linestyle="--", linewidth=1)
+            ax_c.axhline(cond_bad, linestyle=":", linewidth=1)
+            ax_c.text(
+                0.01, 0.95,
+                f"warn>{cond_warn:.0e}  bad>{cond_bad:.0e}",
+                transform=ax_c.transAxes,
+                va="top",
+            )
 
             axs[5, idx].set_xlabel("time (s)")
 
@@ -456,18 +435,28 @@ class Analyzer:
         else:
             raise ValueError(f"Unsupported filetype: {filetype}")
 
-        plt.show()
+        if display:
+            plt.show()
 
-    def run(self) -> None:
+    def run(self, display: bool) -> None:
         n_files: int = len(self.cfg.paths_to_spreadsheets)
-        iinj_clamps_to_use: list = [None] * n_files if self.cfg.iinj_clamps_to_use is None else self.cfg.iinj_clamps_to_use
+
         for i in range(n_files):
-            rdr: XLReader = XLReader(self.cfg.paths_to_spreadsheets[i])
-            recordings: Dict[str, WholeCellRecording] = {}
-            for paradigm in rdr.get_paradigms():
-                recording: WholeCellRecording = WholeCellRecording(rdr.get_paradigm_data(paradigm), rdr.get_paradigm_parameters(paradigm), iinj_clamps_to_use[i])
-                recording.estimate_conductances()
-                recordings[paradigm] = recording
-                print(f"{paradigm} done")
+            path_to_spreadsheet: Path = self.cfg.paths_to_spreadsheets[i]
+            print(f"Collecting data from {path_to_spreadsheet}")
+            rdr: XLReader = XLReader(path_to_spreadsheet)
             
-            self.plot_timeseries(recordings, self.cfg.image_save_dir / self.cfg.paths_to_spreadsheets[i].name, filetype=self.cfg.image_save_type, current_clamps=iinj_clamps_to_use)
+            stimuli: Dict[str, pd.DataFrame] = {paradigm:rdr.get_paradigm_data(paradigm) for paradigm in rdr.get_paradigms()}
+            recording: WholeCellRecording = WholeCellRecording(rdr.get_paradigm_parameters(rdr.get_paradigms()[0]), 5e-3, stimuli)
+            del rdr  # free excel file handle
+            
+            recording.run_analysis()
+
+            # ---- plot ----
+            if display:
+                self.plot_timeseries(
+                    recording,
+                    self.cfg.image_save_dir / path_to_spreadsheet.stem,
+                    filetype=self.cfg.image_save_type,
+                    display=display,
+                )
