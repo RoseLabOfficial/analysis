@@ -6,13 +6,12 @@ from pyhelpers.store import save_fig
 from pathlib import Path
 
 from libs.readers import XLReader, AnalyzerCfg
-from libs.test import posterior_C_batch_grid, summarize_posterior_batch
 
 from typing import Dict, Optional, List, Tuple
 
 import numpy as np
 
-def weighted_median(values: np.ndarray, weights: np.ndarray, quantile: float):    
+def weighted_quantile(values: np.ndarray, weights: np.ndarray, quantile: float):    
     sort_indices = np.argsort(values)
     
     values_sorted = values[sort_indices]
@@ -49,8 +48,9 @@ class WholeCellRecording:
             Eeff_pool.extend(stimulus.binned_timeseries["Eeff unbiased"])
             gsyn_pool.extend(stimulus.binned_timeseries["gsyn"])
 
-        Ei_hat: float = float(weighted_median(np.array(Eeff_pool), np.array(gsyn_pool)**2, 0.1)) # units: Volts
-        Ee_hat: float = float(weighted_median(np.array(Eeff_pool), np.array(gsyn_pool)**2, 0.9)) # units: Volts
+        Ei_hat: float = float(np.nanquantile(Eeff_pool, 0.05)) # units: Volts
+        Ee_hat: float = float(np.nanquantile(Eeff_pool, 0.95)) # units: Volts
+        print(Ei_hat, Ee_hat)
 
         return Ee_hat, Ei_hat
         
@@ -156,7 +156,7 @@ class WholeCellStimulus:
         # Your derived params
         gsyn = -b                                                  # Siemens
         # Avoid divide-by-zero when gsyn ~ 0
-        gsyn_safe = np.where(np.abs(gsyn) > eps, gsyn, np.nan)
+        gsyn_safe = np.where(np.abs(gsyn) > 0.5e-9, gsyn, np.nan)
 
         Eeff = a / (gsyn_safe * float(self.recording.bin_s))       # Volts
 
@@ -171,20 +171,10 @@ class WholeCellStimulus:
         sst = np.sum((Q - Q_m[None, :]) ** 2, axis=0)
         r2 = np.where(sst > 0, 1.0 - (sse / sst), np.nan)
 
-        C_grid = np.linspace(-0.130, 0.060, 4001)
-
-        pdf, logpost = posterior_C_batch_grid(
-            a[:, np.newaxis], gsyn_safe[:, np.newaxis], C_grid,
-            sigma_A=5e-11, sigma_B=5e-10,
-            mu_C=self.recording.Er, tau_C=0.05,
-            mu_B=np.array([1e-9]*np.size(gsyn_safe)),  # per-problem B prior mean
-            tau_B=1e-9
-        )
-        summ = summarize_posterior_batch(C_grid, pdf, cred_mass=0.95)
 
         # Store
         self.binned_timeseries["Eeff unbiased"] = Eeff
-        self.binned_timeseries["Eeff bayesian"] =  summ["mean"]
+        self.binned_timeseries["Eeff bayesian"] = Eeff
         self.binned_timeseries["gsyn"] = gsyn
         self.binned_timeseries["SSE least-squares Qsyn"] = sse
         self.binned_timeseries["r2 least-squares Qsyn"] = r2
@@ -371,7 +361,7 @@ class Analyzer:
 
             # ---- Row 1: Eeff ----
             # axs[1, idx].plot(bin_times, Eeff, c="black")
-            axs[1, idx].plot(bin_times, (1e9 * Eeff + stimulus.recording.Er / gsyn) / (1e9 + 1 / gsyn), c="black")
+            axs[1, idx].plot(bin_times, Eeff, c="black")
             axs[1, idx].axhline(recording.Er, linestyle="--", color="k", linewidth=1, label="Er" if idx == 0 else None)
             axs[1, idx].axhline(recording.Ee, linestyle="--", color="r", linewidth=1, label="Ee" if idx == 0 else None)
             axs[1, idx].axhline(recording.Ei, linestyle="--", color="b", linewidth=1, label="Ei" if idx == 0 else None)
@@ -447,7 +437,7 @@ class Analyzer:
             rdr: XLReader = XLReader(path_to_spreadsheet)
             
             stimuli: Dict[str, pd.DataFrame] = {paradigm:rdr.get_paradigm_data(paradigm) for paradigm in rdr.get_paradigms()}
-            recording: WholeCellRecording = WholeCellRecording(rdr.get_paradigm_parameters(rdr.get_paradigms()[0]), 5e-3, stimuli)
+            recording: WholeCellRecording = WholeCellRecording(rdr.get_paradigm_parameters(rdr.get_paradigms()[0]), 4e-3, stimuli)
             del rdr  # free excel file handle
             
             recording.run_analysis()
