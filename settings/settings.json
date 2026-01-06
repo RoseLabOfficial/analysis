@@ -1,6 +1,6 @@
 {
-    "spreadsheets_input_dir": "/home/jamessteele/Documents/Local/PRR/ReconstructionSpreadsheets",
-    "image_save_dir": "/home/jamessteele/Documents/Local/PRR/Figures",
+    "spreadsheets_input_dir": "/home/jsteele/Documents/Local/PRR/ReconstructionSpreadsheets",
+    "image_save_dir": "/home/jsteele/Documents/Local/PRR/Figures",
     "image_save_type": "png",
     "files_to_analyze": ["2012-05-03_2_baseline.xlsx"],
     "iinj_clamps_to_use": null

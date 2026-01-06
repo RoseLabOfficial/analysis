@@ -22,6 +22,7 @@ def weighted_quantile(values: np.ndarray, weights: np.ndarray, quantile: float):
     
     return values_sorted[cumsum >= cutoff][0]
 
+
 class WholeCellRecording:
     def __init__(self, parameters: pd.DataFrame, bin_s: float, stimuli: Dict[str, pd.DataFrame]) -> None:
         assert len(stimuli) > 0
@@ -29,6 +30,9 @@ class WholeCellRecording:
         self.Cm: float = parameters["Cm"][0]        # units: Farads
         self.gl: float = 1 / parameters["Rin"][0]   # units: Siemens
         self.Er: float = parameters["Er"][0]        # units: Volts
+        self.Et: float = parameters["Et"][0]        # units: Volts
+        self.Ess: np.ndarray = parameters["Ess"].to_numpy()
+        self.alpha: float = 1e-5  # units: Siemens
 
         example_t: pd.Series = list(stimuli.values())[0]["times"] # units: Seconds, shape: (Nsamples,)
         self.dt: float = example_t[1] - example_t[0] # time assumed sampled at constant interval; units: Seconds
@@ -48,8 +52,8 @@ class WholeCellRecording:
             Eeff_pool.extend(stimulus.binned_timeseries["Eeff unbiased"])
             gsyn_pool.extend(stimulus.binned_timeseries["gsyn"])
 
-        Ei_hat: float = float(np.nanquantile(Eeff_pool, 0.05)) # units: Volts
-        Ee_hat: float = float(np.nanquantile(Eeff_pool, 0.95)) # units: Volts
+        Ei_hat: float = float(np.nanquantile(Eeff_pool, 0.01)) # units: Volts
+        Ee_hat: float = float(np.nanquantile(Eeff_pool, 0.99)) # units: Volts
         print(Ei_hat, Ee_hat)
 
         return Ee_hat, Ei_hat
@@ -59,6 +63,7 @@ class WholeCellRecording:
         for paradigm, stimulus in self.stimuli.items():
             print(f"\t...{paradigm}")
             stimulus.calculate_target_Qsyn()
+            stimulus.calculate_target_Qsyn_nonlinear()
             stimulus.estimate_Eeff()
         print("Done")
         self.Ee, self.Ei = self.estimate_Ee_Ei()
@@ -66,7 +71,8 @@ class WholeCellRecording:
         print("Calculating synaptic conductances... ")
         for paradigm, stimulus in self.stimuli.items():
             print(f"\t...{paradigm}")
-            stimulus.estimate_ge_gi()
+            stimulus.estimate_ge_gi(nonlinear=True, constrained=False)
+            stimulus.estimate_ge_gi(nonlinear=False, constrained=True)
             stimulus.calculate_predicted_Vm()
         print("Done")
         
@@ -102,19 +108,31 @@ class WholeCellStimulus:
             "bin duration": bin_duration
         })
 
+    def _cumtrapz_prefix_integral(self, arr: np.ndarray) -> np.ndarray:
+        pref: np.ndarray = np.zeros((self.Nclamps, self.Nsamples + 1), dtype=arr.dtype) # shape: (Nclamps, Nsamples + 1)
+        area: np.ndarray = 0.5 * (arr[:, 1:] + arr[:, :-1]) * self.recording.dt         # shape: (Nclamps, Nsamples)
+        pref[:, 2:] = np.cumsum(area, axis=1)
+        return pref
+
+    def calculate_target_Qsyn_nonlinear(self) -> None:
+
+        integral_Vm: np.ndarray = np.stack(self.binned_timeseries["integral Vm"].to_numpy()).astype(np.float64).T #type: ignore
+        target_Qsyn: np.ndarray = np.stack(self.binned_timeseries["target Qsyn"].to_numpy()).astype(np.float64).T #type: ignore
+        bin_duration: np.ndarray = self.binned_timeseries["bin duration"].to_numpy(np.float64)  # units: Seconds, shape: (Nbins,)
+
+        integral_Iact: np.ndarray = np.maximum(0.0, self.recording.alpha * (self.recording.Ess[:, np.newaxis] * bin_duration[np.newaxis, :] - integral_Vm) * (integral_Vm - self.recording.Et * bin_duration[np.newaxis, :]))
+        target_Qsyn_nonlinear: np.ndarray = target_Qsyn - integral_Iact
+
+        self.binned_timeseries["integral Iact"] = integral_Iact.T.tolist()
+        self.binned_timeseries["target Qsyn nonlinear"] = target_Qsyn_nonlinear.T.tolist()
+
     def calculate_target_Qsyn(self) -> None:
-        
-        def cumtrapz_prefix_integral(arr: np.ndarray) -> np.ndarray:
-            pref: np.ndarray = np.zeros((self.Nclamps, self.Nsamples + 1), dtype=arr.dtype) # shape: (Nclamps, Nsamples + 1)
-            area: np.ndarray = 0.5 * (arr[:, 1:] + arr[:, :-1]) * self.recording.dt         # shape: (Nclamps, Nsamples)
-            pref[:, 2:] = np.cumsum(area, axis=1)
-            return pref
-        
+
         l_bin_idxs: np.ndarray = self.binned_timeseries["left index"].to_numpy(np.int32)           # shape: (Nbins,)
         r_bin_idxs: np.ndarray = self.binned_timeseries["right index"].to_numpy(np.int32)           # shape: (Nbins,)
         bin_duration: np.ndarray = self.binned_timeseries["bin duration"].to_numpy(np.float64)  # units: Seconds, shape: (Nbins,)
 
-        Vm_prefix_integral: np.ndarray = cumtrapz_prefix_integral(self.Vm)  # units: Webers, shape: (Nclamps, Nsamples + 1)
+        Vm_prefix_integral: np.ndarray = self._cumtrapz_prefix_integral(self.Vm)  # units: Webers, shape: (Nclamps, Nsamples + 1)
         integral_Vm: np.ndarray = Vm_prefix_integral[:, r_bin_idxs - 1] - Vm_prefix_integral[:, l_bin_idxs] # units : Webers, shape: (Nclamps, Nsamples)
 
         Delta_Vm: np.ndarray = self.Vm[:, r_bin_idxs - 1] - self.Vm[:, l_bin_idxs] # units: Volts, shape: (Nclamps, Nsamples - 1)
@@ -179,10 +197,14 @@ class WholeCellStimulus:
         self.binned_timeseries["SSE least-squares Qsyn"] = sse
         self.binned_timeseries["r2 least-squares Qsyn"] = r2
 
-    def estimate_ge_gi(self) -> None:
+    def estimate_ge_gi(self, nonlinear: bool=False, constrained: bool=True) -> None:
         bin_duration: np.ndarray = self.binned_timeseries["bin duration"].to_numpy(dtype=np.float64)                # units: Seconds, shape: (Nbins,)
         integral_Vm: np.ndarray = np.stack(self.binned_timeseries["integral Vm"].to_numpy()).astype(np.float64).T   #type: ignore , units: Webers, shape: (Nclamps, Nbins)
-        target_Qsyn: np.ndarray  = np.stack(self.binned_timeseries["target Qsyn"].to_numpy()).astype(np.float64).T  #type: ignore , units: Coulombs, shape: (Nclamps, Nbins)
+        
+        if nonlinear:
+            target_Qsyn = np.stack(self.binned_timeseries["target Qsyn nonlinear"].to_numpy()).astype(np.float64).T #type: ignore ,
+        else: # linear
+            target_Qsyn  = np.stack(self.binned_timeseries["target Qsyn"].to_numpy()).astype(np.float64).T  #type: ignore , units: Coulombs, shape: (Nclamps, Nbins)
 
         Ee: float = self.recording.Ee # units: Volts
         Ei: float = self.recording.Ei # units: Volts
@@ -214,35 +236,41 @@ class WholeCellStimulus:
             + (gi_u * gi_u) * iTi
         )
 
-        # boundary candidates
-        ge_a = np.where(eTe > 0, eTq / eTe, 0.0)
-        ge_a = np.maximum(ge_a, 0.0)
-        r2_a = qTq - 2.0 * ge_a * eTq + (ge_a * ge_a) * eTe
+        if constrained:
+            # boundary candidates
+            ge_a = np.where(eTe > 0, eTq / eTe, 0.0)
+            ge_a = np.maximum(ge_a, 0.0)
+            r2_a = qTq - 2.0 * ge_a * eTq + (ge_a * ge_a) * eTe
 
-        gi_b = np.where(iTi > 0, iTq / iTi, 0.0)
-        gi_b = np.maximum(gi_b, 0.0)
-        r2_b = qTq - 2.0 * gi_b * iTq + (gi_b * gi_b) * iTi
+            gi_b = np.where(iTi > 0, iTq / iTi, 0.0)
+            gi_b = np.maximum(gi_b, 0.0)
+            r2_b = qTq - 2.0 * gi_b * iTq + (gi_b * gi_b) * iTi
 
-        feasible_u = (
-            (ge_u >= 0.0) & (gi_u >= 0.0) &
-            np.isfinite(ge_u) & np.isfinite(gi_u) &
-            np.isfinite(r2_u)
-        )
+            feasible_u = (
+                (ge_u >= 0.0) & (gi_u >= 0.0) &
+                np.isfinite(ge_u) & np.isfinite(gi_u) &
+                np.isfinite(r2_u)
+            )
 
-        # pick best
-        ge = ge_a.copy()
-        gi = np.zeros_like(ge)
-        r2 = r2_a.copy()
+            # pick best
+            ge = ge_a.copy()
+            gi = np.zeros_like(ge)
+            r2 = r2_a.copy()
 
-        pick_b = r2_b < r2
-        ge[pick_b] = 0.0
-        gi[pick_b] = gi_b[pick_b]
-        r2[pick_b] = r2_b[pick_b]
+            pick_b = r2_b < r2
+            ge[pick_b] = 0.0
+            gi[pick_b] = gi_b[pick_b]
+            r2[pick_b] = r2_b[pick_b]
 
-        pick_u = feasible_u & (r2_u < r2)
-        ge[pick_u] = ge_u[pick_u]
-        gi[pick_u] = gi_u[pick_u]
-        r2[pick_u] = r2_u[pick_u]
+            pick_u = feasible_u & (r2_u < r2)
+            ge[pick_u] = ge_u[pick_u]
+            gi[pick_u] = gi_u[pick_u]
+            r2[pick_u] = r2_u[pick_u]
+        
+        else:
+            ge = ge_u.copy()
+            gi = gi_u.copy()
+            r2 = r2_u.copy()
 
         resnorm = np.sqrt(np.maximum(r2, 0.0))
 
@@ -253,10 +281,10 @@ class WholeCellStimulus:
         lam2 = 0.5 * (tr - disc)
         cond = np.where(lam2 > 0, lam1 / lam2, np.inf)
 
-        self.binned_timeseries["ge"] = ge
-        self.binned_timeseries["gi"] = gi
-        self.binned_timeseries["ge/gi residual norm"] = resnorm
-        self.binned_timeseries["ge/gi matrix conditioning"] = cond
+        self.binned_timeseries[f"ge{' nonlinear' if nonlinear else str()}{' constrained' if constrained else str()}"] = ge
+        self.binned_timeseries[f"gi{' nonlinear' if nonlinear else str()}{' constrained' if constrained else str()}"] = gi
+        self.binned_timeseries[f"ge/gi residual norm{' nonlinear' if nonlinear else str()}{' constrained' if constrained else str()}"] = resnorm
+        self.binned_timeseries[f"ge/gi matrix conditioning{' nonlinear' if nonlinear else str()}{' constrained' if constrained else str()}"] = cond
 
     def calculate_predicted_Vm(self) -> None:
         Vm: np.ndarray = self.Vm        # units: Volts, shape: (Nclamps, Nsamples)
@@ -272,8 +300,8 @@ class WholeCellStimulus:
         l_idx: np.ndarray = self.binned_timeseries["left index"].to_numpy(dtype=np.int64)   # shape: (Nbins,)
         r_idx: np.ndarray = self.binned_timeseries["right index"].to_numpy(dtype=np.int64)  # shape: (Nbins,)
 
-        ge_bins: np.ndarray = self.binned_timeseries["ge"].to_numpy(dtype=np.float64) # units: Siemens, shape: (Nbins,)
-        gi_bins: np.ndarray = self.binned_timeseries["gi"].to_numpy(dtype=np.float64) # units: Siemens, shape: (Nbins,)
+        ge_bins: np.ndarray = self.binned_timeseries["ge constrained"].to_numpy(dtype=np.float64) # units: Siemens, shape: (Nbins,)
+        gi_bins: np.ndarray = self.binned_timeseries["gi constrained"].to_numpy(dtype=np.float64) # units: Siemens, shape: (Nbins,)
 
         Vpred: np.ndarray = np.empty_like(Vm, dtype=np.float64) # units: Volts, shape: (Nclamps, Nsamples)
         Vpred[:, 0] = Vm[:, 0]  # initial condition from measured Vm
@@ -333,17 +361,23 @@ class Analyzer:
             times: np.ndarray = stimulus.times
             bin_times: np.ndarray = stimulus.binned_timeseries["left time"].to_numpy(np.float64)
 
+            bin_durations: np.ndarray = stimulus.binned_timeseries["bin duration"].to_numpy(np.float64)
+
             Vpred: np.ndarray = np.stack(stimulus.timeseries["predicted Vm"].to_numpy()).astype(np.float64).T
+            integral_Iact: np.ndarray = np.stack(stimulus.binned_timeseries["integral Iact"].to_numpy()).astype(np.float64).T
 
             Eeff: np.ndarray = stimulus.binned_timeseries["Eeff bayesian"].to_numpy(np.float64) 
             gsyn: np.ndarray = stimulus.binned_timeseries["gsyn"].to_numpy(np.float64)
 
-            ge = stimulus.binned_timeseries["ge"].to_numpy(np.float64)
-            gi = stimulus.binned_timeseries["gi"].to_numpy(np.float64)
+            ge = stimulus.binned_timeseries["ge constrained"].to_numpy(np.float64)
+            gi = stimulus.binned_timeseries["gi constrained"].to_numpy(np.float64)
             
+            ge_n_u = stimulus.binned_timeseries["ge nonlinear"].to_numpy(np.float64)
+            gi_n_u = stimulus.binned_timeseries["gi nonlinear"].to_numpy(np.float64)
+
             # diagnostics
-            resnorm = stimulus.binned_timeseries["ge/gi residual norm"].to_numpy()
-            cond = stimulus.binned_timeseries["ge/gi matrix conditioning"].to_numpy()
+            resnorm = stimulus.binned_timeseries["ge/gi residual norm constrained"].to_numpy()
+            cond = stimulus.binned_timeseries["ge/gi matrix conditioning constrained"].to_numpy()
 
             axs[0, idx].set_title(paradigm)
 
@@ -366,9 +400,15 @@ class Analyzer:
             axs[1, idx].axhline(recording.Ee, linestyle="--", color="r", linewidth=1, label="Ee" if idx == 0 else None)
             axs[1, idx].axhline(recording.Ei, linestyle="--", color="b", linewidth=1, label="Ei" if idx == 0 else None)
 
+
+            axs[1, idx].plot(bin_times, 0 * bin_times, c="black")
+            axs[2, idx].plot(bin_times, integral_Iact.T / bin_durations[:, np.newaxis])
+
             # ---- Row 3: conductances ----
             axs[3, idx].plot(bin_times, ge, c="r", label="ge")
             axs[3, idx].plot(bin_times, gi, c="b", label="gi")
+            axs[3, idx].plot(bin_times, ge_n_u, "r--", label="ge nonlin unconstrained")
+            axs[3, idx].plot(bin_times, gi_n_u, "b--", label="gi nonlin unconstrained")
             
             axs[3, idx].plot(bin_times, bin_times * 0, "--k", linewidth=1)
             axs[3, idx].set_ylabel("G (S)")
