@@ -1,37 +1,115 @@
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt 
-from scipy.optimize import nnls
 from pyhelpers.store import save_fig
 from pathlib import Path
 
 from libs.readers import XLReader, AnalyzerCfg
 
-from typing import Dict, Optional, List, Tuple
+from typing import Dict, List, Tuple
 
 import numpy as np
 
-def weighted_quantile(values: np.ndarray, weights: np.ndarray, quantile: float):    
-    sort_indices = np.argsort(values)
-    
-    values_sorted = values[sort_indices]
-    weights_sorted = weights[sort_indices]  
+def weighted_quantile(x, q, w=None, axis=-1):
+    """
+    Weighted quantiles of `x` at quantiles `q` in [0,1], along `axis`.
 
-    cumsum = weights_sorted.cumsum()
-    cutoff = weights_sorted.sum() * quantile
-    
-    return values_sorted[cumsum >= cutoff][0]
+    Parameters
+    ----------
+    x : array_like
+        Data.
+    q : float or array_like
+        Quantile(s) in [0,1].
+    w : array_like or None
+        Nonnegative weights, same shape as x, or broadcastable to x.
+        If None, equivalent to np.quantile(x, q, axis=axis) but using sorting.
+    axis : int
+        Axis to compute along.
+
+    Returns
+    -------
+    out : ndarray
+        Shape is x.shape with `axis` removed, plus an extra quantile dimension (len(q)).
+        If q is scalar, that quantile dimension is omitted.
+    """
+    x = np.asarray(x)
+    q = np.asarray(q, dtype=float)
+    if np.any((q < 0) | (q > 1)):
+        raise ValueError("q must be in [0, 1].")
+
+    if w is None:
+        w = np.ones_like(x, dtype=float)
+    else:
+        w = np.asarray(w, dtype=float)
+        w = np.broadcast_to(w, x.shape)
+
+    if np.any(w < 0):
+        raise ValueError("weights must be nonnegative.")
+
+    # Move target axis to last for easier vectorization
+    x = np.moveaxis(x, axis, -1)
+    w = np.moveaxis(w, axis, -1)
+
+    *batch, n = x.shape
+    m = int(np.prod(batch)) if batch else 1
+    x2 = x.reshape(m, n)
+    w2 = w.reshape(m, n)
+
+    # Sort each row
+    idx = np.argsort(x2, axis=1)
+    xs = np.take_along_axis(x2, idx, axis=1)
+    ws = np.take_along_axis(w2, idx, axis=1)
+
+    # CDF of weights
+    cw = np.cumsum(ws, axis=1)
+    total = cw[:, -1]
+    if np.any(total <= 0):
+        raise ValueError("each slice must have positive total weight.")
+
+    cdf = cw / total[:, None]  # in (0,1]
+
+    # Find first index where CDF >= q (vectorized)
+    qv = q.ravel()
+    mask = cdf[:, None, :] >= qv[None, :, None]          # (m, k, n)
+    any_true = mask.any(axis=2)
+    hi = mask.argmax(axis=2)                              # (m, k)
+    hi = np.where(any_true, hi, n - 1)                    # safety (shouldn't trigger if q<=1)
+
+    # Linear interpolation in (cdf, x) space
+    lo = np.clip(hi - 1, 0, n - 1)
+
+    x_hi = np.take_along_axis(xs, hi, axis=1)
+    x_lo = np.take_along_axis(xs, lo, axis=1)
+
+    c_hi = np.take_along_axis(cdf, hi, axis=1)
+    c_lo = np.where(hi > 0, np.take_along_axis(cdf, lo, axis=1), 0.0)
+
+    denom = (c_hi - c_lo)
+    # If denom==0 (flat CDF step), fall back to x_hi
+    t = np.where(denom > 0, (qv[None, :] - c_lo) / denom, 0.0)
+    t = np.clip(t, 0.0, 1.0)
+
+    out = x_lo + t * (x_hi - x_lo)
+
+    # Reshape back: batch dims + (k,)
+    k = qv.size
+    out = out.reshape((*batch, k))
+
+    # If q was scalar, drop the last dim
+    if q.ndim == 0:
+        out = out[..., 0]
+
+    return out
 
 
 class WholeCellRecording:
     def __init__(self, parameters: pd.DataFrame, bin_s: float, stimuli: Dict[str, pd.DataFrame]) -> None:
         assert len(stimuli) > 0
         
-        self.Cm: float = parameters["Cm"][0]        # units: Farads
-        self.gl: float = 1 / parameters["Rin"][0]   # units: Siemens
-        self.Er: float = parameters["Er"][0]        # units: Volts
-        self.Et: float = parameters["Et"][0]        # units: Volts
-        self.Ess: np.ndarray = parameters["Ess"].to_numpy()
+        self.Cm: float = parameters["Cm"][0]    # units: Farads
+        self.Rin: float = parameters["Rin"][0]  # units: Ohms
+        self.Et: float = parameters["Et"][0]
+
         self.alpha: float = 1e-5  # units: Siemens
 
         example_t: pd.Series = list(stimuli.values())[0]["times"] # units: Seconds, shape: (Nsamples,)
@@ -45,6 +123,21 @@ class WholeCellRecording:
 
         self.stimuli: Dict[str, WholeCellStimulus] = {name: WholeCellStimulus(self, data) for name, data in stimuli.items()}
 
+        self._estimate_Er()
+
+    @property
+    def gl(self) -> float:
+        return 1 / self.Rin # units: Siemens
+
+    def _estimate_Er(self) -> None:
+        Ess_pool: list = []
+        Iinj_pool: list = []
+        for stimulus in self.stimuli.values():
+            Ess_pool.extend(stimulus.Ess)
+            Iinj_pool.extend(stimulus.Iinj)
+        Er: float = (np.sum(Ess_pool) - np.sum(Iinj_pool) * self.Rin) / len(Ess_pool)
+        self.Er: float = Er
+
     def estimate_Ee_Ei(self) -> Tuple[float, float]:
         Eeff_pool: List[float] = []
         gsyn_pool: List[float] = []
@@ -54,7 +147,6 @@ class WholeCellRecording:
 
         Ei_hat: float = float(np.nanquantile(Eeff_pool, 0.01)) # units: Volts
         Ee_hat: float = float(np.nanquantile(Eeff_pool, 0.99)) # units: Volts
-        print(Ei_hat, Ee_hat)
 
         return Ee_hat, Ei_hat
         
@@ -108,6 +200,15 @@ class WholeCellStimulus:
             "bin duration": bin_duration
         })
 
+        self._estimate_Ess()
+    
+    def _estimate_Ess(self) -> None:
+        Vm: np.ndarray = self.Vm        
+        dVm: np.ndarray = np.diff(Vm, axis=-1)
+        mean_dVm: np.ndarray = np.hstack((dVm[:, 0, None], dVm)) + np.hstack((dVm, dVm[:, -1, None]))
+        Ess: np.ndarray = weighted_quantile(Vm, 0.5, 1 / (1 + mean_dVm)) #type: ignore
+        self.Ess: np.ndarray = Ess[:, np.newaxis]
+
     def _cumtrapz_prefix_integral(self, arr: np.ndarray) -> np.ndarray:
         pref: np.ndarray = np.zeros((self.Nclamps, self.Nsamples + 1), dtype=arr.dtype) # shape: (Nclamps, Nsamples + 1)
         area: np.ndarray = 0.5 * (arr[:, 1:] + arr[:, :-1]) * self.recording.dt         # shape: (Nclamps, Nsamples)
@@ -120,7 +221,7 @@ class WholeCellStimulus:
         target_Qsyn: np.ndarray = np.stack(self.binned_timeseries["target Qsyn"].to_numpy()).astype(np.float64).T #type: ignore
         bin_duration: np.ndarray = self.binned_timeseries["bin duration"].to_numpy(np.float64)  # units: Seconds, shape: (Nbins,)
 
-        integral_Iact: np.ndarray = np.maximum(0.0, self.recording.alpha * (self.recording.Ess[:, np.newaxis] * bin_duration[np.newaxis, :] - integral_Vm) * (integral_Vm - self.recording.Et * bin_duration[np.newaxis, :]))
+        integral_Iact: np.ndarray = np.maximum(0.0, self.recording.alpha * (self.Ess * bin_duration[np.newaxis, :] - integral_Vm) * (integral_Vm - self.recording.Et * bin_duration[np.newaxis, :]))
         target_Qsyn_nonlinear: np.ndarray = target_Qsyn - integral_Iact
 
         self.binned_timeseries["integral Iact"] = integral_Iact.T.tolist()
@@ -148,8 +249,8 @@ class WholeCellStimulus:
 
     def estimate_Eeff(self) -> None:
         # Pull data (faster than .tolist() if these are arrays-in-cells, but keep if needed)
-        integral_Vm = np.stack(self.binned_timeseries["integral Vm"].to_numpy()).astype(np.float64).T  # (Nclamps, Nbins)
-        target_Qsyn = np.stack(self.binned_timeseries["target Qsyn"].to_numpy()).astype(np.float64).T  # (Nclamps, Nbins)
+        integral_Vm = np.stack(self.binned_timeseries["integral Vm"].to_numpy()).astype(np.float64).T  #type: ignore , (Nclamps, Nbins)
+        target_Qsyn = np.stack(self.binned_timeseries["target Qsyn"].to_numpy()).astype(np.float64).T  #type: ignore , (Nclamps, Nbins)
 
         Phi = integral_Vm
         Q   = target_Qsyn
@@ -304,14 +405,22 @@ class WholeCellStimulus:
         gi_bins: np.ndarray = self.binned_timeseries["gi constrained"].to_numpy(dtype=np.float64) # units: Siemens, shape: (Nbins,)
 
         Vpred: np.ndarray = np.empty_like(Vm, dtype=np.float64) # units: Volts, shape: (Nclamps, Nsamples)
-        Vpred[:, 0] = Vm[:, 0]  # initial condition from measured Vm
+        Vpred[:, 0] = self.Ess[:, 0]  # initial condition from measured Vm
 
-        for r, l, ge, gi in zip(r_idx + 1, l_idx + 1, ge_bins, gi_bins):
-            v0: np.ndarray = Vpred[:, l - 1].reshape(-1, 1)
+        vsss = []
+
+        for r, l, ge, gi in zip(r_idx, l_idx, ge_bins, gi_bins):
+            v0: np.ndarray = Vpred[:, l].reshape(-1, 1)
             G: np.ndarray = ge + gi + gl
             vss: np.ndarray = (ge * Ee + gi * Ei + gl * Er + Iinj) / G
-            t: np.ndarray = np.arange(1, r - l + 1) * dt
-            Vpred[:, l:r] = (v0 - vss) * np.exp(-G * t / Cm) + vss
+            t: np.ndarray = np.arange(r - l + 1) * dt
+            Vpred[:, l:r + 1] = (v0 - vss) * np.exp(-G * t / Cm) + vss
+
+            vsss.append(vss)
+        
+        plt.plot(np.repeat(np.squeeze(np.array(vsss)), self.recording.bin_nsamples, axis=0))
+        plt.plot(Vpred.T)
+        # plt.show()
 
         self.timeseries[f"predicted Vm"] = Vpred.T.tolist()
 
@@ -363,8 +472,8 @@ class Analyzer:
 
             bin_durations: np.ndarray = stimulus.binned_timeseries["bin duration"].to_numpy(np.float64)
 
-            Vpred: np.ndarray = np.stack(stimulus.timeseries["predicted Vm"].to_numpy()).astype(np.float64).T
-            integral_Iact: np.ndarray = np.stack(stimulus.binned_timeseries["integral Iact"].to_numpy()).astype(np.float64).T
+            Vpred: np.ndarray = np.stack(stimulus.timeseries["predicted Vm"].to_numpy()).astype(np.float64).T #type: ignore
+            integral_Iact: np.ndarray = np.stack(stimulus.binned_timeseries["integral Iact"].to_numpy()).astype(np.float64).T #type: ignore
 
             Eeff: np.ndarray = stimulus.binned_timeseries["Eeff bayesian"].to_numpy(np.float64) 
             gsyn: np.ndarray = stimulus.binned_timeseries["gsyn"].to_numpy(np.float64)
@@ -387,6 +496,7 @@ class Analyzer:
 
             for j in range(stimulus.Nclamps):
                 axs[0, idx].plot(times, Vpred[j, :], linestyle=":", color=colors[j])  # dotted Vpred
+                axs[0, idx].plot([times[0], times[-1]], [stimulus.Ess[j]] * 2, color="grey", ls="--")
 
             axs[0, idx].set_ylabel("Vm (V)")
             axs[0, idx].grid(True)
@@ -394,14 +504,14 @@ class Analyzer:
                 axs[0, idx].legend(loc="upper right")
 
             # ---- Row 1: Eeff ----
-            # axs[1, idx].plot(bin_times, Eeff, c="black")
+            axs[1, idx].grid(True)
             axs[1, idx].plot(bin_times, Eeff, c="black")
             axs[1, idx].axhline(recording.Er, linestyle="--", color="k", linewidth=1, label="Er" if idx == 0 else None)
             axs[1, idx].axhline(recording.Ee, linestyle="--", color="r", linewidth=1, label="Ee" if idx == 0 else None)
             axs[1, idx].axhline(recording.Ei, linestyle="--", color="b", linewidth=1, label="Ei" if idx == 0 else None)
 
-
-            axs[1, idx].plot(bin_times, 0 * bin_times, c="black")
+            axs[2, idx].grid(True)
+            axs[2, idx].plot(bin_times, bin_times * 0, "k--")
             axs[2, idx].plot(bin_times, integral_Iact.T / bin_durations[:, np.newaxis])
 
             # ---- Row 3: conductances ----
@@ -477,7 +587,7 @@ class Analyzer:
             rdr: XLReader = XLReader(path_to_spreadsheet)
             
             stimuli: Dict[str, pd.DataFrame] = {paradigm:rdr.get_paradigm_data(paradigm) for paradigm in rdr.get_paradigms()}
-            recording: WholeCellRecording = WholeCellRecording(rdr.get_paradigm_parameters(rdr.get_paradigms()[0]), 4e-3, stimuli)
+            recording: WholeCellRecording = WholeCellRecording(rdr.get_paradigm_parameters(rdr.get_paradigms()[0]), 10e-3, stimuli)
             del rdr  # free excel file handle
             
             recording.run_analysis()
