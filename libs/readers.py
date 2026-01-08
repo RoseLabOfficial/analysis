@@ -23,8 +23,13 @@ class AnalyzerCfg:
         spreadsheets_input_dir: Path = Path(kwargs["spreadsheets_input_dir"])
         image_save_dir: Path = Path(kwargs["image_save_dir"])
 
-        assert os.path.isdir(spreadsheets_input_dir)
-        assert os.path.isdir(image_save_dir)
+        if not os.path.isdir(spreadsheets_input_dir):
+            spreadsheets_input_dir = spreadsheets_input_dir.expanduser()
+        if not os.path.isdir(image_save_dir):
+            image_save_dir = image_save_dir.expanduser()
+
+        assert os.path.isdir(spreadsheets_input_dir), spreadsheets_input_dir
+        assert os.path.isdir(image_save_dir), image_save_dir
         assert kwargs["image_save_type"] in {'png', 'emf'}
         if kwargs["files_to_analyze"] is not None:
             assert isinstance(kwargs["files_to_analyze"], list)

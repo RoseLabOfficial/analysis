@@ -142,7 +142,7 @@ class WholeCellRecording:
         Eeff_pool: List[float] = []
         gsyn_pool: List[float] = []
         for stimulus in self.stimuli.values():
-            Eeff_pool.extend(stimulus.binned_timeseries["Eeff unbiased"])
+            Eeff_pool.extend(stimulus.binned_timeseries["Eeff bayesian"])
             gsyn_pool.extend(stimulus.binned_timeseries["gsyn"])
 
         Ei_hat: float = float(np.nanquantile(Eeff_pool, 0.01)) # units: Volts
@@ -157,6 +157,8 @@ class WholeCellRecording:
             stimulus.calculate_target_Qsyn()
             stimulus.calculate_target_Qsyn_nonlinear()
             stimulus.estimate_Eeff()
+        plt.axhline(0)
+        plt.show()
         print("Done")
         self.Ee, self.Ei = self.estimate_Ee_Ei()
 
@@ -205,8 +207,8 @@ class WholeCellStimulus:
     def _estimate_Ess(self) -> None:
         Vm: np.ndarray = self.Vm        
         dVm: np.ndarray = np.diff(Vm, axis=-1)
-        mean_dVm: np.ndarray = np.hstack((dVm[:, 0, None], dVm)) + np.hstack((dVm, dVm[:, -1, None]))
-        Ess: np.ndarray = weighted_quantile(Vm, 0.5, 1 / (1 + mean_dVm)) #type: ignore
+        mean_abs_dVm: np.ndarray = (np.abs(np.hstack((dVm[:, 0, None], dVm))) + np.abs(np.hstack((dVm, dVm[:, -1, None])))) / 2
+        Ess: np.ndarray = weighted_quantile(Vm, 0.5, np.exp(-mean_abs_dVm)) #type: ignore
         self.Ess: np.ndarray = Ess[:, np.newaxis]
 
     def _cumtrapz_prefix_integral(self, arr: np.ndarray) -> np.ndarray:
@@ -292,7 +294,16 @@ class WholeCellStimulus:
 
 
         # Store
-        self.binned_timeseries["Eeff unbiased"] = Eeff
+        unstable_mask = gsyn < 0
+        unstable_Vm = integral_Vm[:, unstable_mask] / self.recording.bin_s
+        unstable_current = gsyn[unstable_mask] * (Eeff[unstable_mask] - unstable_Vm)
+
+
+        plt.scatter(integral_Vm.flatten() / self.recording.bin_s, (gsyn * (Eeff - integral_Vm / self.recording.bin_s)).flatten())
+        plt.scatter(unstable_Vm.flatten(), unstable_current.flatten(), color="black")
+        plt.vlines(self.Ess, -1e-9, 1e-9, colors=["black"]*self.Ess.size)
+
+        self.binned_timeseries["Eeff unbiased"] = a / (gsyn * float(self.recording.bin_s))
         self.binned_timeseries["Eeff bayesian"] = Eeff
         self.binned_timeseries["gsyn"] = gsyn
         self.binned_timeseries["SSE least-squares Qsyn"] = sse
@@ -417,10 +428,6 @@ class WholeCellStimulus:
             Vpred[:, l:r + 1] = (v0 - vss) * np.exp(-G * t / Cm) + vss
 
             vsss.append(vss)
-        
-        plt.plot(np.repeat(np.squeeze(np.array(vsss)), self.recording.bin_nsamples, axis=0))
-        plt.plot(Vpred.T)
-        # plt.show()
 
         self.timeseries[f"predicted Vm"] = Vpred.T.tolist()
 
@@ -476,6 +483,7 @@ class Analyzer:
             integral_Iact: np.ndarray = np.stack(stimulus.binned_timeseries["integral Iact"].to_numpy()).astype(np.float64).T #type: ignore
 
             Eeff: np.ndarray = stimulus.binned_timeseries["Eeff bayesian"].to_numpy(np.float64) 
+            Eeff_ub: np.ndarray = stimulus.binned_timeseries["Eeff unbiased"].to_numpy(np.float64)
             gsyn: np.ndarray = stimulus.binned_timeseries["gsyn"].to_numpy(np.float64)
 
             ge = stimulus.binned_timeseries["ge constrained"].to_numpy(np.float64)
@@ -483,6 +491,8 @@ class Analyzer:
             
             ge_n_u = stimulus.binned_timeseries["ge nonlinear"].to_numpy(np.float64)
             gi_n_u = stimulus.binned_timeseries["gi nonlinear"].to_numpy(np.float64)
+
+            gsyn = stimulus.binned_timeseries["gsyn"].to_numpy(np.float64)
 
             # diagnostics
             resnorm = stimulus.binned_timeseries["ge/gi residual norm constrained"].to_numpy()
@@ -506,6 +516,7 @@ class Analyzer:
             # ---- Row 1: Eeff ----
             axs[1, idx].grid(True)
             axs[1, idx].plot(bin_times, Eeff, c="black")
+            axs[1, idx].plot(bin_times, Eeff_ub, c="magenta")
             axs[1, idx].axhline(recording.Er, linestyle="--", color="k", linewidth=1, label="Er" if idx == 0 else None)
             axs[1, idx].axhline(recording.Ee, linestyle="--", color="r", linewidth=1, label="Ee" if idx == 0 else None)
             axs[1, idx].axhline(recording.Ei, linestyle="--", color="b", linewidth=1, label="Ei" if idx == 0 else None)
@@ -519,6 +530,7 @@ class Analyzer:
             axs[3, idx].plot(bin_times, gi, c="b", label="gi")
             axs[3, idx].plot(bin_times, ge_n_u, "r--", label="ge nonlin unconstrained")
             axs[3, idx].plot(bin_times, gi_n_u, "b--", label="gi nonlin unconstrained")
+            axs[3, idx].fill_between(bin_times, bin_times * 0, gsyn, color="grey", alpha=0.5, label="gsyn")
             
             axs[3, idx].plot(bin_times, bin_times * 0, "--k", linewidth=1)
             axs[3, idx].set_ylabel("G (S)")
@@ -587,7 +599,7 @@ class Analyzer:
             rdr: XLReader = XLReader(path_to_spreadsheet)
             
             stimuli: Dict[str, pd.DataFrame] = {paradigm:rdr.get_paradigm_data(paradigm) for paradigm in rdr.get_paradigms()}
-            recording: WholeCellRecording = WholeCellRecording(rdr.get_paradigm_parameters(rdr.get_paradigms()[0]), 10e-3, stimuli)
+            recording: WholeCellRecording = WholeCellRecording(rdr.get_paradigm_parameters(rdr.get_paradigms()[0]), 5e-3, stimuli)
             del rdr  # free excel file handle
             
             recording.run_analysis()
