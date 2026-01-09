@@ -157,8 +157,6 @@ class WholeCellRecording:
             stimulus.calculate_target_Qsyn()
             stimulus.calculate_target_Qsyn_nonlinear()
             stimulus.estimate_Eeff()
-        plt.axhline(0)
-        plt.show()
         print("Done")
         self.Ee, self.Ei = self.estimate_Ee_Ei()
 
@@ -277,7 +275,7 @@ class WholeCellStimulus:
         # Your derived params
         gsyn = -b                                                  # Siemens
         # Avoid divide-by-zero when gsyn ~ 0
-        gsyn_safe = np.where(np.abs(gsyn) > 0.5e-9, gsyn, np.nan)
+        gsyn_safe = np.where(np.abs(gsyn) > 0.1e-9, gsyn, np.nan)
 
         Eeff = a / (gsyn_safe * float(self.recording.bin_s))       # Volts
 
@@ -294,18 +292,9 @@ class WholeCellStimulus:
 
 
         # Store
-        unstable_mask = gsyn < 0
-        unstable_Vm = integral_Vm[:, unstable_mask] / self.recording.bin_s
-        unstable_current = gsyn[unstable_mask] * (Eeff[unstable_mask] - unstable_Vm)
-
-
-        plt.scatter(integral_Vm.flatten() / self.recording.bin_s, (gsyn * (Eeff - integral_Vm / self.recording.bin_s)).flatten())
-        plt.scatter(unstable_Vm.flatten(), unstable_current.flatten(), color="black")
-        plt.vlines(self.Ess, -1e-9, 1e-9, colors=["black"]*self.Ess.size)
-
-        self.binned_timeseries["Eeff unbiased"] = a / (gsyn * float(self.recording.bin_s))
+        self.binned_timeseries["Eeff unbiased"] = Eeff
         self.binned_timeseries["Eeff bayesian"] = Eeff
-        self.binned_timeseries["gsyn"] = gsyn
+        self.binned_timeseries["gsyn"] = gsyn_safe
         self.binned_timeseries["SSE least-squares Qsyn"] = sse
         self.binned_timeseries["r2 least-squares Qsyn"] = r2
 
@@ -483,7 +472,6 @@ class Analyzer:
             integral_Iact: np.ndarray = np.stack(stimulus.binned_timeseries["integral Iact"].to_numpy()).astype(np.float64).T #type: ignore
 
             Eeff: np.ndarray = stimulus.binned_timeseries["Eeff bayesian"].to_numpy(np.float64) 
-            Eeff_ub: np.ndarray = stimulus.binned_timeseries["Eeff unbiased"].to_numpy(np.float64)
             gsyn: np.ndarray = stimulus.binned_timeseries["gsyn"].to_numpy(np.float64)
 
             ge = stimulus.binned_timeseries["ge constrained"].to_numpy(np.float64)
@@ -516,7 +504,6 @@ class Analyzer:
             # ---- Row 1: Eeff ----
             axs[1, idx].grid(True)
             axs[1, idx].plot(bin_times, Eeff, c="black")
-            axs[1, idx].plot(bin_times, Eeff_ub, c="magenta")
             axs[1, idx].axhline(recording.Er, linestyle="--", color="k", linewidth=1, label="Er" if idx == 0 else None)
             axs[1, idx].axhline(recording.Ee, linestyle="--", color="r", linewidth=1, label="Ee" if idx == 0 else None)
             axs[1, idx].axhline(recording.Ei, linestyle="--", color="b", linewidth=1, label="Ei" if idx == 0 else None)
