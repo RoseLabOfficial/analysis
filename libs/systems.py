@@ -140,13 +140,11 @@ class WholeCellRecording:
 
     def estimate_Ee_Ei(self) -> Tuple[float, float]:
         Eeff_pool: List[float] = []
-        gsyn_pool: List[float] = []
         for stimulus in self.stimuli.values():
-            Eeff_pool.extend(stimulus.binned_timeseries["Eeff bayesian"])
-            gsyn_pool.extend(stimulus.binned_timeseries["gsyn"])
+            Eeff_pool.extend(stimulus.binned_timeseries["Eeff"])
 
-        Ei_hat: float = float(np.nanquantile(Eeff_pool, 0.01)) # units: Volts
-        Ee_hat: float = float(np.nanquantile(Eeff_pool, 0.99)) # units: Volts
+        Ei_hat: float = float(np.nanquantile(Eeff_pool, 0.05)) # units: Volts
+        Ee_hat: float = float(np.nanquantile(Eeff_pool, 0.95)) # units: Volts
 
         return Ee_hat, Ei_hat
         
@@ -159,6 +157,7 @@ class WholeCellRecording:
             stimulus.estimate_Eeff()
         print("Done")
         self.Ee, self.Ei = self.estimate_Ee_Ei()
+        print(f"Estimated Reversals: Ee = {self.Ee:.2e}, Ei = {self.Ei:.2e}")
 
         print("Calculating synaptic conductances... ")
         for paradigm, stimulus in self.stimuli.items():
@@ -249,51 +248,47 @@ class WholeCellStimulus:
 
     def estimate_Eeff(self) -> None:
         # Pull data (faster than .tolist() if these are arrays-in-cells, but keep if needed)
-        integral_Vm = np.stack(self.binned_timeseries["integral Vm"].to_numpy()).astype(np.float64).T  #type: ignore , (Nclamps, Nbins)
-        target_Qsyn = np.stack(self.binned_timeseries["target Qsyn"].to_numpy()).astype(np.float64).T  #type: ignore , (Nclamps, Nbins)
-
-        Phi = integral_Vm
-        Q   = target_Qsyn
+        integral_Vm = np.stack(self.binned_timeseries["integral Vm"].to_numpy()).astype(np.float64).T #type: ignore , (Nclamps, Nbins)
+        target_Qsyn = np.stack(self.binned_timeseries["target Qsyn"].to_numpy()).astype(np.float64).T #type: ignore , (Nclamps, Nbins)
 
         # Means per bin
-        Phi_m = Phi.mean(axis=0)   # (Nbins,)
-        Q_m   = Q.mean(axis=0)
+        integral_Vm_mean = integral_Vm.mean(axis=0) # (Nbins,)
+        target_Qsyn_mean = target_Qsyn.mean(axis=0)
 
         # Centered
-        Phi_c = Phi - Phi_m[None, :]
-        Q_c   = Q - Q_m[None, :]
+        centered_integral_Vm = integral_Vm - integral_Vm_mean[None, :]
+        centered_target_Qsyn = target_Qsyn - target_Qsyn_mean[None, :]
 
         # Regression slope b and intercept a for each bin
-        denom = np.sum(Phi_c * Phi_c, axis=0)         # var * (Nclamps-1) up to scale
-        numer = np.sum(Phi_c * Q_c, axis=0)
+        denom = np.sum(centered_integral_Vm * centered_integral_Vm, axis=0) # var * (Nclamps-1) up to scale
+        numer = np.sum(centered_integral_Vm * centered_target_Qsyn, axis=0)
 
         # Handle degenerate bins where Phi has no variation across clamps
         eps = np.finfo(np.float64).tiny
         b = np.where(np.abs(denom) > eps, numer / denom, np.nan)   # slope (Nbins,)
-        a = Q_m - b * Phi_m                                        # intercept
+        a = target_Qsyn_mean - b * integral_Vm_mean                                        # intercept
 
         # Your derived params
         gsyn = -b                                                  # Siemens
         # Avoid divide-by-zero when gsyn ~ 0
-        gsyn_safe = np.where(np.abs(gsyn) > 0.1e-9, gsyn, np.nan)
+        gsyn_safe = np.where(np.abs(gsyn) > 0.5e-9, gsyn, np.nan)
 
         Eeff = a / (gsyn_safe * float(self.recording.bin_s))       # Volts
 
         # Diagnostics per bin
         # Your SSE formula: sum (Q - gsyn*(Eeff - Phi))^2
         # We can compute predicted Q directly from a + b*Phi (same fit)
-        Q_hat = a[None, :] + b[None, :] * Phi
-        resid = Q - Q_hat
+        Q_hat = a[None, :] + b[None, :] * integral_Vm
+        resid = target_Qsyn - Q_hat
         sse = np.sum(resid * resid, axis=0)
 
         # Proper per-bin R^2: 1 - SSE / SST, SST = sum (Q - mean(Q))^2 within the bin
-        sst = np.sum((Q - Q_m[None, :]) ** 2, axis=0)
+        sst = np.sum((target_Qsyn - target_Qsyn_mean[None, :]) ** 2, axis=0)
         r2 = np.where(sst > 0, 1.0 - (sse / sst), np.nan)
 
 
         # Store
-        self.binned_timeseries["Eeff unbiased"] = Eeff
-        self.binned_timeseries["Eeff bayesian"] = Eeff
+        self.binned_timeseries["Eeff"] = Eeff
         self.binned_timeseries["gsyn"] = gsyn_safe
         self.binned_timeseries["SSE least-squares Qsyn"] = sse
         self.binned_timeseries["r2 least-squares Qsyn"] = r2
@@ -471,7 +466,7 @@ class Analyzer:
             Vpred: np.ndarray = np.stack(stimulus.timeseries["predicted Vm"].to_numpy()).astype(np.float64).T #type: ignore
             integral_Iact: np.ndarray = np.stack(stimulus.binned_timeseries["integral Iact"].to_numpy()).astype(np.float64).T #type: ignore
 
-            Eeff: np.ndarray = stimulus.binned_timeseries["Eeff bayesian"].to_numpy(np.float64) 
+            Eeff: np.ndarray = stimulus.binned_timeseries["Eeff"].to_numpy(np.float64) 
             gsyn: np.ndarray = stimulus.binned_timeseries["gsyn"].to_numpy(np.float64)
 
             ge = stimulus.binned_timeseries["ge constrained"].to_numpy(np.float64)
@@ -517,8 +512,7 @@ class Analyzer:
             axs[3, idx].plot(bin_times, gi, c="b", label="gi")
             axs[3, idx].plot(bin_times, ge_n_u, "r--", label="ge nonlin unconstrained")
             axs[3, idx].plot(bin_times, gi_n_u, "b--", label="gi nonlin unconstrained")
-            axs[3, idx].fill_between(bin_times, bin_times * 0, gsyn, color="grey", alpha=0.5, label="gsyn")
-            
+
             axs[3, idx].plot(bin_times, bin_times * 0, "--k", linewidth=1)
             axs[3, idx].set_ylabel("G (S)")
             axs[3, idx].grid(True)
