@@ -124,9 +124,13 @@ class WholeCellRecording:
         self.LI_dvdt_vs_Vm: float = np.nan
 
         self.stimuli: Dict[str, WholeCellStimulus] = {name: WholeCellStimulus(self, data) for name, data in stimuli.items()}
+        
         self.Er, self.Rin = self._estimate_Er_Rin()
-        self.Eact, self.alpha = self._estimate_Eact_alpha()
-        print(f"Parameter Estimates:\n\tEr: {self.Er*1e3:.1f} mV\n\tRin: {self.Rin*1e-9:.1f} Gohm\n\tEact: {self.Eact*1e3:.1f} mV\n\talpha: {self.alpha:.2e} siemens / V")
+        
+        self.Eact: float = np.nan
+        self.Eact = self._estimate_Eact()
+        
+        print(f"Parameter Estimates:\n\tEr: {self.Er*1e3:.1f} mV\n\tRin: {self.Rin*1e-9:.1f} Gohm\n\tEact: {self.Eact*1e3:.1f} mV")
 
 
     @property
@@ -134,12 +138,20 @@ class WholeCellRecording:
         return 1 / self.Rin # units: Siemens
 
     @property
+    def gact(self) -> float:
+        return self.gl * (self.max_Eact - self.Er) / (self.max_Eact - self.Eact)
+
+    @property
     def max_Vm(self) -> float:
         max_Vms: List[float] = []
-        for paradigm, stimulus in self.stimuli.items():
+        for stimulus in self.stimuli.values():
             max_Vms.append(stimulus.Vm.max())
         return np.max(max_Vms)
     
+    @property
+    def max_Eact(self) -> float:
+        return max(self.Et, self.max_Vm)
+
     def _estimate_Er_Rin(self, bins: int=200, smooth_bins: float=4) -> Tuple[float, float]:
         # Step 1: Get noisy estimate of Vss: argmax of Vm density function.
         Vm_by_Iinj: Dict[float, List[np.ndarray]] = {}
@@ -202,35 +214,33 @@ class WholeCellRecording:
 
         if verbose: print("Calculating synaptic conductances... ")
         for stimulus in self.stimuli.values():
-            stimulus.estimate_ge_gi(nonlinear=True, constrained=False)
-            stimulus.estimate_ge_gi(nonlinear=False, constrained=True)
+            stimulus.estimate_ge_gi(nonlinear=True, constrained=True)
             stimulus.calculate_predicted_Vm()
         
     """ Eact Optimization """
     def predicted_Vm_SSE(self, x) -> float:
-        self.Eact, self.alpha = x
+        self.Eact = x
         self.run_analysis(verbose=False)
         total = 0.0
-        for stim in self.stimuli.values():
-            ge = stim.binned_timeseries["ge nonlinear"]
-            gi = stim.binned_timeseries["gi nonlinear"]
-            total += np.square(np.clip(ge, -np.inf, 0)).sum()
-            total += np.square(np.clip(gi, -np.inf, 0)).sum()
+        for stimulus in self.stimuli.values():
+            sse = np.sum(np.square(stimulus.Vm - np.stack(stimulus.timeseries["predicted Vm"].to_numpy()).astype(np.float64).T)) #type: ignore
+            total += sse
         return total
     
-    def _estimate_Eact_alpha(self) -> Tuple[float, float]:
-        self.Eact = self.max_Vm
-        self.alpha = 1e-7
-        result = minimize(
-            self.squared_sum_of_negative_conductances, 
-            (self.Eact, self.alpha), 
-            method='Powell', 
-            bounds=Bounds([self.Er, 0], [self.Er + (self.max_Vm - self.Er) * 2, 1e-4]), #type: ignore
-        )
-        print(result.success, result.message)
-        Eact: float = result.x[0]
-        alpha: float = result.x[1]
-        return Eact, alpha
+    def _estimate_Eact(self) -> float:
+        print(self.max_Vm, self.max_Eact, self.Er)
+        eps: float = np.finfo(float).eps
+        if self.max_Eact <= self.Er:
+            return self.Er + eps
+        else:
+            Eact_initial_guess: float = (self.Er + self.max_Eact) / 2
+            result = minimize(
+                self.predicted_Vm_SSE, 
+                Eact_initial_guess, 
+                method='Powell', 
+                bounds=Bounds(self.Er + eps, self.max_Eact - eps),
+            )
+            return result.x[0]
 
 
 class WholeCellStimulus:
@@ -280,7 +290,7 @@ class WholeCellStimulus:
         target_Qsyn: np.ndarray = np.stack(self.binned_timeseries["target Qsyn"].to_numpy()).astype(np.float64).T #type: ignore
         bin_duration: np.ndarray = self.binned_timeseries["bin duration"].to_numpy(np.float64)  # units: Seconds, shape: (Nbins,)
 
-        integral_Iact: np.ndarray = np.maximum(0.0, self.recording.alpha * (self.recording.Er * bin_duration[np.newaxis, :] - integral_Vm) * (integral_Vm - self.recording.Eact * bin_duration[np.newaxis, :]))
+        integral_Iact: np.ndarray = np.maximum(0.0, self.recording.gact * (integral_Vm - self.recording.Eact * bin_duration[np.newaxis, :]))
         target_Qsyn_nonlinear: np.ndarray = target_Qsyn - integral_Iact
 
         self.binned_timeseries["integral Iact"] = integral_Iact.T.tolist()
@@ -345,7 +355,6 @@ class WholeCellStimulus:
         # Proper per-bin R^2: 1 - SSE / SST, SST = sum (Q - mean(Q))^2 within the bin
         sst = np.sum((target_Qsyn - target_Qsyn_mean[None, :]) ** 2, axis=0)
         r2 = np.where(sst > 0, 1.0 - (sse / sst), np.nan)
-
 
         # Store
         self.binned_timeseries["Eeff"] = Eeff
@@ -456,8 +465,8 @@ class WholeCellStimulus:
         l_idx: np.ndarray = self.binned_timeseries["left index"].to_numpy(dtype=np.int64)   # shape: (Nbins,)
         r_idx: np.ndarray = self.binned_timeseries["right index"].to_numpy(dtype=np.int64)  # shape: (Nbins,)
 
-        ge_bins: np.ndarray = self.binned_timeseries["ge constrained"].to_numpy(dtype=np.float64) # units: Siemens, shape: (Nbins,)
-        gi_bins: np.ndarray = self.binned_timeseries["gi constrained"].to_numpy(dtype=np.float64) # units: Siemens, shape: (Nbins,)
+        ge_bins: np.ndarray = self.binned_timeseries["ge nonlinear constrained"].to_numpy(dtype=np.float64) # units: Siemens, shape: (Nbins,)
+        gi_bins: np.ndarray = self.binned_timeseries["gi nonlinear constrained"].to_numpy(dtype=np.float64) # units: Siemens, shape: (Nbins,)
 
         Vpred: np.ndarray = np.empty_like(Vm, dtype=np.float64) # units: Volts, shape: (Nclamps, Nsamples)
         Vpred[:, 0:1] = Er + Iinj / gl
@@ -527,19 +536,13 @@ class Analyzer:
             integral_Iact: np.ndarray = np.stack(stimulus.binned_timeseries["integral Iact"].to_numpy()).astype(np.float64).T #type: ignore
 
             Eeff: np.ndarray = stimulus.binned_timeseries["Eeff"].to_numpy(np.float64) 
-            gsyn: np.ndarray = stimulus.binned_timeseries["gsyn"].to_numpy(np.float64)
-
-            ge = stimulus.binned_timeseries["ge constrained"].to_numpy(np.float64)
-            gi = stimulus.binned_timeseries["gi constrained"].to_numpy(np.float64)
             
-            ge_n_u = stimulus.binned_timeseries["ge nonlinear"].to_numpy(np.float64)
-            gi_n_u = stimulus.binned_timeseries["gi nonlinear"].to_numpy(np.float64)
-
-            gsyn = stimulus.binned_timeseries["gsyn"].to_numpy(np.float64)
-
+            ge = stimulus.binned_timeseries["ge nonlinear constrained"].to_numpy(np.float64)
+            gi = stimulus.binned_timeseries["gi nonlinear constrained"].to_numpy(np.float64)
+            
             # diagnostics
-            resnorm = stimulus.binned_timeseries["ge/gi residual norm constrained"].to_numpy()
-            cond = stimulus.binned_timeseries["ge/gi matrix conditioning constrained"].to_numpy()
+            resnorm = stimulus.binned_timeseries["ge/gi residual norm nonlinear constrained"].to_numpy()
+            cond = stimulus.binned_timeseries["ge/gi matrix conditioning nonlinear constrained"].to_numpy()
 
             axs[0, idx].set_title(paradigm)
 
@@ -560,6 +563,7 @@ class Analyzer:
             for j in range(stimulus.Nclamps):
                 axs[0, idx].plot(times, Vpred[j, :], linestyle=":", color=colors[j])  # dotted Vpred
                 axs[0, idx].plot([times[0], times[-1]], [Ess[j]] * 2, color="grey", ls="--")
+            axs[0, idx].plot([times[0], times[-1]], [recording.Eact] * 2, color="red", ls="--")
 
             axs[0, idx].set_ylabel("Vm (V)")
             axs[0, idx].grid(True)
@@ -580,8 +584,6 @@ class Analyzer:
             # ---- Row 3: conductances ----
             axs[3, idx].plot(bin_times, ge, c="r", label="ge")
             axs[3, idx].plot(bin_times, gi, c="b", label="gi")
-            axs[3, idx].plot(bin_times, ge_n_u, "r--", label="ge nonlin unconstrained")
-            axs[3, idx].plot(bin_times, gi_n_u, "b--", label="gi nonlin unconstrained")
 
             axs[3, idx].plot(bin_times, bin_times * 0, "--k", linewidth=1)
             axs[3, idx].set_ylabel("G (S)")
