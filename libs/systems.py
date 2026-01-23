@@ -193,29 +193,21 @@ class WholeCellRecording:
         
     def run_analysis(self, verbose: bool=True):
         if verbose: print("Estimating reversal potentials... ")
-        for paradigm, stimulus in self.stimuli.items():
-            if verbose: print(f"\t...{paradigm}")
+        for stimulus in self.stimuli.values():
             stimulus.calculate_target_Qsyn()
             stimulus.calculate_target_Qsyn_nonlinear()
             stimulus.estimate_Eeff()
-        if verbose: print("Done")
         self.Ee, self.Ei = self.estimate_Ee_Ei()
         if verbose: print(f"Estimated Reversals: Ee = {self.Ee*1e3:.1f} mV, Ei = {self.Ei*1e3:.1f} mV")
 
         if verbose: print("Calculating synaptic conductances... ")
-        for paradigm, stimulus in self.stimuli.items():
-            if verbose: print(f"\t...{paradigm}")
+        for stimulus in self.stimuli.values():
             stimulus.estimate_ge_gi(nonlinear=True, constrained=False)
             stimulus.estimate_ge_gi(nonlinear=False, constrained=True)
             stimulus.calculate_predicted_Vm()
-        if verbose: print("Done")
-
-        if verbose: print("Computing recording-level dv/dt–Vm linearity... ")
-        self.compute_recording_iv_linearity_index()
-        if verbose: print(f"Done. LI_dvdt_vs_Vm = {self.LI_dvdt_vs_Vm:.3f}")
-    
+        
     """ Eact Optimization """
-    def squared_sum_of_negative_conductances(self, x) -> float:
+    def predicted_Vm_SSE(self, x) -> float:
         self.Eact, self.alpha = x
         self.run_analysis(verbose=False)
         total = 0.0
@@ -239,42 +231,6 @@ class WholeCellRecording:
         Eact: float = result.x[0]
         alpha: float = result.x[1]
         return Eact, alpha
-
-    def compute_recording_iv_linearity_index(
-        self,
-        smooth_sigma_samples: float = 50.0,
-        deriv_method: str = "savgol",
-        eps: float = 1e-12,
-    ) -> float:
-        """
-        Compute a single LI for the whole recording by aggregating per-time R^2 across stimuli,
-        weighted by cross-clamp voltage leverage (Sxx).
-
-        Stores:
-            self.LI_dvdt_vs_Vm (float)
-            stimulus.timeseries["r2_dvdt_vs_Vm"], ["w_dvdt_vs_Vm"] for each stimulus
-        """
-
-        num = 0.0
-        den = 0.0
-
-        for stimulus in self.stimuli.values():
-            r2, w = stimulus.compute_iv_linearity_index(
-                smooth_sigma_samples=smooth_sigma_samples,
-                deriv_method=deriv_method,
-            )
-
-            finite = np.isfinite(r2) & np.isfinite(w) & (w > 0)
-            if np.any(finite):
-                num += float(np.sum(w[finite] * r2[finite]))
-                den += float(np.sum(w[finite]))
-
-        LI = np.nan
-        if den > 0:
-            LI = num / (den + eps)
-
-        self.LI_dvdt_vs_Vm = float(LI)
-        return self.LI_dvdt_vs_Vm
 
 
 class WholeCellStimulus:
@@ -518,109 +474,6 @@ class WholeCellStimulus:
             vsss.append(vss)
 
         self.timeseries[f"predicted Vm"] = Vpred.T.tolist()
-
-
-    def compute_iv_linearity_index(
-        self,
-        smooth_sigma_samples: float = 20.0,
-        deriv_method: str = "savgol",
-        g_min: float = 0.5e-9,             # Siemens
-        dvdt_var_min: float = 1e-2,        # (V/s)^2 across clamps; tune to your noise floor
-        eps: float = 1e-12
-    ) -> Tuple[np.ndarray, np.ndarray]:
-        """
-        Time-resolved linearity test for dv/dt vs Vm across clamps.
-
-        Fits per timepoint across clamps:
-            dv/dt(t) = a(t) + b(t) * Vm(t)
-
-        Returns
-        -------
-        r2 : ndarray, shape (Nsamples,)
-            Per-time R^2, but only at valid timepoints; invalid -> NaN.
-        w : ndarray, shape (Nsamples,)
-            Per-time weight (voltage leverage Sxx). Useful for weighted aggregation.
-        """
-
-        Vm = self.Vm.astype(np.float64)  # (Nclamps, Nsamples)
-
-        # --- dv/dt ---
-        if smooth_sigma_samples is not None and smooth_sigma_samples > 0:
-            Vm_s = gaussian_filter1d(Vm, smooth_sigma_samples, axis=-1)
-        else:
-            Vm_s = Vm
-
-        if deriv_method == "finite_difference":
-            fd = np.diff(Vm_s, axis=-1) / float(self.recording.dt)  # (Nclamps, Nsamples-1)
-            dvdt = (
-                np.hstack([fd, fd[:, -1][:, None]]) +
-                np.hstack([fd[:, 0][:, None], fd])
-            ) / 2.0
-        elif deriv_method == "savgol":
-            win = int(max(5, 2 * int(3 * smooth_sigma_samples) + 1))
-            if win % 2 == 0:
-                win += 1
-            dvdt = savgol_filter(
-                Vm, window_length=win, polyorder=3, deriv=1,
-                delta=float(self.recording.dt), axis=-1, mode="interp"
-            )
-        else:
-            raise ValueError(f"Unknown deriv_method: {deriv_method}")
-
-        # --- regression across clamps per timepoint ---
-        x = Vm - Vm.mean(axis=0, keepdims=True)
-        y = dvdt - dvdt.mean(axis=0, keepdims=True)
-
-        Sxx = np.sum(x * x, axis=0)          # (Nsamples,)
-        Sxy = np.sum(x * y, axis=0)          # (Nsamples,)
-        Syy = np.sum(y * y, axis=0)          # (Nsamples,)  (== SST when centered)
-
-        # slope and intercept
-        b = np.where(Sxx > eps, Sxy / Sxx, np.nan)
-        a = dvdt.mean(axis=0) - b * Vm.mean(axis=0)
-
-        # implied G(t)
-        Ghat = -b
-
-        # dvdt variance across clamps at each time:
-        # Syy = sum_i (dvdt_i - mean)^2 = (Nclamps-1) * var (ddof=1)
-        n = float(self.Nclamps)
-        dvdt_var = Syy / max(n - 1.0, 1.0)   # (V/s)^2; ddof=1 when n>1
-
-        # --- validity mask ---
-        valid = (
-            (Sxx > eps) &
-            np.isfinite(Ghat) & (np.abs(Ghat) >= g_min) &
-            np.isfinite(dvdt_var) & (dvdt_var >= dvdt_var_min) &
-            np.isfinite(Syy) & (Syy > eps)
-        )
-
-        # --- R^2 only for valid timepoints ---
-        r2 = np.full(self.Nsamples, np.nan, dtype=np.float64)
-
-        if np.any(valid):
-            # predicted centered yhat = b*x
-            yhat = b[None, :] * x
-            ss_res = np.sum((y - yhat) ** 2, axis=0)   # (Nsamples,)
-            # since y is centered: SST == Syy
-            r2_valid = 1.0 - (ss_res[valid] / (Syy[valid] + eps))
-            r2[valid] = r2_valid
-
-        # weights for aggregation (keep full length; aggregation should mask with r2 finite)
-        w = Sxx.astype(np.float64)
-
-        # --- store diagnostics ---
-        self.timeseries["dvdt"] = dvdt.T.tolist()
-        self.timeseries["Ghat(t)"] = Ghat
-        self.timeseries["Ehat(t)"] = np.where(np.isfinite(Ghat) & (np.abs(Ghat) >= g_min), a / Ghat, np.nan)
-
-        self.timeseries["r2_dvdt_vs_Vm"] = r2
-        self.timeseries["w_dvdt_vs_Vm"] = w
-        self.timeseries["dvdt_var_across_clamps"] = dvdt_var
-        self.timeseries["valid_iv_linearity_mask"] = valid.astype(np.int8)
-
-        return r2, w
-
 
 
 class Analyzer:
