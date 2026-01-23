@@ -80,7 +80,7 @@ class XLReader:
         data: pd.DataFrame = pd.read_excel(self.filepath, sheet_name=paradigm, header=0)
         assert "times" in data, f"No 'times' column present in {paradigm} sheet." 
         for key in data.keys():
-            if key != "times":
+            if key not in {"times", "stimulus", "representative"}: # stimulus is often (optionally) stored alongside membrane potential averages
                 data.rename(columns={key: f"{float(key):.3e}"}, inplace=True)                
         return data
     

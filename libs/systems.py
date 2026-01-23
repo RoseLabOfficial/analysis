@@ -3,6 +3,9 @@ import numpy as np
 import matplotlib.pyplot as plt 
 from pyhelpers.store import save_fig
 from pathlib import Path
+from scipy.optimize import minimize, Bounds
+from scipy.ndimage import gaussian_filter1d
+from scipy.signal import savgol_filter
 
 from libs.readers import XLReader, AnalyzerCfg
 
@@ -107,10 +110,7 @@ class WholeCellRecording:
         assert len(stimuli) > 0
         
         self.Cm: float = parameters["Cm"][0]    # units: Farads
-        self.Rin: float = parameters["Rin"][0]  # units: Ohms
         self.Et: float = parameters["Et"][0]
-
-        self.alpha: float = 1e-5  # units: Siemens
 
         example_t: pd.Series = list(stimuli.values())[0]["times"] # units: Seconds, shape: (Nsamples,)
         self.dt: float = example_t[1] - example_t[0] # time assumed sampled at constant interval; units: Seconds
@@ -118,25 +118,68 @@ class WholeCellRecording:
         self.bin_nsamples: int = round(bin_s / self.dt)
         self.bin_s: float = self.bin_nsamples * self.dt # units: Seconds
 
-        self.Ee: float # units: Volts
-        self.Ei: float # units: Volts
+        self.Ee: float = np.nan # units: Volts
+        self.Ei: float = np.nan # units: Volts
+        
+        self.LI_dvdt_vs_Vm: float = np.nan
 
         self.stimuli: Dict[str, WholeCellStimulus] = {name: WholeCellStimulus(self, data) for name, data in stimuli.items()}
+        self.Er, self.Rin = self._estimate_Er_Rin()
+        self.Eact, self.alpha = self._estimate_Eact_alpha()
+        print(f"Parameter Estimates:\n\tEr: {self.Er*1e3:.1f} mV\n\tRin: {self.Rin*1e-9:.1f} Gohm\n\tEact: {self.Eact*1e3:.1f} mV\n\talpha: {self.alpha:.2e} siemens / V")
 
-        self._estimate_Er()
 
     @property
     def gl(self) -> float:
         return 1 / self.Rin # units: Siemens
 
-    def _estimate_Er(self) -> None:
-        Ess_pool: list = []
-        Iinj_pool: list = []
+    @property
+    def max_Vm(self) -> float:
+        max_Vms: List[float] = []
+        for paradigm, stimulus in self.stimuli.items():
+            max_Vms.append(stimulus.Vm.max())
+        return np.max(max_Vms)
+    
+    def _estimate_Er_Rin(self, bins: int=200, smooth_bins: float=4) -> Tuple[float, float]:
+        # Step 1: Get noisy estimate of Vss: argmax of Vm density function.
+        Vm_by_Iinj: Dict[float, List[np.ndarray]] = {}
         for stimulus in self.stimuli.values():
-            Ess_pool.extend(stimulus.Ess)
-            Iinj_pool.extend(stimulus.Iinj)
-        Er: float = (np.sum(Ess_pool) - np.sum(Iinj_pool) * self.Rin) / len(Ess_pool)
-        self.Er: float = Er
+            for Iinj, Vm in zip(np.squeeze(stimulus.Iinj), stimulus.Vm):
+                if Iinj in Vm_by_Iinj:
+                    Vm_by_Iinj[Iinj].append(Vm)
+                else:
+                    Vm_by_Iinj[Iinj] = [Vm]
+        
+        fig, ax = plt.subplots(2, 1)
+
+        Iinjs_list: List[float] = []
+        ys_list: List[float] = []
+        for Iinj, Vms in Vm_by_Iinj.items():
+            counts, edges = np.histogram(np.concatenate(Vms), bins=bins)
+            counts_s: np.ndarray = gaussian_filter1d(counts.astype(float), smooth_bins)
+            centers: np.ndarray = 0.5 * (edges[:-1] + edges[1:])
+            ax[0].plot(centers, counts_s)
+            Vss_hat: float = centers[np.argmax(counts_s)]
+
+            Iinjs_list.append(Iinj)
+            ys_list.append(Vss_hat)
+
+        # Step 2: Linear Regression Solution
+        Iinjs: np.ndarray = np.array(Iinjs_list)
+        Iinjs_mean: float = Iinjs.mean()
+        Iinjs_centered: np.ndarray = Iinjs - Iinjs_mean
+
+        ys: np.ndarray = np.array(ys_list)
+        ys_mean: float = ys.mean() 
+        ys_centered: np.ndarray = ys - ys_mean 
+        
+        Rin_hat: float = np.sum(Iinjs_centered * ys_centered) / np.sum(np.square(Iinjs_centered))
+        Er_hat: float = ys_mean - Rin_hat * Iinjs_mean
+
+        ax[1].scatter(Iinjs, ys)
+        ax[1].plot(Iinjs, Er_hat + Rin_hat * Iinjs)
+
+        return Er_hat, Rin_hat
 
     def estimate_Ee_Ei(self) -> Tuple[float, float]:
         Eeff_pool: List[float] = []
@@ -148,25 +191,91 @@ class WholeCellRecording:
 
         return Ee_hat, Ei_hat
         
-    def run_analysis(self):
-        print("Estimating reversal potentials... ")
+    def run_analysis(self, verbose: bool=True):
+        if verbose: print("Estimating reversal potentials... ")
         for paradigm, stimulus in self.stimuli.items():
-            print(f"\t...{paradigm}")
+            if verbose: print(f"\t...{paradigm}")
             stimulus.calculate_target_Qsyn()
             stimulus.calculate_target_Qsyn_nonlinear()
             stimulus.estimate_Eeff()
-        print("Done")
+        if verbose: print("Done")
         self.Ee, self.Ei = self.estimate_Ee_Ei()
-        print(f"Estimated Reversals: Ee = {self.Ee:.2e}, Ei = {self.Ei:.2e}")
+        if verbose: print(f"Estimated Reversals: Ee = {self.Ee*1e3:.1f} mV, Ei = {self.Ei*1e3:.1f} mV")
 
-        print("Calculating synaptic conductances... ")
+        if verbose: print("Calculating synaptic conductances... ")
         for paradigm, stimulus in self.stimuli.items():
-            print(f"\t...{paradigm}")
+            if verbose: print(f"\t...{paradigm}")
             stimulus.estimate_ge_gi(nonlinear=True, constrained=False)
             stimulus.estimate_ge_gi(nonlinear=False, constrained=True)
             stimulus.calculate_predicted_Vm()
-        print("Done")
-        
+        if verbose: print("Done")
+
+        if verbose: print("Computing recording-level dv/dt–Vm linearity... ")
+        self.compute_recording_iv_linearity_index()
+        if verbose: print(f"Done. LI_dvdt_vs_Vm = {self.LI_dvdt_vs_Vm:.3f}")
+    
+    """ Eact Optimization """
+    def squared_sum_of_negative_conductances(self, x) -> float:
+        self.Eact, self.alpha = x
+        self.run_analysis(verbose=False)
+        total = 0.0
+        for stim in self.stimuli.values():
+            ge = stim.binned_timeseries["ge nonlinear"]
+            gi = stim.binned_timeseries["gi nonlinear"]
+            total += np.square(np.clip(ge, -np.inf, 0)).sum()
+            total += np.square(np.clip(gi, -np.inf, 0)).sum()
+        return total
+    
+    def _estimate_Eact_alpha(self) -> Tuple[float, float]:
+        self.Eact = self.max_Vm
+        self.alpha = 1e-7
+        result = minimize(
+            self.squared_sum_of_negative_conductances, 
+            (self.Eact, self.alpha), 
+            method='Powell', 
+            bounds=Bounds([self.Er, 0], [self.Er + (self.max_Vm - self.Er) * 2, 1e-4]), #type: ignore
+        )
+        print(result.success, result.message)
+        Eact: float = result.x[0]
+        alpha: float = result.x[1]
+        return Eact, alpha
+
+    def compute_recording_iv_linearity_index(
+        self,
+        smooth_sigma_samples: float = 50.0,
+        deriv_method: str = "savgol",
+        eps: float = 1e-12,
+    ) -> float:
+        """
+        Compute a single LI for the whole recording by aggregating per-time R^2 across stimuli,
+        weighted by cross-clamp voltage leverage (Sxx).
+
+        Stores:
+            self.LI_dvdt_vs_Vm (float)
+            stimulus.timeseries["r2_dvdt_vs_Vm"], ["w_dvdt_vs_Vm"] for each stimulus
+        """
+
+        num = 0.0
+        den = 0.0
+
+        for stimulus in self.stimuli.values():
+            r2, w = stimulus.compute_iv_linearity_index(
+                smooth_sigma_samples=smooth_sigma_samples,
+                deriv_method=deriv_method,
+            )
+
+            finite = np.isfinite(r2) & np.isfinite(w) & (w > 0)
+            if np.any(finite):
+                num += float(np.sum(w[finite] * r2[finite]))
+                den += float(np.sum(w[finite]))
+
+        LI = np.nan
+        if den > 0:
+            LI = num / (den + eps)
+
+        self.LI_dvdt_vs_Vm = float(LI)
+        return self.LI_dvdt_vs_Vm
+
 
 class WholeCellStimulus:
     def __init__(self, recording: WholeCellRecording, data: pd.DataFrame) -> None:
@@ -175,7 +284,11 @@ class WholeCellStimulus:
         self.times: np.ndarray = data["times"].to_numpy(dtype=np.float64)
 
         Iinj_colnames: List[str] = list(data.columns)
-        Iinj_colnames.remove("times")        
+        
+        for aux_key in ["times", "stimulus", "representative"]:
+            if aux_key in Iinj_colnames:
+                Iinj_colnames.remove(aux_key)
+
         # (* 1e-3 is to scale Vm from millivolts to volts)
         self.Vm: np.ndarray = data[Iinj_colnames].to_numpy(dtype=np.float64).T * 1e-3       # units: Volts, shape: [Nclamps, Nsamples]
         self.Iinj: np.ndarray = np.array(Iinj_colnames, dtype=np.float64)[:, np.newaxis]    # units: Amperes, shape: [Nclamps, 1]
@@ -198,16 +311,7 @@ class WholeCellStimulus:
             "right time": r_time,
             "bin duration": bin_duration
         })
-
-        self._estimate_Ess()
     
-    def _estimate_Ess(self) -> None:
-        Vm: np.ndarray = self.Vm        
-        dVm: np.ndarray = np.diff(Vm, axis=-1)
-        mean_abs_dVm: np.ndarray = (np.abs(np.hstack((dVm[:, 0, None], dVm))) + np.abs(np.hstack((dVm, dVm[:, -1, None])))) / 2
-        Ess: np.ndarray = weighted_quantile(Vm, 0.5, np.exp(-mean_abs_dVm)) #type: ignore
-        self.Ess: np.ndarray = Ess[:, np.newaxis]
-
     def _cumtrapz_prefix_integral(self, arr: np.ndarray) -> np.ndarray:
         pref: np.ndarray = np.zeros((self.Nclamps, self.Nsamples + 1), dtype=arr.dtype) # shape: (Nclamps, Nsamples + 1)
         area: np.ndarray = 0.5 * (arr[:, 1:] + arr[:, :-1]) * self.recording.dt         # shape: (Nclamps, Nsamples)
@@ -220,7 +324,7 @@ class WholeCellStimulus:
         target_Qsyn: np.ndarray = np.stack(self.binned_timeseries["target Qsyn"].to_numpy()).astype(np.float64).T #type: ignore
         bin_duration: np.ndarray = self.binned_timeseries["bin duration"].to_numpy(np.float64)  # units: Seconds, shape: (Nbins,)
 
-        integral_Iact: np.ndarray = np.maximum(0.0, self.recording.alpha * (self.Ess * bin_duration[np.newaxis, :] - integral_Vm) * (integral_Vm - self.recording.Et * bin_duration[np.newaxis, :]))
+        integral_Iact: np.ndarray = np.maximum(0.0, self.recording.alpha * (self.recording.Er * bin_duration[np.newaxis, :] - integral_Vm) * (integral_Vm - self.recording.Eact * bin_duration[np.newaxis, :]))
         target_Qsyn_nonlinear: np.ndarray = target_Qsyn - integral_Iact
 
         self.binned_timeseries["integral Iact"] = integral_Iact.T.tolist()
@@ -271,7 +375,7 @@ class WholeCellStimulus:
         # Your derived params
         gsyn = -b                                                  # Siemens
         # Avoid divide-by-zero when gsyn ~ 0
-        gsyn_safe = np.where(np.abs(gsyn) > 0.5e-9, gsyn, np.nan)
+        gsyn_safe = np.where(np.abs(gsyn) > 0.1e-9, gsyn, np.nan)
 
         Eeff = a / (gsyn_safe * float(self.recording.bin_s))       # Volts
 
@@ -400,7 +504,7 @@ class WholeCellStimulus:
         gi_bins: np.ndarray = self.binned_timeseries["gi constrained"].to_numpy(dtype=np.float64) # units: Siemens, shape: (Nbins,)
 
         Vpred: np.ndarray = np.empty_like(Vm, dtype=np.float64) # units: Volts, shape: (Nclamps, Nsamples)
-        Vpred[:, 0] = self.Ess[:, 0]  # initial condition from measured Vm
+        Vpred[:, 0:1] = Er + Iinj / gl
 
         vsss = []
 
@@ -414,6 +518,109 @@ class WholeCellStimulus:
             vsss.append(vss)
 
         self.timeseries[f"predicted Vm"] = Vpred.T.tolist()
+
+
+    def compute_iv_linearity_index(
+        self,
+        smooth_sigma_samples: float = 20.0,
+        deriv_method: str = "savgol",
+        g_min: float = 0.5e-9,             # Siemens
+        dvdt_var_min: float = 1e-2,        # (V/s)^2 across clamps; tune to your noise floor
+        eps: float = 1e-12
+    ) -> Tuple[np.ndarray, np.ndarray]:
+        """
+        Time-resolved linearity test for dv/dt vs Vm across clamps.
+
+        Fits per timepoint across clamps:
+            dv/dt(t) = a(t) + b(t) * Vm(t)
+
+        Returns
+        -------
+        r2 : ndarray, shape (Nsamples,)
+            Per-time R^2, but only at valid timepoints; invalid -> NaN.
+        w : ndarray, shape (Nsamples,)
+            Per-time weight (voltage leverage Sxx). Useful for weighted aggregation.
+        """
+
+        Vm = self.Vm.astype(np.float64)  # (Nclamps, Nsamples)
+
+        # --- dv/dt ---
+        if smooth_sigma_samples is not None and smooth_sigma_samples > 0:
+            Vm_s = gaussian_filter1d(Vm, smooth_sigma_samples, axis=-1)
+        else:
+            Vm_s = Vm
+
+        if deriv_method == "finite_difference":
+            fd = np.diff(Vm_s, axis=-1) / float(self.recording.dt)  # (Nclamps, Nsamples-1)
+            dvdt = (
+                np.hstack([fd, fd[:, -1][:, None]]) +
+                np.hstack([fd[:, 0][:, None], fd])
+            ) / 2.0
+        elif deriv_method == "savgol":
+            win = int(max(5, 2 * int(3 * smooth_sigma_samples) + 1))
+            if win % 2 == 0:
+                win += 1
+            dvdt = savgol_filter(
+                Vm, window_length=win, polyorder=3, deriv=1,
+                delta=float(self.recording.dt), axis=-1, mode="interp"
+            )
+        else:
+            raise ValueError(f"Unknown deriv_method: {deriv_method}")
+
+        # --- regression across clamps per timepoint ---
+        x = Vm - Vm.mean(axis=0, keepdims=True)
+        y = dvdt - dvdt.mean(axis=0, keepdims=True)
+
+        Sxx = np.sum(x * x, axis=0)          # (Nsamples,)
+        Sxy = np.sum(x * y, axis=0)          # (Nsamples,)
+        Syy = np.sum(y * y, axis=0)          # (Nsamples,)  (== SST when centered)
+
+        # slope and intercept
+        b = np.where(Sxx > eps, Sxy / Sxx, np.nan)
+        a = dvdt.mean(axis=0) - b * Vm.mean(axis=0)
+
+        # implied G(t)
+        Ghat = -b
+
+        # dvdt variance across clamps at each time:
+        # Syy = sum_i (dvdt_i - mean)^2 = (Nclamps-1) * var (ddof=1)
+        n = float(self.Nclamps)
+        dvdt_var = Syy / max(n - 1.0, 1.0)   # (V/s)^2; ddof=1 when n>1
+
+        # --- validity mask ---
+        valid = (
+            (Sxx > eps) &
+            np.isfinite(Ghat) & (np.abs(Ghat) >= g_min) &
+            np.isfinite(dvdt_var) & (dvdt_var >= dvdt_var_min) &
+            np.isfinite(Syy) & (Syy > eps)
+        )
+
+        # --- R^2 only for valid timepoints ---
+        r2 = np.full(self.Nsamples, np.nan, dtype=np.float64)
+
+        if np.any(valid):
+            # predicted centered yhat = b*x
+            yhat = b[None, :] * x
+            ss_res = np.sum((y - yhat) ** 2, axis=0)   # (Nsamples,)
+            # since y is centered: SST == Syy
+            r2_valid = 1.0 - (ss_res[valid] / (Syy[valid] + eps))
+            r2[valid] = r2_valid
+
+        # weights for aggregation (keep full length; aggregation should mask with r2 finite)
+        w = Sxx.astype(np.float64)
+
+        # --- store diagnostics ---
+        self.timeseries["dvdt"] = dvdt.T.tolist()
+        self.timeseries["Ghat(t)"] = Ghat
+        self.timeseries["Ehat(t)"] = np.where(np.isfinite(Ghat) & (np.abs(Ghat) >= g_min), a / Ghat, np.nan)
+
+        self.timeseries["r2_dvdt_vs_Vm"] = r2
+        self.timeseries["w_dvdt_vs_Vm"] = w
+        self.timeseries["dvdt_var_across_clamps"] = dvdt_var
+        self.timeseries["valid_iv_linearity_mask"] = valid.astype(np.int8)
+
+        return r2, w
+
 
 
 class Analyzer:
@@ -441,7 +648,7 @@ class Analyzer:
         """
 
         ncols = len(recording.stimuli)
-        nrows = 6
+        nrows = 7
         fig, axs = plt.subplots(
             nrows=nrows,
             ncols=ncols,
@@ -450,7 +657,7 @@ class Analyzer:
             figsize=(15, 10),
             constrained_layout=True,
         )
-        fig.suptitle(filename.name)
+        fig.suptitle(f"{filename.name}   LI={recording.LI_dvdt_vs_Vm:.3f}")
 
         if ncols == 1:
             axs = np.expand_dims(axs, axis=1)
@@ -483,18 +690,28 @@ class Analyzer:
 
             axs[0, idx].set_title(paradigm)
 
+            r2_iv = stimulus.timeseries.get("r2_dvdt_vs_Vm", None)
+            LI_iv = stimulus.timeseries.get("LI_dvdt_vs_Vm", None)
+            if r2_iv is not None:
+                r2_iv = np.asarray(r2_iv, dtype=np.float64)
+                axs[6, idx].plot(times, r2_iv, linewidth=1)  # or pick a new row
+                if LI_iv is not None:
+                    LI_val = float(np.asarray(LI_iv, dtype=np.float64)[0])
+                    axs[0, idx].set_title(f"{paradigm}  LI={LI_val:.3f}")
+
             # ---- Row 0: Vm + Vpred (same colors) ----
             curves = axs[0, idx].plot(times, stimulus.Vm.T)  # solid Vm traces
             colors = [line.get_color() for line in curves]
 
+            Ess = recording.Er + recording.Rin * stimulus.Iinj
             for j in range(stimulus.Nclamps):
                 axs[0, idx].plot(times, Vpred[j, :], linestyle=":", color=colors[j])  # dotted Vpred
-                axs[0, idx].plot([times[0], times[-1]], [stimulus.Ess[j]] * 2, color="grey", ls="--")
+                axs[0, idx].plot([times[0], times[-1]], [Ess[j]] * 2, color="grey", ls="--")
 
             axs[0, idx].set_ylabel("Vm (V)")
             axs[0, idx].grid(True)
-            if idx == 0:
-                axs[0, idx].legend(loc="upper right")
+            # if idx == 0:
+            #     axs[0, idx].legend(loc="upper right")
 
             # ---- Row 1: Eeff ----
             axs[1, idx].grid(True)
@@ -516,8 +733,8 @@ class Analyzer:
             axs[3, idx].plot(bin_times, bin_times * 0, "--k", linewidth=1)
             axs[3, idx].set_ylabel("G (S)")
             axs[3, idx].grid(True)
-            if idx == 0:
-                axs[3, idx].legend(loc="upper right")
+            # if idx == 0:
+            #     axs[3, idx].legend(loc="upper right")
 
             # ---- Row 4: residual norm + warning threshold ----
             ax_r = axs[4, idx]
