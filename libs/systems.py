@@ -596,15 +596,6 @@ class Analyzer:
 
             axs[0, idx].set_title(paradigm)
 
-            r2_iv = stimulus.timeseries.get("r2_dvdt_vs_Vm", None)
-            LI_iv = stimulus.timeseries.get("LI_dvdt_vs_Vm", None)
-            if r2_iv is not None:
-                r2_iv = np.asarray(r2_iv, dtype=np.float64)
-                axs[6, idx].plot(times, r2_iv, linewidth=1)  # or pick a new row
-                if LI_iv is not None:
-                    LI_val = float(np.asarray(LI_iv, dtype=np.float64)[0])
-                    axs[0, idx].set_title(f"{paradigm}  LI={LI_val:.3f}")
-
             # ---- Row 0: Vm + Vpred (same colors) ----
             curves = axs[0, idx].plot(times, stimulus.Vm.T)  # solid Vm traces
             colors = [line.get_color() for line in curves]
