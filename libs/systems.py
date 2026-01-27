@@ -227,6 +227,15 @@ class WholeCellRecording:
             total += sse
         return total
     
+    def gegi_correlation(self, x) -> float:
+        self.Eact = x
+        self.run_analysis(verbose=False)
+        total = 0.0
+        for stimulus in self.stimuli.values():
+            sse = np.sum(np.square(stimulus.Vm - np.stack(stimulus.timeseries["predicted Vm"].to_numpy()).astype(np.float64).T)) #type: ignore
+            total += sse
+        return total
+    
     def _estimate_Eact(self) -> float:
         print(self.max_Vm, self.max_Eact, self.Er)
         eps: float = np.finfo(float).eps
@@ -362,80 +371,120 @@ class WholeCellStimulus:
         self.binned_timeseries["SSE least-squares Qsyn"] = sse
         self.binned_timeseries["r2 least-squares Qsyn"] = r2
 
-    def estimate_ge_gi(self, nonlinear: bool=False, constrained: bool=True) -> None:
-        bin_duration: np.ndarray = self.binned_timeseries["bin duration"].to_numpy(dtype=np.float64)                # units: Seconds, shape: (Nbins,)
-        integral_Vm: np.ndarray = np.stack(self.binned_timeseries["integral Vm"].to_numpy()).astype(np.float64).T   #type: ignore , units: Webers, shape: (Nclamps, Nbins)
-        
+    def estimate_ge_gi(
+        self,
+        nonlinear: bool = False,
+        constrained: bool = True,
+        fit_ge: bool = False,
+        fit_gi: bool = True,
+    ) -> None:
+        """
+        Estimate ge and gi per bin.
+
+        fit_ge / fit_gi control whether each conductance is fit.
+        - fit_ge=True,  fit_gi=True  : fit both (your current behavior)
+        - fit_ge=True,  fit_gi=False : excitation-only (gi == 0 for all bins)
+        - fit_ge=False, fit_gi=True  : inhibition-only (ge == 0 for all bins)
+        - fit_ge=False, fit_gi=False : both forced to 0 (degenerate)
+        """
+
+        bin_duration: np.ndarray = self.binned_timeseries["bin duration"].to_numpy(dtype=np.float64)
+        integral_Vm: np.ndarray = np.stack(self.binned_timeseries["integral Vm"].to_numpy()).astype(np.float64).T  # type: ignore
+
         if nonlinear:
-            target_Qsyn = np.stack(self.binned_timeseries["target Qsyn nonlinear"].to_numpy()).astype(np.float64).T #type: ignore ,
-        else: # linear
-            target_Qsyn  = np.stack(self.binned_timeseries["target Qsyn"].to_numpy()).astype(np.float64).T  #type: ignore , units: Coulombs, shape: (Nclamps, Nbins)
+            target_Qsyn = np.stack(self.binned_timeseries["target Qsyn nonlinear"].to_numpy()).astype(np.float64).T  # type: ignore
+        else:
+            target_Qsyn = np.stack(self.binned_timeseries["target Qsyn"].to_numpy()).astype(np.float64).T  # type: ignore
 
-        Ee: float = self.recording.Ee # units: Volts
-        Ei: float = self.recording.Ei # units: Volts
+        Ee: float = self.recording.Ee
+        Ei: float = self.recording.Ei
 
-        Phie: np.ndarray = Ee * bin_duration[np.newaxis, :] - integral_Vm # units: Webers, shape: (Nclamps, Nbins)
-        Phii: np.ndarray = Ei * bin_duration[np.newaxis, :] - integral_Vm # units: Webers, shape: (Nclamps, Nbins)
+        Phie: np.ndarray = Ee * bin_duration[np.newaxis, :] - integral_Vm
+        Phii: np.ndarray = Ei * bin_duration[np.newaxis, :] - integral_Vm
 
         # dot products per bin (sum over clamps axis=0)
-        eTe: np.ndarray = np.sum(Phie * Phie, axis=0)                   # units: Weber^2, shape: (Nbins,)
-        iTi: np.ndarray = np.sum(Phii * Phii, axis=0)                   # units: Weber^2, shape: (Nbins,)
-        eTi: np.ndarray = np.sum(Phie * Phii, axis=0)                   # units: Weber^2, shape: (Nbins,)
-        eTq: np.ndarray = np.sum(Phie * target_Qsyn, axis=0)            # units: Joule * Second, shape: (Nbins,)
-        iTq: np.ndarray = np.sum(Phii * target_Qsyn, axis=0)            # units: Joule * Second, shape: (Nbins,)
-        qTq: np.ndarray = np.sum(target_Qsyn * target_Qsyn, axis=0)     # units: Coulomb^2, shape: (Nbins,)
+        eTe: np.ndarray = np.sum(Phie * Phie, axis=0)
+        iTi: np.ndarray = np.sum(Phii * Phii, axis=0)
+        eTi: np.ndarray = np.sum(Phie * Phii, axis=0)
+        eTq: np.ndarray = np.sum(Phie * target_Qsyn, axis=0)
+        iTq: np.ndarray = np.sum(Phii * target_Qsyn, axis=0)
+        qTq: np.ndarray = np.sum(target_Qsyn * target_Qsyn, axis=0)
 
-        det: np.ndarray = eTe * iTi - eTi * eTi # units: Weber^4
-        safe_det: np.ndarray = np.where(np.abs(det) > np.finfo(np.float64).tiny, det, np.nan)
+        # --- handle "excitation-only" / "inhibition-only" modes first ---
+        if fit_ge and not fit_gi:
+            # gi forced to 0
+            ge = np.where(eTe > 0, eTq / eTe, 0.0)
+            if constrained:
+                ge = np.maximum(ge, 0.0)
+            gi = np.zeros_like(ge)
+            r2 = qTq - 2.0 * ge * eTq + (ge * ge) * eTe
 
-        # unconstrained LS candidate
-        ge_u: np.ndarray = ( iTi * eTq - eTi * iTq) / safe_det # units: Siemens, shape: (Nbins,)
-        gi_u: np.ndarray = (-eTi * eTq + eTe * iTq) / safe_det # units: Siemens, shape: (Nbins,)
+        elif fit_gi and not fit_ge:
+            # ge forced to 0
+            gi = np.where(iTi > 0, iTq / iTi, 0.0)
+            if constrained:
+                gi = np.maximum(gi, 0.0)
+            ge = np.zeros_like(gi)
+            r2 = qTq - 2.0 * gi * iTq + (gi * gi) * iTi
 
-        r2_u = (
-            qTq
-            - 2.0 * ge_u * eTq
-            - 2.0 * gi_u * iTq
-            + (ge_u * ge_u) * eTe
-            + 2.0 * ge_u * gi_u * eTi
-            + (gi_u * gi_u) * iTi
-        )
+        elif (not fit_ge) and (not fit_gi):
+            # both forced to 0 (degenerate)
+            ge = np.zeros_like(eTe)
+            gi = np.zeros_like(eTe)
+            r2 = qTq.copy()
 
-        if constrained:
-            # boundary candidates
-            ge_a = np.where(eTe > 0, eTq / eTe, 0.0)
-            ge_a = np.maximum(ge_a, 0.0)
-            r2_a = qTq - 2.0 * ge_a * eTq + (ge_a * ge_a) * eTe
+        else:
+            # --- fit both (your original logic) ---
+            det: np.ndarray = eTe * iTi - eTi * eTi
+            safe_det: np.ndarray = np.where(np.abs(det) > np.finfo(np.float64).tiny, det, np.nan)
 
-            gi_b = np.where(iTi > 0, iTq / iTi, 0.0)
-            gi_b = np.maximum(gi_b, 0.0)
-            r2_b = qTq - 2.0 * gi_b * iTq + (gi_b * gi_b) * iTi
+            ge_u: np.ndarray = ( iTi * eTq - eTi * iTq) / safe_det
+            gi_u: np.ndarray = (-eTi * eTq + eTe * iTq) / safe_det
 
-            feasible_u = (
-                (ge_u >= 0.0) & (gi_u >= 0.0) &
-                np.isfinite(ge_u) & np.isfinite(gi_u) &
-                np.isfinite(r2_u)
+            r2_u = (
+                qTq
+                - 2.0 * ge_u * eTq
+                - 2.0 * gi_u * iTq
+                + (ge_u * ge_u) * eTe
+                + 2.0 * ge_u * gi_u * eTi
+                + (gi_u * gi_u) * iTi
             )
 
-            # pick best
-            ge = ge_a.copy()
-            gi = np.zeros_like(ge)
-            r2 = r2_a.copy()
+            if constrained:
+                # boundary candidates (nonnegative)
+                ge_a = np.where(eTe > 0, eTq / eTe, 0.0)
+                ge_a = np.maximum(ge_a, 0.0)
+                r2_a = qTq - 2.0 * ge_a * eTq + (ge_a * ge_a) * eTe
 
-            pick_b = r2_b < r2
-            ge[pick_b] = 0.0
-            gi[pick_b] = gi_b[pick_b]
-            r2[pick_b] = r2_b[pick_b]
+                gi_b = np.where(iTi > 0, iTq / iTi, 0.0)
+                gi_b = np.maximum(gi_b, 0.0)
+                r2_b = qTq - 2.0 * gi_b * iTq + (gi_b * gi_b) * iTi
 
-            pick_u = feasible_u & (r2_u < r2)
-            ge[pick_u] = ge_u[pick_u]
-            gi[pick_u] = gi_u[pick_u]
-            r2[pick_u] = r2_u[pick_u]
-        
-        else:
-            ge = ge_u.copy()
-            gi = gi_u.copy()
-            r2 = r2_u.copy()
+                feasible_u = (
+                    (ge_u >= 0.0) & (gi_u >= 0.0) &
+                    np.isfinite(ge_u) & np.isfinite(gi_u) &
+                    np.isfinite(r2_u)
+                )
+
+                # pick best
+                ge = ge_a.copy()
+                gi = np.zeros_like(ge)
+                r2 = r2_a.copy()
+
+                pick_b = r2_b < r2
+                ge[pick_b] = 0.0
+                gi[pick_b] = gi_b[pick_b]
+                r2[pick_b] = r2_b[pick_b]
+
+                pick_u = feasible_u & (r2_u < r2)
+                ge[pick_u] = ge_u[pick_u]
+                gi[pick_u] = gi_u[pick_u]
+                r2[pick_u] = r2_u[pick_u]
+
+            else:
+                ge = ge_u.copy()
+                gi = gi_u.copy()
+                r2 = r2_u.copy()
 
         resnorm = np.sqrt(np.maximum(r2, 0.0))
 
@@ -446,11 +495,12 @@ class WholeCellStimulus:
         lam2 = 0.5 * (tr - disc)
         cond = np.where(lam2 > 0, lam1 / lam2, np.inf)
 
-        self.binned_timeseries[f"ge{' nonlinear' if nonlinear else str()}{' constrained' if constrained else str()}"] = ge
-        self.binned_timeseries[f"gi{' nonlinear' if nonlinear else str()}{' constrained' if constrained else str()}"] = gi
-        self.binned_timeseries[f"ge/gi residual norm{' nonlinear' if nonlinear else str()}{' constrained' if constrained else str()}"] = resnorm
-        self.binned_timeseries[f"ge/gi matrix conditioning{' nonlinear' if nonlinear else str()}{' constrained' if constrained else str()}"] = cond
-
+        suffix = f"{' nonlinear' if nonlinear else ''}{' constrained' if constrained else ''}"
+        self.binned_timeseries[f"ge{suffix}"] = ge
+        self.binned_timeseries[f"gi{suffix}"] = gi
+        self.binned_timeseries[f"ge/gi residual norm{suffix}"] = resnorm
+        self.binned_timeseries[f"ge/gi matrix conditioning{suffix}"] = cond
+    
     def calculate_predicted_Vm(self) -> None:
         Vm: np.ndarray = self.Vm        # units: Volts, shape: (Nclamps, Nsamples)
         Iinj: np.ndarray = self.Iinj    # units: Amperes, shape: (Nclamps, 1)
@@ -519,7 +569,7 @@ class Analyzer:
             figsize=(15, 10),
             constrained_layout=True,
         )
-        fig.suptitle(f"{filename.name}   LI={recording.LI_dvdt_vs_Vm:.3f}")
+        fig.suptitle(f"{filename.name}")
 
         if ncols == 1:
             axs = np.expand_dims(axs, axis=1)
