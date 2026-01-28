@@ -3,10 +3,9 @@ import numpy as np
 import matplotlib.pyplot as plt 
 from pyhelpers.store import save_fig
 from pathlib import Path
-from scipy.optimize import minimize, Bounds, lsq_linear
+from scipy.optimize import minimize, Bounds
 from scipy.ndimage import gaussian_filter1d
 from scipy.signal import savgol_filter
-from scipy import sparse
 
 from libs.readers import XLReader, AnalyzerCfg
 
@@ -203,63 +202,21 @@ class WholeCellRecording:
         Ee_hat: float = float(np.nanquantile(Eeff_pool, 0.95)) # units: Volts
 
         return Ee_hat, Ei_hat
-
-    def estimate_Ee_Ei_from_Eeff(self, series_key: str, q_low: float = 0.05, q_high: float = 0.95) -> Tuple[float, float]:
-        """
-        Estimate Ee/Ei from pooled Eeff values stored in each stimulus' binned_timeseries[series_key].
-        NaNs are ignored.
-        Returns (Ee_hat, Ei_hat).
-        """
-        pool: List[float] = []
-        for stimulus in self.stimuli.values():
-            if series_key not in stimulus.binned_timeseries:
-                continue
-            vals = stimulus.binned_timeseries[series_key]
-            # vals may be numpy array, list, or pandas Series
-            pool.extend(list(np.asarray(vals, dtype=np.float64).ravel()))
-        if len(pool) == 0:
-            return np.nan, np.nan
-        Ei_hat = float(np.nanquantile(pool, q_low))
-        Ee_hat = float(np.nanquantile(pool, q_high))
-        return Ee_hat, Ei_hat
         
-
     def run_analysis(self, verbose: bool=True):
-        # --- Step 1: estimate reversal potentials from Eeff/gsyn stage ---
         if verbose: print("Estimating reversal potentials... ")
-
         for stimulus in self.stimuli.values():
             stimulus.calculate_target_Qsyn()
             stimulus.calculate_target_Qsyn_nonlinear()
-
-            # Original (stepwise) Eeff/gsyn estimator (kept for backward compatibility)
             stimulus.estimate_Eeff()
-
-            # New (piecewise-linear) Eeff/gsyn estimator (for side-by-side comparison)
-            # stimulus.estimate_Eeff_gsyn_piecewise_linear(nonlinear=False, constrained=True)
-
-        # Original reversal estimate (used by default downstream)
         self.Ee, self.Ei = self.estimate_Ee_Ei()
+        if verbose: print(f"Estimated Reversals: Ee = {self.Ee*1e3:.1f} mV, Ei = {self.Ei*1e3:.1f} mV")
 
-        # Alternate reversal estimate from piecewise-linear Eeff nodes (stored for comparison)
-        self.Ee_pl, self.Ei_pl = self.estimate_Ee_Ei_from_Eeff("Eeff nodes piecewise linear constrained")
-
-        if verbose:
-            print(f"Estimated Reversals (stepwise Eeff): Ee = {self.Ee*1e3:.1f} mV, Ei = {self.Ei*1e3:.1f} mV")
-            if np.isfinite(self.Ee_pl) and np.isfinite(self.Ei_pl):
-                print(f"Estimated Reversals (piecewise-linear Eeff): Ee = {self.Ee_pl*1e3:.1f} mV, Ei = {self.Ei_pl*1e3:.1f} mV")
-
-        # --- Step 2: estimate ge/gi and forward-predict Vm ---
         if verbose: print("Calculating synaptic conductances... ")
-
         for stimulus in self.stimuli.values():
-            # Original stepwise ge/gi + analytic forward model (unchanged outputs)
-            stimulus.estimate_ge_gi(nonlinear=True, constrained=True, fit_ge=True, fit_gi=True)
+            stimulus.estimate_ge_gi(nonlinear=True, constrained=True)
             stimulus.calculate_predicted_Vm()
-
-            # New piecewise-linear ge/gi + Crank–Nicolson forward model (side-by-side)
-            stimulus.estimate_ge_gi_piecewise_linear(nonlinear=True, constrained=True, fit_ge=True, fit_gi=True)
-            stimulus.calculate_predicted_Vm_piecewise_linear(nonlinear=True, constrained=True)
+        
     """ Eact Optimization """
     def predicted_Vm_SSE(self, x) -> float:
         self.Eact = x
@@ -280,7 +237,6 @@ class WholeCellRecording:
         return total
     
     def _estimate_Eact(self) -> float:
-        return self.max_Eact
         print(self.max_Vm, self.max_Eact, self.Er)
         eps: float = np.finfo(float).eps
         if self.max_Eact <= self.Er:
@@ -329,12 +285,6 @@ class WholeCellStimulus:
             "left time": l_time, 
             "right time": r_time,
             "bin duration": bin_duration
-        })
-        node_index: np.ndarray = np.arange(0, self.Nsamples + self.recording.bin_nsamples, self.recording.bin_nsamples)
-        node_time: np.ndarray = node_index * self.recording.dt
-        self.node_timeseries: pd.DataFrame = pd.DataFrame({
-            "node index": node_index,
-            "node time": node_time
         })
     
     def _cumtrapz_prefix_integral(self, arr: np.ndarray) -> np.ndarray:
@@ -551,238 +501,6 @@ class WholeCellStimulus:
         self.binned_timeseries[f"ge/gi residual norm{suffix}"] = resnorm
         self.binned_timeseries[f"ge/gi matrix conditioning{suffix}"] = cond
     
-
-    def estimate_ge_gi_piecewise_linear(
-        self,
-        nonlinear: bool = False,
-        constrained: bool = True,
-        fit_ge: bool = True,
-        fit_gi: bool = True,
-    ) -> None:
-        """
-        Estimate ge(t), gi(t) assuming they are piecewise linear between bin edges.
-
-        Parameterization:
-          Nodes at bin boundaries. Unknowns are ge_node[0..Nbins], gi_node[0..Nbins].
-          Within bin k: ge(t) = (1-s)*ge_k + s*ge_{k+1}, same for gi.
-
-        This yields a global sparse linear least-squares problem:
-          Qsyn[c,k] = ∫ ge(t)(Ee - Vm[c,t]) dt + ∫ gi(t)(Ei - Vm[c,t]) dt
-
-        Bounds:
-          If constrained=True, enforces ge_node >= 0 and gi_node >= 0 (and therefore ge(t),gi(t) >= 0 everywhere).
-
-        Stored outputs (self.binned_timeseries):
-          - ge{suffix}, gi{suffix}: bin-midpoint values (avg adjacent nodes), length Nbins
-          - ge nodes{suffix}, gi nodes{suffix}: node values, length Nbins+1
-          - ge/gi residual rms{suffix}: per-bin RMS residual across clamps, length Nbins
-        """
-
-        if not (fit_ge or fit_gi):
-            raise ValueError("At least one of fit_ge or fit_gi must be True.")
-
-        Vm = self.Vm.astype(np.float64)  # (Nclamps, Nsamples)
-        dt = float(self.recording.dt)
-
-        l_idx = self.binned_timeseries["left index"].to_numpy(dtype=np.int64)
-        r_idx = self.binned_timeseries["right index"].to_numpy(dtype=np.int64)
-
-        if nonlinear:
-            Q = np.stack(self.binned_timeseries["target Qsyn nonlinear"].to_numpy()).astype(np.float64).T  # type: ignore
-        else:
-            Q = np.stack(self.binned_timeseries["target Qsyn"].to_numpy()).astype(np.float64).T  # type: ignore
-
-        Ee = float(self.recording.Ee)
-        Ei = float(self.recording.Ei)
-
-        Nbins = len(l_idx)
-        Nnodes = Nbins + 1
-
-        suffix = " piecewise linear"
-        if nonlinear:
-            suffix += " nonlinear"
-        if constrained:
-            suffix += " constrained"
-
-        # x = [ge_nodes (Nnodes), gi_nodes (Nnodes)]
-        n_rows = self.Nclamps * Nbins
-        n_cols = 2 * Nnodes
-
-        data: List[float] = []
-        rows: List[int] = []
-        cols: List[int] = []
-        y = np.empty(n_rows, dtype=np.float64)
-
-        def trapz_weighted(signal: np.ndarray, w: np.ndarray) -> np.ndarray:
-            return np.trapz(signal * w[None, :], dx=dt, axis=1)
-
-        row0 = 0
-        for k, (l, r) in enumerate(zip(l_idx, r_idx)):
-            if r < l:
-                raise ValueError(f"Invalid bin indices: bin {k} has left {l} > right {r}.")
-
-            seg = Vm[:, l : r + 1]
-            n = seg.shape[1]
-
-            # Fill RHS for this bin (all clamps)
-            y[row0 : row0 + self.Nclamps] = Q[:, k]
-
-            if n < 2:
-                w0 = np.array([1.0], dtype=np.float64)
-                w1 = np.array([0.0], dtype=np.float64)
-            else:
-                s = np.linspace(0.0, 1.0, n, dtype=np.float64)
-                w0 = 1.0 - s
-                w1 = s
-
-            Ee_minus_V = (Ee - seg)
-            Ei_minus_V = (Ei - seg)
-
-            Phi_e0 = trapz_weighted(Ee_minus_V, w0)
-            Phi_e1 = trapz_weighted(Ee_minus_V, w1)
-            Phi_i0 = trapz_weighted(Ei_minus_V, w0)
-            Phi_i1 = trapz_weighted(Ei_minus_V, w1)
-
-            for c in range(self.Nclamps):
-                ridx = row0 + c
-
-                if fit_ge:
-                    rows.extend([ridx, ridx])
-                    cols.extend([k, k + 1])
-                    data.extend([float(Phi_e0[c]), float(Phi_e1[c])])
-
-                if fit_gi:
-                    rows.extend([ridx, ridx])
-                    cols.extend([Nnodes + k, Nnodes + (k + 1)])
-                    data.extend([float(Phi_i0[c]), float(Phi_i1[c])])
-
-            row0 += self.Nclamps
-
-        A = sparse.coo_matrix((data, (rows, cols)), shape=(n_rows, n_cols)).tocsr()
-
-        # Optionally drop blocks if only fitting one conductance
-        keep = np.ones(n_cols, dtype=bool)
-        if not fit_ge:
-            keep[:Nnodes] = False
-        if not fit_gi:
-            keep[Nnodes:] = False
-
-        A_k = A[:, keep]
-
-        # Bounds on selected unknowns
-        if constrained:
-            lb = np.zeros(A_k.shape[1], dtype=np.float64)
-            ub = np.full(A_k.shape[1], np.inf, dtype=np.float64)
-        else:
-            lb = np.full(A_k.shape[1], -np.inf, dtype=np.float64)
-            ub = np.full(A_k.shape[1],  np.inf, dtype=np.float64)
-
-        sol = lsq_linear(A_k, y, bounds=(lb, ub), lsmr_tol="auto", verbose=0)
-
-        x = np.zeros(n_cols, dtype=np.float64)
-        x[keep] = sol.x
-
-        ge_nodes = x[:Nnodes]
-        gi_nodes = x[Nnodes:]
-
-        ge_bins = 0.5 * (ge_nodes[:-1] + ge_nodes[1:])
-        gi_bins = 0.5 * (gi_nodes[:-1] + gi_nodes[1:])
-
-        resid = (A @ x) - y
-        resid = resid.reshape(Nbins, self.Nclamps).T  # (Nclamps, Nbins)
-        res_rms = np.sqrt(np.mean(resid**2, axis=0))
-
-        plt.figure()
-        # plt.plot(ge_bins)
-        # plt.plot(ge_nodes)
-        # plt.plot(gi_bins)
-        plt.plot(gi_nodes)
-        plt.show()
-
-        self.binned_timeseries[f"ge{suffix}"] = ge_bins
-        self.binned_timeseries[f"gi{suffix}"] = gi_bins
-        self.node_timeseries[f"ge nodes{suffix}"] = ge_nodes
-        self.node_timeseries[f"gi nodes{suffix}"] = gi_nodes
-        self.binned_timeseries[f"ge/gi residual rms{suffix}"] = res_rms
-
-    def calculate_predicted_Vm_piecewise_linear(
-        self,
-        nonlinear: bool = True,
-        constrained: bool = True,
-    ) -> None:
-        """
-        Forward-simulate Vm using piecewise-linear ge(t), gi(t) (between bin-edge nodes),
-        stepping the membrane ODE with a trapezoidal / Crank–Nicolson update.
-
-        Requires estimate_ge_gi_piecewise_linear(...) has been run with matching flags.
-
-        Stores:
-          self.timeseries[f"predicted Vm{suffix}"] (same orientation as existing predicted Vm)
-        """
-
-        Vm: np.ndarray = self.Vm        # (Nclamps, Nsamples)
-        Iinj: np.ndarray = self.Iinj    # (Nclamps, 1)
-
-        Ee: float = float(self.recording.Ee)
-        Ei: float = float(self.recording.Ei)
-        Er: float = float(self.recording.Er)
-        gl: float = float(self.recording.gl)
-        Cm: float = float(self.recording.Cm)
-        dt: float = float(self.recording.dt)
-
-        l_idx: np.ndarray = self.binned_timeseries["left index"].to_numpy(dtype=np.int64)
-        r_idx: np.ndarray = self.binned_timeseries["right index"].to_numpy(dtype=np.int64)
-
-        suffix = " piecewise linear"
-        if nonlinear:
-            suffix += " nonlinear"
-        if constrained:
-            suffix += " constrained"
-
-        ge_nodes_key = f"ge nodes{suffix}"
-        gi_nodes_key = f"gi nodes{suffix}"
-
-        ge_nodes: np.ndarray = self.node_timeseries[ge_nodes_key].to_numpy(dtype=np.float64)
-        gi_nodes: np.ndarray = self.node_timeseries[gi_nodes_key].to_numpy(dtype=np.float64)
-
-        Nsamples = self.Nsamples
-        Nbins = len(l_idx)
-
-        # Build per-sample ge(t), gi(t) via linear interpolation on each bin
-        ge_t = np.empty(Nsamples, dtype=np.float64)
-        gi_t = np.empty(Nsamples, dtype=np.float64)
-
-        for k, (l, r) in enumerate(zip(l_idx, r_idx)):
-            n = int(r - l + 1)
-            if n <= 1:
-                ge_t[l] = ge_nodes[k]
-                gi_t[l] = gi_nodes[k]
-                continue
-            s = np.linspace(0.0, 1.0, n, dtype=np.float64)
-            ge_t[l : r + 1] = (1.0 - s) * ge_nodes[k] + s * ge_nodes[k + 1]
-            gi_t[l : r + 1] = (1.0 - s) * gi_nodes[k] + s * gi_nodes[k + 1]
-
-        Vpred: np.ndarray = np.empty_like(Vm, dtype=np.float64)
-        Vpred[:, 0:1] = Er + Iinj / gl
-
-        G_t = ge_t + gi_t + gl  # (Nsamples,)
-        A_t = G_t / Cm
-
-        Iinj_vec = Iinj[:, 0]  # (Nclamps,)
-
-        for n in range(Nsamples - 1):
-            An = A_t[n]
-            An1 = A_t[n + 1]
-
-            bn = (ge_t[n] * Ee + gi_t[n] * Ei + gl * Er + Iinj_vec) / Cm
-            bn1 = (ge_t[n + 1] * Ee + gi_t[n + 1] * Ei + gl * Er + Iinj_vec) / Cm
-
-            lhs = 1.0 + 0.5 * dt * An1
-            rhs = (1.0 - 0.5 * dt * An) * Vpred[:, n] + 0.5 * dt * (bn + bn1)
-            Vpred[:, n + 1] = rhs / lhs
-
-        self.timeseries[f"predicted Vm{suffix}"] = Vpred.T.tolist()
-        
     def calculate_predicted_Vm(self) -> None:
         Vm: np.ndarray = self.Vm        # units: Volts, shape: (Nclamps, Nsamples)
         Iinj: np.ndarray = self.Iinj    # units: Amperes, shape: (Nclamps, 1)
@@ -860,22 +578,17 @@ class Analyzer:
             stimulus = recording.stimuli[paradigm]
 
             times: np.ndarray = stimulus.times
-            bin_times: np.ndarray = (stimulus.binned_timeseries["left time"].to_numpy(np.float64) + stimulus.binned_timeseries["right time"].to_numpy(np.float64)) / 2
-            node_times: np.ndarray = stimulus.node_timeseries["node time"].to_numpy(np.float64)
+            bin_times: np.ndarray = stimulus.binned_timeseries["left time"].to_numpy(np.float64)
 
             bin_durations: np.ndarray = stimulus.binned_timeseries["bin duration"].to_numpy(np.float64)
 
             Vpred: np.ndarray = np.stack(stimulus.timeseries["predicted Vm"].to_numpy()).astype(np.float64).T #type: ignore
-            Vpred_pw: np.ndarray = np.stack(stimulus.timeseries["predicted Vm piecewise linear nonlinear constrained"].to_numpy()).astype(np.float64).T #type: ignore
             integral_Iact: np.ndarray = np.stack(stimulus.binned_timeseries["integral Iact"].to_numpy()).astype(np.float64).T #type: ignore
 
             Eeff: np.ndarray = stimulus.binned_timeseries["Eeff"].to_numpy(np.float64) 
-            # Eeff_pw: np.ndarray = stimulus.node_timeseries["Eeff nodes piecewise linear constrained"].to_numpy(np.float64)
             
             ge = stimulus.binned_timeseries["ge nonlinear constrained"].to_numpy(np.float64)
             gi = stimulus.binned_timeseries["gi nonlinear constrained"].to_numpy(np.float64)
-            ge_pw = stimulus.node_timeseries["ge nodes piecewise linear nonlinear constrained"].to_numpy(np.float64)
-            gi_pw = stimulus.node_timeseries["gi nodes piecewise linear nonlinear constrained"].to_numpy(np.float64)
             
             # diagnostics
             resnorm = stimulus.binned_timeseries["ge/gi residual norm nonlinear constrained"].to_numpy()
@@ -890,7 +603,6 @@ class Analyzer:
             Ess = recording.Er + recording.Rin * stimulus.Iinj
             for j in range(stimulus.Nclamps):
                 axs[0, idx].plot(times, Vpred[j, :], linestyle=":", color=colors[j])  # dotted Vpred
-                axs[0, idx].plot(times, Vpred_pw[j, :], linestyle="--", color=colors[j])
                 axs[0, idx].plot([times[0], times[-1]], [Ess[j]] * 2, color="grey", ls="--")
             axs[0, idx].plot([times[0], times[-1]], [recording.Eact] * 2, color="red", ls="--")
 
@@ -902,7 +614,6 @@ class Analyzer:
             # ---- Row 1: Eeff ----
             axs[1, idx].grid(True)
             axs[1, idx].plot(bin_times, Eeff, c="black")
-            # axs[1, idx].plot(node_times, Eeff_pw, c="black", ls="--")
             axs[1, idx].axhline(recording.Er, linestyle="--", color="k", linewidth=1, label="Er" if idx == 0 else None)
             axs[1, idx].axhline(recording.Ee, linestyle="--", color="r", linewidth=1, label="Ee" if idx == 0 else None)
             axs[1, idx].axhline(recording.Ei, linestyle="--", color="b", linewidth=1, label="Ei" if idx == 0 else None)
@@ -914,8 +625,6 @@ class Analyzer:
             # ---- Row 3: conductances ----
             axs[3, idx].plot(bin_times, ge, c="r", label="ge")
             axs[3, idx].plot(bin_times, gi, c="b", label="gi")
-            axs[3, idx].plot(node_times, ge_pw, c="r", ls=":")
-            axs[3, idx].plot(node_times, gi_pw, c="b", ls=":")
 
             axs[3, idx].plot(bin_times, bin_times * 0, "--k", linewidth=1)
             axs[3, idx].set_ylabel("G (S)")

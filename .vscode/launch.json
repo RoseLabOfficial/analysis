@@ -10,7 +10,7 @@
             "request": "launch",
             "program": "./BatchAnalyzer.py",
             "console": "integratedTerminal",
-            "args": ["./settings/settings_windows.json"]
+            "args": ["./settings/settings.json"]
         }
     ]
 }
