@@ -2,6 +2,6 @@
     "spreadsheets_input_dir": "~/Documents/Local/PRR/ReconstructionSpreadsheets",
     "image_save_dir": "~/Documents/Local/PRR/Figures",
     "image_save_type": "png",
-    "files_to_analyze": ["2022-12-07_1_NBQX.xlsx"],
+    "files_to_analyze": ["2012-05-03_2_baseline.xlsx"],
     "iinj_clamps_to_use": null
 }
