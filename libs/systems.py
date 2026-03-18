@@ -5,6 +5,7 @@ from scipy.signal import butter, buttord, sosfiltfilt
 
 from pathlib import Path
 from pyhelpers.store import save_fig
+from pathlib import Path
 
 from libs.readers import XLReader
 
@@ -27,7 +28,6 @@ class WholeCellRecording:
         self.filters: Dict[str, LowPassFilter] = filters
 
         self.data: pd.DataFrame = data
-
         self.parameters: pd.DataFrame = parameters
 
     def filter_membrane_potentials(self):
@@ -620,6 +620,90 @@ class WholeCellStimulus:
         self.timeseries[f"predicted Vm"] = Vpred.T.tolist()
 
 
+        # --- prefix integrals ---
+        pref_leak_inj: np.ndarray = trapez_prefix_integral(Il + Iinj)   # shape: (Nsamples, Nclamps), units: Coulombs
+        pref_epotential: np.ndarray = trapez_prefix_integral(Ee - Vm)   # shape: (Nsamples, Nclamps), units: Webers (Volt * Second)
+        pref_ipotential: np.ndarray = trapez_prefix_integral(Ei - Vm)   # shape: (Nsamples, Nclamps), units: Webers (Volt * Second)
+
+        # --- bin integrals using prefix differences ---
+        int_leak_inj: np.ndarray = pref_leak_inj[right_edges - 1, :] - pref_leak_inj[left_edges, :]         # shape: (Nbins, Nclamps), units: Coulombs
+        int_epotential: np.ndarray = pref_epotential[right_edges - 1, :] - pref_epotential[left_edges, :]   # shape: (Nbins, Nclamps), units: Webers (Volt * Second)
+        int_ipotential: np.ndarray = pref_ipotential[right_edges - 1, :] - pref_ipotential[left_edges, :]   # shape: (Nbins, Nclamps), units: Webers (Volt * Second)
+
+        # --- Δv per bin per clamp ---
+        dv: np.ndarray = Vm[right_edges - 1, :] - Vm[left_edges, :] # shape: (Nbins, Nclamps), units: Volts
+
+        # --- y per bin per clamp ---
+        y: np.ndarray = Cm * dv - int_leak_inj # (Nbins, Nclamps), units: Coulombs
+
+        # --- solve per bin with NNLS ---
+        ge_bins: np.ndarray = np.empty(Nbins)       # shape: (Nbins,), units: Siemens
+        gi_bins: np.ndarray = np.empty(Nbins)       # shape: (Nbins,), units: Siemens
+        resnorm_bins: np.ndarray = np.empty(Nbins)  # shape: (Nbins,), units: Coulombs
+        cond_bins: np.ndarray = np.empty(Nbins)     # shape: (Nbins,)
+
+        for k in range(Nbins):
+            Xk: np.ndarray = np.column_stack([int_epotential[k, :], int_ipotential[k, :]])  # shape: (Nclamps, 2), units: Webers (Volt * Second)
+            yk: np.ndarray = y[k, :]                                                        # shape: (Nclamps,), units: Coulombs
+
+            # conditioning diagnostic
+            XtX: np.ndarray = Xk.T @ Xk # shape: (2, 2), units: Webers^2 
+            cond_bins[k] = np.linalg.cond(XtX) if np.all(np.isfinite(XtX)) else np.nan
+
+            gk, rnorm = nnls(Xk, yk)
+            ge_bins[k], gi_bins[k] = gk
+            resnorm_bins[k] = rnorm
+        
+
+        """ SAVE RESULTS """
+        # --- expand ge/gi to sample grid ---
+        ge: np.ndarray = np.repeat(ge_bins, bin_len)[:Nsamples]  # shape: (Nsamples,), units: Siemens
+        gi: np.ndarray = np.repeat(gi_bins, bin_len)[:Nsamples]  # shape: (Nsamples,), units: Siemens
+
+        self.data["excitation"] = ge
+        self.data["inhibition"] = gi
+
+        # --- expand & save diagnostic trances ---
+        self.data["bin_resnorm"] = np.repeat(resnorm_bins, bin_len)[:Nsamples]
+        self.data["bin_cond_XtX"] = np.repeat(cond_bins, bin_len)[:Nsamples]
+
+        # --- per-clamp leakage current ---
+        for j, col in enumerate(Iinj_colnames):
+            self.data[f"Il_{col}"] = Il[:, j]
+
+        # --- per-clamp capacitive current ---
+        Im_bins = Cm * dv / bin_s                               # shape: (Nbins, Nclamps), units: Amperes
+        Im = np.repeat(Im_bins, bin_len, axis=0)[:Nsamples, :]  # shape: (Nsamples, Nclamps), units: Amperes
+        for j, col in enumerate(Iinj_colnames):
+            self.data[f"Im_{col}"] = Im[:, j]
+
+        # --- forward-simulated Vpred per clamp (RK4; vectorized across clamps) ---
+        Vpred: np.ndarray = np.empty_like(Vm) # shape: (Nsamples, Nclamps), units: Volts
+        Vpred[0, :] = Vm[0, :] # Initial Conditions
+
+        # RK4 algo
+        for ti in range(Nsamples - 1):
+            ge_t: float = ge[ti]
+            gi_t: float = gi[ti]
+
+            def f(vstate: np.ndarray) -> np.ndarray:
+                return (
+                    ge_t * (Ee - vstate) +
+                    gi_t * (Ei - vstate) +
+                    gl   * (Er - vstate) +
+                    Iinj
+                ) / Cm
+
+            k1: np.ndarray = f(Vpred[ti, :])
+            k2: np.ndarray = f(Vpred[ti, :] + 0.5 * dt * k1)
+            k3: np.ndarray = f(Vpred[ti, :] + 0.5 * dt * k2)
+            k4: np.ndarray = f(Vpred[ti, :] + dt * k3)
+
+            Vpred[ti + 1, :] = Vpred[ti, :] + (dt / 6.0) * (k1 + 2*k2 + 2*k3 + k4)
+
+        for j, col in enumerate(Iinj_colnames):
+            self.data[f"Vpred_{col}"] = Vpred[:, j]
+        
 class Analyzer:
     def __init__(self, cfg: AnalyzerCfg):
         self.cfg: AnalyzerCfg = cfg

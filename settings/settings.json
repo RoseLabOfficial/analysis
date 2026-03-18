@@ -9,5 +9,5 @@
     },
     "run": "ALL",
     "optimization_level": 0,
-    "use_clamps": null
+    "iinj_clamps_to_use": null
 }

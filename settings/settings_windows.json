@@ -1,13 +1,7 @@
 {
-    "input_directory": "c:\\Users\\james\\Box\\PRR\\PRR\\WholeCellAnalysis\\2021-12-17_1",
-    "output_directory": "c:\\Users\\james\\Box\\PRR\\PRR\\WholeCellAnalysis\\2021-12-17_1\\resultfiles",
-    "filetype": "png",
-    "filters": {
-        "membrane_potentials": {"passband": 100, "ripple": 0.01, "stopband": 600, "attenuation": 30},
-        "membrane_currents": {"passband": 100, "ripple": 0.01, "stopband": 600, "attenuation": 30},
-        "activation_currents": {"passband": 100, "ripple": 0.01, "stopband": 600, "attenuation": 30}
-    },
-    "run": ["2021-12-17_1.xlsx"],
-    "optimization_level": 0,
-    "use_clamps": null
+    "spreadsheets_input_dir": "c:\\Users\\james\\Box\\PRR\\PRR\\ReconstructionSpreadsheets",
+    "image_save_dir": "c:\\Users\\james\\Box\\PRR\\PRR\\Figures",
+    "image_save_type": "png",
+    "files_to_analyze": null,
+    "iinj_clamps_to_use": null
 }
