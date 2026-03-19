@@ -1,15 +1,26 @@
+# Array Handling
 import pandas as pd
 import numpy as np
 
+# Optimization
+from numba import njit
+
+# Signal Processing
 from scipy.signal import butter, buttord, sosfiltfilt
+from scipy.ndimage import gaussian_filter1d
 
-from pathlib import Path
+# Plotting & Graphics
+import matplotlib.pyplot as plt
 from pyhelpers.store import save_fig
+
+# Local
+from libs.readers import XLReader, AnalyzerCfg
+
+# OS
 from pathlib import Path
 
-from libs.readers import XLReader
-
-from typing import Dict, Optional, List, Tuple
+# Annotation
+from typing import Dict, List, Tuple
 
 
 class LowPassFilter:
@@ -19,7 +30,7 @@ class LowPassFilter:
 
     def propagate(self, raw_signal: np.ndarray, fs: float) -> np.ndarray:
         return sosfiltfilt(self.filter_design(fs), raw_signal)
-
+"""
 # class WholeCellRecording:
 #     def __init__(self, data: pd.DataFrame, parameters: pd.DataFrame, filters: Dict[str, LowPassFilter], current_clamps: Optional[List[float]]=None) -> None:
 #         self.filters: Dict[str, LowPassFilter] = filters
@@ -162,6 +173,8 @@ from libs.readers import XLReader, AnalyzerCfg
 from typing import Dict, List, Tuple
 
 import numpy as np
+"""
+
 
 def weighted_quantile(x, q, w=None, axis=-1):
     """
@@ -256,7 +269,7 @@ def weighted_quantile(x, q, w=None, axis=-1):
 
 
 class WholeCellRecording:
-    def __init__(self, parameters: pd.DataFrame, bin_s: float, stimuli: Dict[str, pd.DataFrame], filters: Dict[str, LowPassFilter]) -> None:
+    def __init__(self, parameters: pd.DataFrame, stimuli: Dict[str, pd.DataFrame], filters: Dict[str, LowPassFilter]) -> None:
         assert len(stimuli) > 0
         assert set(filters.keys()) == {"Vm", "Im"}
 
@@ -267,9 +280,6 @@ class WholeCellRecording:
 
         example_t: pd.Series = list(stimuli.values())[0]["times"] # units: Seconds, shape: (Nsamples,)
         self.dt: float = example_t[1] - example_t[0] # time assumed sampled at constant interval; units: Seconds
-
-        self.bin_nsamples: int = round(bin_s / self.dt)
-        self.bin_s: float = self.bin_nsamples * self.dt # units: Seconds
 
         self.Ee: float = np.nan # units: Volts
         self.Ei: float = np.nan # units: Volts
@@ -356,55 +366,23 @@ class WholeCellRecording:
 
         return Ee_hat, Ei_hat
 
-    def estimate_Ee_Ei_from_Eeff(self, series_key: str, q_low: float = 0.05, q_high: float = 0.95) -> Tuple[float, float]:
-        """
-        Estimate Ee/Ei from pooled Eeff values stored in each stimulus' binned_timeseries[series_key].
-        NaNs are ignored.
-        Returns (Ee_hat, Ei_hat).
-        """
-        pool: List[float] = []
-        for stimulus in self.stimuli.values():
-            if series_key not in stimulus.timeseries:
-                continue
-            vals = stimulus.timeseries[series_key]
-            # vals may be numpy array, list, or pandas Series
-            pool.extend(list(np.asarray(vals, dtype=np.float64).ravel()))
-        if len(pool) == 0:
-            return np.nan, np.nan
-        Ei_hat = float(np.nanquantile(pool, q_low))
-        Ee_hat = float(np.nanquantile(pool, q_high))
-        return Ee_hat, Ei_hat
-        
-
     def run_analysis(self, verbose: bool=True):
         # --- Step 1: estimate reversal potentials from Eeff/gsyn stage ---
         if verbose: print("Estimating reversal potentials... ")
 
         for stimulus in self.stimuli.values():
             stimulus.calculate_target_Isyn()
-
-            # Original (stepwise) Eeff/gsyn estimator (kept for backward compatibility)
             stimulus.estimate_Eeff()
-
-            # New (piecewise-linear) Eeff/gsyn estimator (for side-by-side comparison)
-            # stimulus.estimate_Eeff_gsyn_piecewise_linear(nonlinear=False, constrained=True)
 
         # Original reversal estimate (used by default downstream)
         self.Ee, self.Ei = self.estimate_Ee_Ei()
 
-        # Alternate reversal estimate from piecewise-linear Eeff nodes (stored for comparison)
-        self.Ee_pl, self.Ei_pl = self.estimate_Ee_Ei_from_Eeff("Eeff")
-
-        if verbose:
-            print(f"Estimated Reversals (stepwise Eeff): Ee = {self.Ee*1e3:.1f} mV, Ei = {self.Ei*1e3:.1f} mV")
-            if np.isfinite(self.Ee_pl) and np.isfinite(self.Ei_pl):
-                print(f"Estimated Reversals (piecewise-linear Eeff): Ee = {self.Ee_pl*1e3:.1f} mV, Ei = {self.Ei_pl*1e3:.1f} mV")
+        if verbose: print(f"Estimated Reversals: Ee = {self.Ee*1e3:.1f} mV, Ei = {self.Ei*1e3:.1f} mV")
 
         # --- Step 2: estimate ge/gi and forward-predict Vm ---
         if verbose: print("Calculating synaptic conductances... ")
 
         for stimulus in self.stimuli.values():
-            # Original stepwise ge/gi + analytic forward model (unchanged outputs)
             stimulus.estimate_ge_gi()
             stimulus.calculate_predicted_Vm()
 
@@ -482,11 +460,11 @@ class WholeCellStimulus:
         Im: np.ndarray = Cm * np.gradient(Vm, dt, axis=-1) # units: Amperes, shape: [Nclamps, Nsamples]
         Im_filtered: np.ndarray = self.recording.filters["Im"].propagate(Im, fs) # units: Amperes, shape: [Nclamps, Nsamples]
 
-        Il: np.ndarray = gl * (Er - Vm) # units: Amperes, shape: [Nclamps, Nsamples]
+        Il: np.ndarray = gl * (Er - Vm_filtered) # units: Amperes, shape: [Nclamps, Nsamples]
 
         Iact: np.ndarray = np.zeros_like(Il) # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-        target_Isyn: np.ndarray = Im + Iact + Iinj + Il # units: Amperes, shape: [Nclamps, Nsamples]
+        target_Isyn: np.ndarray = Im_filtered + Iact + Iinj + Il # units: Amperes, shape: [Nclamps, Nsamples]
         
         self.timeseries["Vm filtered"] = Vm_filtered.T.tolist()
         self.timeseries["Im"] = Im.T.tolist()
@@ -522,7 +500,7 @@ class WholeCellStimulus:
         # Avoid divide-by-zero when gsyn ~ 0
         gsyn_safe = np.where(np.abs(gsyn) > 0.1e-9, gsyn, np.nan)
 
-        Eeff = a / (gsyn_safe * float(self.recording.bin_s))       # Volts
+        Eeff = a / gsyn_safe       # Volts
 
         # Diagnostics per bin
         # Your SSE formula: sum (Q - gsyn*(Eeff - Phi))^2
@@ -548,14 +526,13 @@ class WholeCellStimulus:
         Ee: float = self.recording.Ee # units: Volts
         Ei: float = self.recording.Ei # units: Volts
 
-        driving_force: np.ndarray = np.vstack([[Vm_filtered - Ee], [Vm_filtered - Ei]]).shape # units: Volts, shape: [2, Nclamps, Nsamples]
+        driving_force: np.ndarray = np.vstack([[Vm_filtered - Ee], [Vm_filtered - Ei]]) # units: Volts, shape: [2, Nclamps, Nsamples]
 
-        XtX: np.ndarray = np.einsum("ijn,jkn->ikn", driving_force, driving_force) # shape: [2, 2, Nsamples]
-        Xty: np.ndarray = np.einsum("kin,kn->in", driving_force, target_Isyn) # shape: [2, Nsamples]
+        XtX: np.ndarray = np.einsum("ijn,kjn->nik", driving_force, driving_force) # shape: [Nsamples, 2, 2]
+        Xty: np.ndarray = np.einsum("ijn,jn->ni", driving_force, target_Isyn) # shape: [Nsamples, 2]
         
-        conductances: np.ndarray
         try:
-            conductances = np.linalg.solve(XtX, Xty) # shape: [Nsamples, 2]
+            conductances = np.linalg.solve(XtX, Xty[..., None])[..., 0] # shape: [Nsamples, 2]
         except np.linalg.LinAlgError:
             print(f"Cannot use least-squares, attempting pseudoinverse...")
             conductances = (np.linalg.pinv(XtX) @ Xty[..., None])[..., 0] # shape: [Nsamples, 2]
@@ -564,8 +541,8 @@ class WholeCellStimulus:
         self.timeseries["gi"] = conductances[:, 1]
     
     def calculate_predicted_Vm(self) -> None:
-        Vm: np.ndarray = self.Vm        # units: Volts, shape: (Nclamps, Nsamples)
-        Iinj: np.ndarray = self.Iinj    # units: Amperes, shape: (Nclamps, 1)
+        Iinj: np.ndarray = self.Iinj    # units: Amperes, shape: [Nclamps, 1]
+        V0: np.ndarray = self.Vm[:, 0]  # units: Volts, shape: [Nclamps, 1]
 
         Ee: float = float(self.recording.Ee)    # units: Volts
         Ei: float = float(self.recording.Ei)    # units: Volts
@@ -574,113 +551,27 @@ class WholeCellStimulus:
         Cm: float = float(self.recording.Cm)    # units: Farads
         dt: float = float(self.recording.dt)    # units: Seconds
 
-        l_idx: np.ndarray = self.binned_timeseries["left index"].to_numpy(dtype=np.int64)   # shape: (Nbins,)
-        r_idx: np.ndarray = self.binned_timeseries["right index"].to_numpy(dtype=np.int64)  # shape: (Nbins,)
+        ge: np.ndarray = np.stack(self.timeseries["ge"]).astype(np.float64).T #type: ignore , units: Siemens, shape: [Nsamples,]
+        gi: np.ndarray = np.stack(self.timeseries["gi"]).astype(np.float64).T #type: ignore , units: Siemens, shape: [Nsamples,]
 
-        ge_bins: np.ndarray = self.binned_timeseries["ge nonlinear constrained"].to_numpy(dtype=np.float64) # units: Siemens, shape: (Nbins,)
-        gi_bins: np.ndarray = self.binned_timeseries["gi nonlinear constrained"].to_numpy(dtype=np.float64) # units: Siemens, shape: (Nbins,)
+        g_tot: np.ndarray = gl + ge + gi                                    # units: Siemens, shape: [Nsamples,]
+        V_inf: np.ndarray = (gl * Er + ge * Ee + gi * Ei + Iinj) / g_tot    # units: Volts, shape: [Nclamps, Nsamples]
+        decay: np.ndarray = np.exp(-g_tot * dt / Cm)                        # shape: [Nsamples,]
 
-        Vpred: np.ndarray = np.empty_like(Vm, dtype=np.float64) # units: Volts, shape: (Nclamps, Nsamples)
-        Vpred[:, 0:1] = Er + Iinj / gl
+        pred_Vm: np.ndarray = self._vm_loop(V_inf.astype(np.float32), decay.astype(np.float32), V0)
 
-        vsss = []
+        self.timeseries["pred Vm"] = pred_Vm.T.tolist()
 
-        for r, l, ge, gi in zip(r_idx, l_idx, ge_bins, gi_bins):
-            v0: np.ndarray = Vpred[:, l].reshape(-1, 1)
-            G: np.ndarray = ge + gi + gl
-            vss: np.ndarray = (ge * Ee + gi * Ei + gl * Er + Iinj) / G
-            t: np.ndarray = np.arange(r - l + 1) * dt
-            Vpred[:, l:r + 1] = (v0 - vss) * np.exp(-G * t / Cm) + vss
-
-            vsss.append(vss)
-
-        self.timeseries[f"predicted Vm"] = Vpred.T.tolist()
+    @staticmethod
+    @njit(cache=True)
+    def _vm_loop(V_inf: np.ndarray, decay: np.ndarray, v0: np.ndarray) -> np.ndarray:
+        Vm: np.ndarray = np.empty_like(V_inf, dtype=np.float32)
+        Vm[:, 0] = v0
+        for i in range(1, V_inf.shape[-1]):
+            Vm[:, i] = V_inf[:, i] + (Vm[:, i - 1] - V_inf[:, i]) * decay[i]
+        return Vm
 
 
-        # --- prefix integrals ---
-        pref_leak_inj: np.ndarray = trapez_prefix_integral(Il + Iinj)   # shape: (Nsamples, Nclamps), units: Coulombs
-        pref_epotential: np.ndarray = trapez_prefix_integral(Ee - Vm)   # shape: (Nsamples, Nclamps), units: Webers (Volt * Second)
-        pref_ipotential: np.ndarray = trapez_prefix_integral(Ei - Vm)   # shape: (Nsamples, Nclamps), units: Webers (Volt * Second)
-
-        # --- bin integrals using prefix differences ---
-        int_leak_inj: np.ndarray = pref_leak_inj[right_edges - 1, :] - pref_leak_inj[left_edges, :]         # shape: (Nbins, Nclamps), units: Coulombs
-        int_epotential: np.ndarray = pref_epotential[right_edges - 1, :] - pref_epotential[left_edges, :]   # shape: (Nbins, Nclamps), units: Webers (Volt * Second)
-        int_ipotential: np.ndarray = pref_ipotential[right_edges - 1, :] - pref_ipotential[left_edges, :]   # shape: (Nbins, Nclamps), units: Webers (Volt * Second)
-
-        # --- Δv per bin per clamp ---
-        dv: np.ndarray = Vm[right_edges - 1, :] - Vm[left_edges, :] # shape: (Nbins, Nclamps), units: Volts
-
-        # --- y per bin per clamp ---
-        y: np.ndarray = Cm * dv - int_leak_inj # (Nbins, Nclamps), units: Coulombs
-
-        # --- solve per bin with NNLS ---
-        ge_bins: np.ndarray = np.empty(Nbins)       # shape: (Nbins,), units: Siemens
-        gi_bins: np.ndarray = np.empty(Nbins)       # shape: (Nbins,), units: Siemens
-        resnorm_bins: np.ndarray = np.empty(Nbins)  # shape: (Nbins,), units: Coulombs
-        cond_bins: np.ndarray = np.empty(Nbins)     # shape: (Nbins,)
-
-        for k in range(Nbins):
-            Xk: np.ndarray = np.column_stack([int_epotential[k, :], int_ipotential[k, :]])  # shape: (Nclamps, 2), units: Webers (Volt * Second)
-            yk: np.ndarray = y[k, :]                                                        # shape: (Nclamps,), units: Coulombs
-
-            # conditioning diagnostic
-            XtX: np.ndarray = Xk.T @ Xk # shape: (2, 2), units: Webers^2 
-            cond_bins[k] = np.linalg.cond(XtX) if np.all(np.isfinite(XtX)) else np.nan
-
-            gk, rnorm = nnls(Xk, yk)
-            ge_bins[k], gi_bins[k] = gk
-            resnorm_bins[k] = rnorm
-        
-
-        """ SAVE RESULTS """
-        # --- expand ge/gi to sample grid ---
-        ge: np.ndarray = np.repeat(ge_bins, bin_len)[:Nsamples]  # shape: (Nsamples,), units: Siemens
-        gi: np.ndarray = np.repeat(gi_bins, bin_len)[:Nsamples]  # shape: (Nsamples,), units: Siemens
-
-        self.data["excitation"] = ge
-        self.data["inhibition"] = gi
-
-        # --- expand & save diagnostic trances ---
-        self.data["bin_resnorm"] = np.repeat(resnorm_bins, bin_len)[:Nsamples]
-        self.data["bin_cond_XtX"] = np.repeat(cond_bins, bin_len)[:Nsamples]
-
-        # --- per-clamp leakage current ---
-        for j, col in enumerate(Iinj_colnames):
-            self.data[f"Il_{col}"] = Il[:, j]
-
-        # --- per-clamp capacitive current ---
-        Im_bins = Cm * dv / bin_s                               # shape: (Nbins, Nclamps), units: Amperes
-        Im = np.repeat(Im_bins, bin_len, axis=0)[:Nsamples, :]  # shape: (Nsamples, Nclamps), units: Amperes
-        for j, col in enumerate(Iinj_colnames):
-            self.data[f"Im_{col}"] = Im[:, j]
-
-        # --- forward-simulated Vpred per clamp (RK4; vectorized across clamps) ---
-        Vpred: np.ndarray = np.empty_like(Vm) # shape: (Nsamples, Nclamps), units: Volts
-        Vpred[0, :] = Vm[0, :] # Initial Conditions
-
-        # RK4 algo
-        for ti in range(Nsamples - 1):
-            ge_t: float = ge[ti]
-            gi_t: float = gi[ti]
-
-            def f(vstate: np.ndarray) -> np.ndarray:
-                return (
-                    ge_t * (Ee - vstate) +
-                    gi_t * (Ei - vstate) +
-                    gl   * (Er - vstate) +
-                    Iinj
-                ) / Cm
-
-            k1: np.ndarray = f(Vpred[ti, :])
-            k2: np.ndarray = f(Vpred[ti, :] + 0.5 * dt * k1)
-            k3: np.ndarray = f(Vpred[ti, :] + 0.5 * dt * k2)
-            k4: np.ndarray = f(Vpred[ti, :] + dt * k3)
-
-            Vpred[ti + 1, :] = Vpred[ti, :] + (dt / 6.0) * (k1 + 2*k2 + 2*k3 + k4)
-
-        for j, col in enumerate(Iinj_colnames):
-            self.data[f"Vpred_{col}"] = Vpred[:, j]
-        
 class Analyzer:
     def __init__(self, cfg: AnalyzerCfg):
         self.cfg: AnalyzerCfg = cfg
@@ -724,27 +615,14 @@ class Analyzer:
             stimulus = recording.stimuli[paradigm]
 
             times: np.ndarray = stimulus.times
-            bin_times: np.ndarray = (stimulus.binned_timeseries["left time"].to_numpy(np.float64) + stimulus.binned_timeseries["right time"].to_numpy(np.float64)) / 2
-            node_times: np.ndarray = stimulus.node_timeseries["node time"].to_numpy(np.float64)
 
-            bin_durations: np.ndarray = stimulus.binned_timeseries["bin duration"].to_numpy(np.float64)
+            pred_Vm: np.ndarray = np.stack(stimulus.timeseries["pred Vm"]).astype(np.float64).T #type: ignore
+            Im: np.ndarray = np.stack(stimulus.timeseries["Im filtered"]).astype(np.float64).T #type: ignore
 
-            Vpred: np.ndarray = np.stack(stimulus.timeseries["predicted Vm"].to_numpy()).astype(np.float64).T #type: ignore
-            Vpred_pw: np.ndarray = np.stack(stimulus.timeseries["predicted Vm piecewise linear nonlinear constrained"].to_numpy()).astype(np.float64).T #type: ignore
-            integral_Iact: np.ndarray = np.stack(stimulus.binned_timeseries["integral Iact"].to_numpy()).astype(np.float64).T #type: ignore
-
-            Eeff: np.ndarray = stimulus.binned_timeseries["Eeff"].to_numpy(np.float64) 
-            # Eeff_pw: np.ndarray = stimulus.node_timeseries["Eeff nodes piecewise linear constrained"].to_numpy(np.float64)
+            Eeff: np.ndarray = stimulus.timeseries["Eeff"].to_numpy(np.float64) 
+            ge: np.ndarray = stimulus.timeseries["ge"].to_numpy(np.float64)
+            gi: np.ndarray = stimulus.timeseries["gi"].to_numpy(np.float64)
             
-            ge = stimulus.binned_timeseries["ge nonlinear constrained"].to_numpy(np.float64)
-            gi = stimulus.binned_timeseries["gi nonlinear constrained"].to_numpy(np.float64)
-            ge_pw = stimulus.node_timeseries["ge nodes piecewise linear nonlinear constrained"].to_numpy(np.float64)
-            gi_pw = stimulus.node_timeseries["gi nodes piecewise linear nonlinear constrained"].to_numpy(np.float64)
-            
-            # diagnostics
-            resnorm = stimulus.binned_timeseries["ge/gi residual norm nonlinear constrained"].to_numpy()
-            cond = stimulus.binned_timeseries["ge/gi matrix conditioning nonlinear constrained"].to_numpy()
-
             axs[0, idx].set_title(paradigm)
 
             # ---- Row 0: Vm + Vpred (same colors) ----
@@ -753,78 +631,33 @@ class Analyzer:
 
             Ess = recording.Er + recording.Rin * stimulus.Iinj
             for j in range(stimulus.Nclamps):
-                axs[0, idx].plot(times, Vpred[j, :], linestyle=":", color=colors[j])  # dotted Vpred
-                axs[0, idx].plot(times, Vpred_pw[j, :], linestyle="--", color=colors[j])
+                axs[0, idx].plot(times, pred_Vm[j, :], linestyle=":", color=colors[j])  # dotted Vpred
                 axs[0, idx].plot([times[0], times[-1]], [Ess[j]] * 2, color="grey", ls="--")
             axs[0, idx].plot([times[0], times[-1]], [recording.Eact] * 2, color="red", ls="--")
 
             axs[0, idx].set_ylabel("Vm (V)")
             axs[0, idx].grid(True)
-            # if idx == 0:
-            #     axs[0, idx].legend(loc="upper right")
 
             # ---- Row 1: Eeff ----
             axs[1, idx].grid(True)
-            axs[1, idx].plot(bin_times, Eeff, c="black")
-            # axs[1, idx].plot(node_times, Eeff_pw, c="black", ls="--")
+            axs[1, idx].plot(times, Eeff, c="black")
             axs[1, idx].axhline(recording.Er, linestyle="--", color="k", linewidth=1, label="Er" if idx == 0 else None)
             axs[1, idx].axhline(recording.Ee, linestyle="--", color="r", linewidth=1, label="Ee" if idx == 0 else None)
             axs[1, idx].axhline(recording.Ei, linestyle="--", color="b", linewidth=1, label="Ei" if idx == 0 else None)
 
+            # ---- Row 2: Im ---- 
             axs[2, idx].grid(True)
-            axs[2, idx].plot(bin_times, bin_times * 0, "k--")
-            axs[2, idx].plot(bin_times, integral_Iact.T / bin_durations[:, np.newaxis])
+            axs[2, idx].plot(times, times * 0, "k--")
+            for j in range(stimulus.Nclamps):
+                axs[2, idx].plot(times, Im[j, :], color=colors[j])
 
             # ---- Row 3: conductances ----
-            axs[3, idx].plot(bin_times, ge, c="r", label="ge")
-            axs[3, idx].plot(bin_times, gi, c="b", label="gi")
-            axs[3, idx].plot(node_times, ge_pw, c="r", ls=":")
-            axs[3, idx].plot(node_times, gi_pw, c="b", ls=":")
+            axs[3, idx].plot(times, ge, c="r", label="ge")
+            axs[3, idx].plot(times, gi, c="b", label="gi")
 
-            axs[3, idx].plot(bin_times, bin_times * 0, "--k", linewidth=1)
+            axs[3, idx].plot(times, times * 0, "--k", linewidth=1)
             axs[3, idx].set_ylabel("G (S)")
             axs[3, idx].grid(True)
-            # if idx == 0:
-            #     axs[3, idx].legend(loc="upper right")
-
-            # ---- Row 4: residual norm + warning threshold ----
-            ax_r = axs[4, idx]
-            ax_r.grid(True)
-            ax_r.set_ylabel("resnorm")
-
-            ax_r.plot(bin_times, resnorm, linewidth=1)
-
-            # robust baseline and warning line
-            finite_r = resnorm[np.isfinite(resnorm)]
-            if finite_r.size > 0:
-                baseline = np.median(finite_r)
-                warn_line = resnorm_factor_warn * baseline
-                ax_r.axhline(warn_line, linestyle="--", linewidth=1)
-                ax_r.text(
-                    0.01, 0.95,
-                    f"warn > {resnorm_factor_warn:g}×median",
-                    transform=ax_r.transAxes,
-                    va="top",
-                )
-
-            # ---- Row 5: conditioning + warning/bad thresholds ----
-            ax_c = axs[5, idx]
-            ax_c.grid(True)
-            ax_c.set_ylabel("cond(XᵀX)")
-            ax_c.set_yscale("log")
-
-            cond_plot = np.where(np.isfinite(cond) & (cond > 0), cond, np.nan)
-            ax_c.plot(bin_times, cond_plot, linewidth=1)
-
-            # thresholds
-            ax_c.axhline(cond_warn, linestyle="--", linewidth=1)
-            ax_c.axhline(cond_bad, linestyle=":", linewidth=1)
-            ax_c.text(
-                0.01, 0.95,
-                f"warn>{cond_warn:.0e}  bad>{cond_bad:.0e}",
-                transform=ax_c.transAxes,
-                va="top",
-            )
 
             axs[5, idx].set_xlabel("time (s)")
 
@@ -841,8 +674,8 @@ class Analyzer:
 
     def run(self, display: bool) -> None:
         filters: Dict[str, LowPassFilter] = {
-            "Im": LowPassFilter(100.0, 600.0, 30.0, 0.01),
-            "Vm": LowPassFilter(100.0, 600.0, 30.0, 0.01)
+            "Im": LowPassFilter(100.0, 300.0, 30.0, 0.01),
+            "Vm": LowPassFilter(100.0, 300.0, 30.0, 0.01)
         }
 
         n_files: int = len(self.cfg.paths_to_spreadsheets)
@@ -853,7 +686,7 @@ class Analyzer:
             rdr: XLReader = XLReader(path_to_spreadsheet)
             
             stimuli: Dict[str, pd.DataFrame] = {paradigm:rdr.get_paradigm_data(paradigm) for paradigm in rdr.get_paradigms()}
-            recording: WholeCellRecording = WholeCellRecording(rdr.get_paradigm_parameters(rdr.get_paradigms()[0]), 5e-3, stimuli, filters)
+            recording: WholeCellRecording = WholeCellRecording(rdr.get_paradigm_parameters(rdr.get_paradigms()[0]), stimuli, filters)
             del rdr  # free excel file handle
             
             recording.run_analysis()
