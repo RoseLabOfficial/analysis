@@ -1,6 +1,6 @@
 {
-    "spreadsheets_input_dir": "/home/jsteele/Documents/Local/ReconstructionSpreadsheets",
-    "image_save_dir": "/home/jsteele/Documents/Local/Figures",
+    "spreadsheets_input_dir": "/home/jsteele/Documents/Local/PRR/test",
+    "image_save_dir": "/home/jsteele/Documents/Local/PRR/Figures2",
     "image_save_type": "png",
     "files_to_analyze": null,
     "iinj_clamps_to_use": null

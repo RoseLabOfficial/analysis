@@ -5,6 +5,8 @@ import numpy as np
 # Optimization
 from numba import njit
 
+from scipy.optimize import minimize, Bounds
+
 # Signal Processing
 from scipy.signal import butter, buttord, sosfiltfilt
 from scipy.ndimage import gaussian_filter1d
@@ -30,151 +32,7 @@ class LowPassFilter:
 
     def propagate(self, raw_signal: np.ndarray, fs: float) -> np.ndarray:
         return sosfiltfilt(self.filter_design(fs), raw_signal)
-"""
-# class WholeCellRecording:
-#     def __init__(self, data: pd.DataFrame, parameters: pd.DataFrame, filters: Dict[str, LowPassFilter], current_clamps: Optional[List[float]]=None) -> None:
-#         self.filters: Dict[str, LowPassFilter] = filters
-
-#         self.data: pd.DataFrame = data
-#         self.parameters: pd.DataFrame = parameters
-
-#     def filter_membrane_potentials(self):
-#         sampling_rate = 1/(self.data["times"][1] - self.data["times"][0])
-#         for inj in self.parameters["Iinj"]:
-#             self.data[f"{inj:.3e}"] = self.filters["membrane_potentials"].propagate(self.data[f"{inj:.3e}"], sampling_rate)
-#         return self.data
     
-#     def compute_activation_conductance_constants(self):
-#         self.parameters["alpha"] = (1.0/self.parameters["Rin"])/(2.0*(self.parameters["Eact"] - self.parameters["Ess"]))
-#         self.parameters["beta"] = self.parameters["alpha"]*(self.parameters["Et"] - self.parameters["Ess"])
-#         self.parameters["alpha"] = self.parameters["alpha"]*self.parameters["xalpha"]
-#         self.parameters["beta"] = self.parameters["beta"]*self.parameters["xbeta"]
-#         return self.parameters
-    
-#     def compute_polarizations(self):
-#         for idx, clamp in zip(self.parameters["Iinj"].keys(), self.parameters["Iinj"]):
-#             self.data["depolarization_"+str(clamp)] = np.where(self.data[f"{clamp:.3e}"] > self.parameters["Ess"][idx], self.data[f"{clamp:.3e}"] - self.parameters["Ess"][idx], 0)
-#             self.data["hyperpolarization_"+str(clamp)] = np.where(self.data[f"{clamp:.3e}"] < self.parameters["Ess"][idx], self.data[f"{clamp:.3e}"] - self.parameters["Ess"][idx], 0)
-#         return self.data
-    
-#     def compute_leakage_currents(self):
-#         for idx, clamp in zip(self.parameters["Iinj"].keys(), self.parameters["Iinj"]):
-#             self.data["Ileakage_"+str(clamp)] = (1/self.parameters["Rin"][idx])*(self.data[f"{clamp:.3e}"] - self.parameters["Er"][idx])
-#         return self.data
-    
-#     def compute_activation_currents(self):
-#         self.compute_activation_conductance_constants(log)
-#         for idx, clamp in zip(self.parameters["Iinj"].keys(), self.parameters["Iinj"]):
-#             alpha_current = self.parameters["alpha"][idx]*(self.data[f"{clamp:.3e}"] - self.parameters["Ess"][idx])*(self.data[f"{clamp:.3e}"] - self.parameters["Et"][idx])
-#             beta_current = self.parameters["beta"][idx]*(self.data[f"{clamp:.3e}"] - self.parameters["Ess"][idx])
-#             activation_current = alpha_current + beta_current
-#             activation_current[self.data[f"{clamp:.3e}"] < self.parameters["Ess"][idx]] = 0.0
-#             activation_current[self.data[f"{clamp:.3e}"] > self.parameters["Et"][idx]] = 0.0
-#             self.data["Iactivation_"+str(clamp)] = activation_current
-#         return self.data
-    
-#     def compute_membrane_currents(self):
-#         for idx, clamp in zip(self.parameters["Iinj"].keys(), self.parameters["Iinj"]):
-#             self.data["Imembrane_"+str(clamp)] = self.parameters["Cm"][idx]*(self.data[f"{clamp:.3e}"].diff()/self.data["times"].diff())
-#             self.data.at[0, "Imembrane_"+str(clamp)] = 0.0
-#             self.data["Imembrane_"+str(clamp)] = self.data["Imembrane_"+str(clamp)] - self.data["Imembrane_"+str(clamp)][0]
-#         return self.data
-    
-#     def filter_membrane_currents(self):
-#         sampling_rate = 1/(self.data["times"][1] - self.data["times"][0])
-#         for inj in list(self.parameters["Iinj"]):
-#             self.data["filtered_Imembrane_"+str(inj)] = self.filters["membrane_currents"].propagate(self.data["Imembrane_"+str(inj)], sampling_rate)
-#         return self.data
-    
-#     def filter_activation_currents(self):
-#         sampling_rate = 1/(self.data["times"][1] - self.data["times"][0])
-#         for inj in list(self.parameters["Iinj"]):
-#             activation_current = self.filters["activation_currents"].propagate(self.data["Iactivation_"+str(inj)], sampling_rate)
-#             self.data["filtered_Iactivation_"+str(inj)] = activation_current 
-#         return self.data
-    
-#     def compute_passive_conductances(self):
-#         ntimesteps = self.data.shape[0]
-#         A = np.zeros((ntimesteps, 2, 2))
-#         B = np.zeros((ntimesteps, 2, 1))
-#         membrane_potential = self.data[[f"{x:.3e}" for x in list(self.parameters["Iinj"])]].to_numpy()
-#         membrane_current = self.data[["filtered_Imembrane_"+str(x) for x in list(self.parameters["Iinj"])]].to_numpy()
-#         activation_current = self.data[["filtered_Iactivation_"+str(x) for x in list(self.parameters["Iinj"])]].to_numpy()
-#         leakage_current = self.data[["Ileakage_"+str(x) for x in list(self.parameters["Iinj"])]].to_numpy()
-#         excitatory_reversal_potential = self.parameters["Ee"].to_numpy()
-#         inhibitory_reversal_potentail = self.parameters["Ei"].to_numpy()
-#         injected_current = self.parameters["Iinj"].to_numpy()
-#         A[:, 0, 0] = np.sum(np.square(membrane_potential - excitatory_reversal_potential), axis=1)
-#         A[:, 0, 1] = np.sum((membrane_potential - excitatory_reversal_potential) * (membrane_potential- inhibitory_reversal_potentail), axis=1)
-#         A[:, 1, 0] = A[:, 0, 1]
-#         A[:, 1, 1] = np.sum(np.square(membrane_potential - inhibitory_reversal_potentail), axis=1)
-#         B[:, 0, 0] = -1.0*np.sum((membrane_current - activation_current - injected_current + leakage_current)*(membrane_potential - excitatory_reversal_potential), axis=1)
-#         B[:, 1, 0] = -1.0*np.sum((membrane_current - activation_current - injected_current + leakage_current)*(membrane_potential - inhibitory_reversal_potentail), axis=1)
-#         conductances = np.linalg.pinv(A) @ B
-#         self.data["excitation"] = conductances[:, 0, 0]
-#         self.data["inhibition"] = conductances[:, 1, 0]
-#         self.data["positive_excitation"] = self.data["excitation"]
-#         self.data["positive_inhibition"] = self.data["inhibition"]
-#         self.data.loc[self.data["positive_excitation"] < 0, "positive_excitation"] = 0.0
-#         self.data.loc[self.data["positive_inhibition"] < 0, "positive_inhibition"] = 0.0
-#         self.data["resultant_excitation"] = self.data["positive_excitation"] - self.data["positive_inhibition"]
-#         self.data["resultant_inhibition"] = self.data["positive_inhibition"] - self.data["positive_excitation"]
-#         self.data.loc[self.data["resultant_excitation"] < 0, "resultant_excitation"] = 0.0
-#         self.data.loc[self.data["resultant_inhibition"] < 0, "resultant_inhibition"] = 0.0
-#         return self.data
-    
-#     def get_clamp_near_0(self) -> Tuple[int, float]:
-#         index_of_minimum_injected_current: int = np.argmin(np.abs(self.parameters["Iinj"]))
-#         minimum_injected_current: float = self.parameters["Iinj"][index_of_minimum_injected_current]
-#         return index_of_minimum_injected_current, minimum_injected_current
-    
-#     def compute_stats(self):
-#         if log:
-#             wholecell_logger.info("Computing stats")
-#         index_of_minimum_injected_current, minimum_injected_current = self.get_clamp_near_0()
-#         stats = pd.DataFrame()
-#         paradigm_all_var_stats = self.data.mean(numeric_only=True).to_frame().T
-#         stats["depolarization"] = paradigm_all_var_stats[f"depolarization_{minimum_injected_current}"]
-#         stats["hyperpolarization"] = paradigm_all_var_stats[f"hyperpolarization_{minimum_injected_current}"]
-#         stats["Imembrane"] = paradigm_all_var_stats[f"filtered_Imembrane_{minimum_injected_current}"]
-#         stats["Ileakage"] = paradigm_all_var_stats[f"Ileakage_{minimum_injected_current}"]
-#         stats["Iactivation"] = paradigm_all_var_stats[f"filtered_Iactivation_{minimum_injected_current}"]
-#         stats["mean_excitation"] = paradigm_all_var_stats["positive_excitation"]
-#         stats["mean_inhibition"] = paradigm_all_var_stats["positive_inhibition"]
-#         stats["net_excitation"] = paradigm_all_var_stats["resultant_excitation"]
-#         stats["net_inhibition"] = paradigm_all_var_stats["resultant_inhibition"]
-#         stats["spikes_per_stimulus_repetition"] = self.parameters["sps"][index_of_minimum_injected_current]
-#         return stats
-
-#     def estimate_conductances(self):
-#         self.filter_membrane_potentials(log)
-#         self.compute_polarizations(log)
-#         self.compute_activation_currents(log)
-#         self.filter_activation_currents(log)
-#         self.compute_leakage_currents(log)
-#         self.compute_membrane_currents(log)
-#         self.filter_membrane_currents(log)
-#         self.compute_passive_conductances(log)
-#         self.stats = self.compute_stats(log)
-#         return self.data
-
-import pandas as pd
-import numpy as np
-import matplotlib.pyplot as plt 
-from pyhelpers.store import save_fig
-from pathlib import Path
-from scipy.optimize import minimize, Bounds, lsq_linear
-from scipy.ndimage import gaussian_filter1d
-from scipy.signal import savgol_filter
-from scipy import sparse
-
-from libs.readers import XLReader, AnalyzerCfg
-
-from typing import Dict, List, Tuple
-
-import numpy as np
-"""
-
 
 def weighted_quantile(x, q, w=None, axis=-1):
     """
@@ -271,12 +129,12 @@ def weighted_quantile(x, q, w=None, axis=-1):
 class WholeCellRecording:
     def __init__(self, parameters: pd.DataFrame, stimuli: Dict[str, pd.DataFrame], filters: Dict[str, LowPassFilter]) -> None:
         assert len(stimuli) > 0
-        assert set(filters.keys()) == {"Vm", "Im"}
+        assert set(filters.keys()) == {"Vm", "Im", "g", "Eeff"}
 
         self.filters: Dict[str, LowPassFilter] = filters
         
         self.Cm: float = parameters["Cm"][0]    # units: Farads
-        self.Et: float = parameters["Et"][0]
+        self.Et_measured: float = parameters["Et"][0]
 
         example_t: pd.Series = list(stimuli.values())[0]["times"] # units: Seconds, shape: (Nsamples,)
         self.dt: float = example_t[1] - example_t[0] # time assumed sampled at constant interval; units: Seconds
@@ -289,12 +147,17 @@ class WholeCellRecording:
         self.stimuli: Dict[str, WholeCellStimulus] = {name: WholeCellStimulus(self, data) for name, data in stimuli.items()}
         
         self.Er, self.Rin = self._estimate_Er_Rin()
+        self._gact_override: float = np.nan
         
         self.Eact: float = np.nan
-        self.Eact = self._estimate_Eact()
+        self.Eact, self._gact_override = self._estimate_Eact_and_gact()
         
-        print(f"Parameter Estimates:\n\tEr: {self.Er*1e3:.1f} mV\n\tRin: {self.Rin*1e-9:.1f} Gohm\n\tEact: {self.Eact*1e3:.1f} mV")
+        print(f"Parameter Estimates:\n\tEr: {self.Er*1e3:.1f} mV\n\tRin: {self.Rin*1e-9:.1f} Gohm\n\tEact: {self.Eact*1e3:.1f} mV\n\tgact: {self.gact*1e9:.1f} nS\n\tEt: {self.Et*1e3:.1f} mV")
+        print(f"\tgl: {self.gl*1e9:.1f} nS")
 
+    @property
+    def Et(self) -> float:
+        return (self.Eact * self.gact - self.Er * self.gl) / (self.gact - self.gl)
 
     @property
     def gl(self) -> float:
@@ -302,7 +165,9 @@ class WholeCellRecording:
 
     @property
     def gact(self) -> float:
-        return self.gl * (self.max_Eact - self.Er) / (self.max_Eact - self.Eact)
+        if not np.isnan(self._gact_override):
+            return self._gact_override
+        return self.gl * (self.max_Vm - self.Er) / (self.max_Vm - self.Eact)
 
     @property
     def max_Vm(self) -> float:
@@ -310,10 +175,6 @@ class WholeCellRecording:
         for stimulus in self.stimuli.values():
             max_Vms.append(stimulus.Vm.max())
         return np.max(max_Vms)
-    
-    @property
-    def max_Eact(self) -> float:
-        return max(self.Et, self.max_Vm)
 
     def _estimate_Er_Rin(self, bins: int=200, smooth_bins: float=4) -> Tuple[float, float]:
         # Step 1: Get noisy estimate of Vss: argmax of Vm density function.
@@ -359,10 +220,12 @@ class WholeCellRecording:
     def estimate_Ee_Ei(self) -> Tuple[float, float]:
         Eeff_pool: List[float] = []
         for stimulus in self.stimuli.values():
-            Eeff_pool.extend(stimulus.timeseries["Eeff"])
+            Eeff_pool.extend(stimulus.timeseries["Eeff filtered"])
 
         Ei_hat: float = float(np.nanquantile(Eeff_pool, 0.05)) # units: Volts
         Ee_hat: float = float(np.nanquantile(Eeff_pool, 0.95)) # units: Volts
+
+        Ee_hat = max(Ee_hat, self.Eact)
 
         return Ee_hat, Ei_hat
 
@@ -384,42 +247,86 @@ class WholeCellRecording:
 
         for stimulus in self.stimuli.values():
             stimulus.estimate_ge_gi()
-            stimulus.calculate_predicted_Vm()
+            stimulus.calculate_predicted_Im()
 
     """ Eact Optimization """
-    def predicted_Vm_SSE(self, x) -> float:
+    def sos_negative_g(self, x) -> float:
         self.Eact = x
         self.run_analysis(verbose=False)
         total = 0.0
         for stimulus in self.stimuli.values():
-            sse = np.sum(np.square(stimulus.Vm - np.stack(stimulus.timeseries["predicted Vm"].to_numpy()).astype(np.float64).T)) #type: ignore
-            total += sse
-        return total
-    
-    def gegi_correlation(self, x) -> float:
-        self.Eact = x
-        self.run_analysis(verbose=False)
-        total = 0.0
-        for stimulus in self.stimuli.values():
-            sse = np.sum(np.square(stimulus.Vm - np.stack(stimulus.timeseries["predicted Vm"].to_numpy()).astype(np.float64).T)) #type: ignore
-            total += sse
-        return total
-    
-    def _estimate_Eact(self) -> float:
-        return self.max_Eact
-        print(self.max_Vm, self.max_Eact, self.Er)
-        eps: float = np.finfo(float).eps
-        if self.max_Eact <= self.Er:
-            return self.Er + eps
-        else:
-            Eact_initial_guess: float = (self.Er + self.max_Eact) / 2
-            result = minimize(
-                self.predicted_Vm_SSE, 
-                Eact_initial_guess, 
-                method='Powell', 
-                bounds=Bounds(self.Er + eps, self.max_Eact - eps),
-            )
-            return result.x[0]
+            ge = stimulus.timeseries["ge filtered"].to_numpy()
+            sse_ge = np.sum(np.square(np.clip(ge, -np.inf, 0)))
+            gi = stimulus.timeseries["gi filtered"].to_numpy()
+            sse_gi = np.sum(np.square(np.clip(gi, -np.inf, 0)))
+            total += sse_gi + sse_ge
+        print(x, total)
+        return 1e10 * total
+
+    def _estimate_Eact_and_gact(self) -> Tuple[float, float]:
+        eps_v: float = 2e-3
+
+        lo_E_init: float = self.Er + eps_v
+        hi_E_init: float = self.max_Vm
+        max_V_safe: float = self.max_Vm + eps_v
+
+        def gact_upper(E: float) -> float:
+            return float(self.gl) * (max_V_safe - self.Er) / (max_V_safe - E)
+
+        def unpack(x: np.ndarray) -> Tuple[float, float]:
+            E, alpha = float(x[0]), float(x[1])
+            g = float(self.gl) + alpha * (gact_upper(E) - float(self.gl))
+            return E, g
+
+        def objective(x: np.ndarray) -> float:
+            E, g = unpack(x)
+            self.Eact = E
+            self._gact_override = g
+            self.run_analysis(verbose=False)
+            total = 0.0
+            for stimulus in self.stimuli.values():
+                ge = stimulus.timeseries["ge filtered"].to_numpy()
+                gi = stimulus.timeseries["gi filtered"].to_numpy()
+                total += np.sum(np.square(np.minimum(ge, 0.0)))
+                total += np.sum(np.square(np.minimum(gi, 0.0)))
+            return total
+
+        if self.max_Vm <= lo_E_init:
+            return lo_E_init, float(self.gl) * 1.1
+
+        n_epochs: int = 3    # number of refinement passes
+        depth: int = 5       # grid points per dimension per pass
+        shrink: float = 0.5  # how much to shrink the search window each epoch
+
+        lo_E: float = lo_E_init
+        hi_E: float = hi_E_init
+        lo_a: float = 0.1
+        hi_a: float = 1.0
+
+        best_x: np.ndarray = np.array([0.5 * (lo_E + hi_E), 0.5])
+        best_val: float = np.inf
+
+        for epoch in range(n_epochs):
+            Eact_grid: np.ndarray = np.linspace(lo_E, hi_E, depth)
+            alpha_grid: np.ndarray = np.linspace(lo_a, hi_a, depth)
+
+            for E in Eact_grid:
+                for a in alpha_grid:
+                    v = objective(np.array([E, a]))
+                    if v < best_val:
+                        best_val = v
+                        best_x = np.array([E, a])
+
+            # Shrink the search window around the current best, keeping it inside the original bounds
+            E_half: float = 0.5 * shrink * (hi_E - lo_E)
+            a_half: float = 0.5 * shrink * (hi_a - lo_a)
+            lo_E = max(lo_E_init, best_x[0] - E_half)
+            hi_E = min(hi_E_init, best_x[0] + E_half)
+            lo_a = max(0.0, best_x[1] - a_half)
+            hi_a = min(1.0, best_x[1] + a_half)
+
+        E_opt, g_opt = unpack(best_x)
+        return E_opt, g_opt
 
 
 class WholeCellStimulus:
@@ -462,9 +369,13 @@ class WholeCellStimulus:
 
         Il: np.ndarray = gl * (Er - Vm_filtered) # units: Amperes, shape: [Nclamps, Nsamples]
 
-        Iact: np.ndarray = np.zeros_like(Il) # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        Iact: np.ndarray = np.where(
+            Vm_filtered > self.recording.Eact,
+            self.recording.gact * (self.recording.Eact - Vm_filtered),
+            0.0,
+        )
 
-        target_Isyn: np.ndarray = Im_filtered + Iact + Iinj + Il # units: Amperes, shape: [Nclamps, Nsamples]
+        target_Isyn = -Im + Iinj + Il - Iact # units: Amperes, shape: [Nclamps, Nsamples]
         
         self.timeseries["Vm filtered"] = Vm_filtered.T.tolist()
         self.timeseries["Im"] = Im.T.tolist()
@@ -475,32 +386,32 @@ class WholeCellStimulus:
 
     def estimate_Eeff(self) -> None:
         # Pull data (faster than .tolist() if these are arrays-in-cells, but keep if needed)
-        Vm_filtered: np.ndarray = np.stack(self.timeseries["Vm filtered"]).astype(np.float64).T #type: ignore , units: Volts, shape: [Nclamps, Nsamples]
-        target_Isyn: np.ndarray = np.stack(self.timeseries["target Isyn"]).astype(np.float64).T #type: ignore , units: Amperes, shape: [Nclamps, Nsamples]
+        Vm_filtered: np.ndarray = np.stack(self.timeseries["Vm filtered"]).astype(np.float64).T  # type: ignore , units: Volts, shape: [Nclamps, Nsamples]
+        target_Isyn: np.ndarray = np.stack(self.timeseries["target Isyn"]).astype(np.float64).T  # type: ignore , units: Amperes, shape: [Nclamps, Nsamples]
 
         # Means per bin
-        Vm_filtered_mean: np.ndarray = Vm_filtered.mean(axis=0) # units: Volts, shape: [Nsamples,]
-        target_Isyn_mean: np.ndarray = target_Isyn.mean(axis=0) # units: Amperes, shape: [Nsamples,]
+        Vm_filtered_mean: np.ndarray = Vm_filtered.mean(axis=0)  # units: Volts, shape: [Nsamples,]
+        target_Isyn_mean: np.ndarray = target_Isyn.mean(axis=0)  # units: Amperes, shape: [Nsamples,]
 
         # Centered
-        centered_integral_Vm: np.ndarray = Vm_filtered - Vm_filtered_mean[None, :] # units: Volts, shape: [Nclamps, Nsamples]
-        centered_target_Isyn: np.ndarray = target_Isyn - target_Isyn_mean[None, :] # units: Amperes, shape: [Nclamps, Nsamples]
+        centered_integral_Vm: np.ndarray = Vm_filtered - Vm_filtered_mean[None, :]  # units: Volts, shape: [Nclamps, Nsamples]
+        centered_target_Isyn: np.ndarray = target_Isyn - target_Isyn_mean[None, :]  # units: Amperes, shape: [Nclamps, Nsamples]
 
         # Regression slope b and intercept a for each bin
-        denom = np.sum(centered_integral_Vm * centered_integral_Vm, axis=0) # var * (Nclamps-1) up to scale
+        denom = np.sum(centered_integral_Vm * centered_integral_Vm, axis=0)  # var * (Nclamps-1) up to scale
         numer = np.sum(centered_integral_Vm * centered_target_Isyn, axis=0)
 
         # Handle degenerate bins where Phi has no variation across clamps
         eps = np.finfo(np.float64).tiny
-        b = np.where(np.abs(denom) > eps, numer / denom, np.nan)   # slope (Nbins,)
-        a = target_Isyn_mean - b * Vm_filtered_mean                                        # intercept
+        b = np.where(np.abs(denom) > eps, numer / denom, np.nan)  # slope (Nbins,)
+        a = target_Isyn_mean - b * Vm_filtered_mean  # intercept
 
         # Your derived params
-        gsyn = -b                                                  # Siemens
+        gsyn = -b  # Siemens
         # Avoid divide-by-zero when gsyn ~ 0
-        gsyn_safe = np.where(np.abs(gsyn) > 0.1e-9, gsyn, np.nan)
+        gsyn_safe = np.where(np.abs(gsyn) > 1e-10, gsyn, np.nan)
 
-        Eeff = a / gsyn_safe       # Volts
+        Eeff = a / gsyn_safe  # Volts
 
         # Diagnostics per bin
         # Your SSE formula: sum (Q - gsyn*(Eeff - Phi))^2
@@ -513,62 +424,166 @@ class WholeCellStimulus:
         sst = np.sum((target_Isyn - target_Isyn_mean[None, :]) ** 2, axis=0)
         r2 = np.where(sst > 0, 1.0 - (sse / sst), np.nan)
 
+        # Filter Eeff, handling NaNs by linear interpolation before filtering
+        # and restoring NaNs in originally undefined regions afterward.
+        nan_mask = np.isnan(Eeff)
+        if nan_mask.all():
+            Eeff_filtered = np.full_like(Eeff, np.nan)
+        else:
+            if nan_mask.any():
+                idx = np.arange(Eeff.size)
+                Eeff_clean = Eeff.copy()
+                Eeff_clean[nan_mask] = np.interp(idx[nan_mask], idx[~nan_mask], Eeff[~nan_mask])
+            else:
+                Eeff_clean = Eeff
+
+            fs = 1 / self.recording.dt
+            Eeff_filtered = self.recording.filters["Eeff"].propagate(Eeff_clean[None, :], fs)[0]
+            # Restore NaNs where Eeff was originally undefined so the filter output doesn't
+            # invent values in regions with no meaningful synaptic conductance.
+            Eeff_filtered[nan_mask] = np.nan
+
         # Store
         self.timeseries["Eeff"] = Eeff
+        self.timeseries["Eeff filtered"] = Eeff_filtered
         self.timeseries["gsyn"] = gsyn_safe
         self.timeseries["SSE least-squares Qsyn"] = sse
         self.timeseries["r2 least-squares Qsyn"] = r2
 
     def estimate_ge_gi(self) -> None:
-        Vm_filtered: np.ndarray = np.stack(self.timeseries["Vm filtered"]).astype(np.float64).T #type: ignore , units: Volts, shape: [Nclamps, Nsamples]
-        target_Isyn: np.ndarray = np.stack(self.timeseries["target Isyn"]).astype(np.float64).T #type: ignore , units: Amperes, shape: [Nclamps, Nsamples]
-        
-        Ee: float = self.recording.Ee # units: Volts
-        Ei: float = self.recording.Ei # units: Volts
+        Vm_filtered: np.ndarray = np.stack(self.timeseries["Vm filtered"]).astype(np.float64).T  # type: ignore , units: Volts, shape: [Nclamps, Nsamples]
+        target_Isyn: np.ndarray = np.stack(self.timeseries["target Isyn"]).astype(np.float64).T  # type: ignore , units: Amperes, shape: [Nclamps, Nsamples]
 
-        driving_force: np.ndarray = np.vstack([[Vm_filtered - Ee], [Vm_filtered - Ei]]) # units: Volts, shape: [2, Nclamps, Nsamples]
+        Ee: float = self.recording.Ee  # units: Volts
+        Ei: float = self.recording.Ei  # units: Volts
 
-        XtX: np.ndarray = np.einsum("ijn,kjn->nik", driving_force, driving_force) # shape: [Nsamples, 2, 2]
-        Xty: np.ndarray = np.einsum("ijn,jn->ni", driving_force, target_Isyn) # shape: [Nsamples, 2]
-        
+        driving_force: np.ndarray = np.stack([Vm_filtered - Ee, Vm_filtered - Ei], axis=0)  # units: Volts, shape: [2, Nclamps, Nsamples]
+
+        XtX: np.ndarray = np.einsum("ijn,kjn->nik", driving_force, driving_force)  # shape: [Nsamples, 2, 2]
+        Xty: np.ndarray = np.einsum("ijn,jn->ni", driving_force, target_Isyn)  # shape: [Nsamples, 2]
+
         try:
-            conductances = np.linalg.solve(XtX, Xty[..., None])[..., 0] # shape: [Nsamples, 2]
+            conductances = np.linalg.solve(XtX, Xty[..., None])[..., 0]  # shape: [Nsamples, 2]
         except np.linalg.LinAlgError:
-            print(f"Cannot use least-squares, attempting pseudoinverse...")
-            conductances = (np.linalg.pinv(XtX) @ Xty[..., None])[..., 0] # shape: [Nsamples, 2]
+            print("Cannot use least-squares, attempting pseudoinverse...")
+            conductances = (np.linalg.pinv(XtX) @ Xty[..., None])[..., 0]  # shape: [Nsamples, 2]
 
-        self.timeseries["ge"] = conductances[:, 0]
-        self.timeseries["gi"] = conductances[:, 1]
+        ge: np.ndarray = conductances[:, 0]  # units: Siemens, shape: [Nsamples]
+        gi: np.ndarray = conductances[:, 1]  # units: Siemens, shape: [Nsamples]
+
+        fs: float = 1 / self.recording.dt  # units: Hertz
+        ge_filtered: np.ndarray = self.recording.filters["g"].propagate(ge[None, :], fs)[0]  # units: Siemens, shape: [Nsamples]
+        gi_filtered: np.ndarray = self.recording.filters["g"].propagate(gi[None, :], fs)[0]  # units: Siemens, shape: [Nsamples]
+
+        self.timeseries["ge"] = ge.tolist()
+        self.timeseries["gi"] = gi.tolist()
+        self.timeseries["ge filtered"] = ge_filtered.tolist()
+        self.timeseries["gi filtered"] = gi_filtered.tolist()
     
+    def calculate_predicted_Im(self) -> None:
+        """
+        Compute predicted membrane current from the fitted conductance model,
+        evaluated at the measured Vm. If the model is correct and fits well,
+        predicted Im should match measured Im up to noise.
+
+        Current balance:
+            Cm·dVm/dt = Iinj - gl·(Vm - Er) - ge·(Vm - Ee) - gi·(Vm - Ei) - Iact(Vm)
+        so
+            Im_predicted = Cm·dVm/dt = Iinj - Il_model - Isyn_model - Iact_model
+        where all RHS terms are evaluated at the measured Vm.
+        """
+        Iinj: np.ndarray = self.Iinj  # units: Amperes, shape: [Nclamps, 1]
+
+        Ee: float = float(self.recording.Ee)        # units: Volts
+        Ei: float = float(self.recording.Ei)        # units: Volts
+        Er: float = float(self.recording.Er)        # units: Volts
+        Eact: float = float(self.recording.Eact)    # units: Volts
+        gl: float = float(self.recording.gl)        # units: Siemens
+        gact: float = float(self.recording.gact)    # units: Siemens
+
+        Vm_filtered: np.ndarray = np.stack(self.timeseries["Vm filtered"]).astype(np.float64).T  # type: ignore , units: Volts, shape: [Nclamps, Nsamples]
+
+        ge: np.ndarray = np.stack(self.timeseries["ge"]).astype(np.float64).T  # type: ignore , units: Siemens, shape: [Nsamples,]
+        gi: np.ndarray = np.stack(self.timeseries["gi"]).astype(np.float64).T  # type: ignore , units: Siemens, shape: [Nsamples,]
+
+        # Model currents evaluated at measured Vm
+        Il_model: np.ndarray = gl * (Vm_filtered - Er)                              # units: Amperes, shape: [Nclamps, Nsamples]
+        Ie_model: np.ndarray = ge[None, :] * (Vm_filtered - Ee)                     # units: Amperes, shape: [Nclamps, Nsamples]
+        Ii_model: np.ndarray = gi[None, :] * (Vm_filtered - Ei)                     # units: Amperes, shape: [Nclamps, Nsamples]
+        Iact_model: np.ndarray = np.where(
+            Vm_filtered > Eact,
+            gact * (Eact - Vm_filtered),
+            0.0,
+        )                                                                            # units: Amperes, shape: [Nclamps, Nsamples]
+
+        # Predicted membrane current from current balance
+        Im_predicted: np.ndarray = Iinj - Il_model - Ie_model - Ii_model - Iact_model  # units: Amperes, shape: [Nclamps, Nsamples]
+        Im_predicted_filtered: np.ndarray = self.recording.filters["Im"].propagate(Im_predicted, 1 / self.recording.dt)
+
+        self.timeseries["Iact predicted"] = Iact_model.T.tolist()
+        self.timeseries["Ie predicted"] = Ie_model.T.tolist()
+        self.timeseries["Ii predicted"] = Ii_model.T.tolist()
+        self.timeseries["Im predicted"] = Im_predicted.T.tolist()
+        self.timeseries["Im predicted filtered"] = Im_predicted_filtered.T.tolist()
+
     def calculate_predicted_Vm(self) -> None:
         Iinj: np.ndarray = self.Iinj    # units: Amperes, shape: [Nclamps, 1]
-        V0: np.ndarray = self.Vm[:, 0]  # units: Volts, shape: [Nclamps, 1]
+        V0: np.ndarray = self.Vm[:, 0]  # units: Volts, shape: [Nclamps,]
 
-        Ee: float = float(self.recording.Ee)    # units: Volts
-        Ei: float = float(self.recording.Ei)    # units: Volts
-        Er: float = float(self.recording.Er)    # units: Volts
-        gl: float = float(self.recording.gl)    # units: Siemens
-        Cm: float = float(self.recording.Cm)    # units: Farads
-        dt: float = float(self.recording.dt)    # units: Seconds
+        Ee: float = float(self.recording.Ee)        # units: Volts
+        Ei: float = float(self.recording.Ei)        # units: Volts
+        Er: float = float(self.recording.Er)        # units: Volts
+        Eact: float = float(self.recording.Eact)    # units: Volts
+        gl: float = float(self.recording.gl)        # units: Siemens
+        gact: float = float(self.recording.gact)    # units: Siemens
+        Cm: float = float(self.recording.Cm)        # units: Farads
+        dt: float = float(self.recording.dt)        # units: Seconds
 
-        ge: np.ndarray = np.stack(self.timeseries["ge"]).astype(np.float64).T #type: ignore , units: Siemens, shape: [Nsamples,]
-        gi: np.ndarray = np.stack(self.timeseries["gi"]).astype(np.float64).T #type: ignore , units: Siemens, shape: [Nsamples,]
+        ge: np.ndarray = np.stack(self.timeseries["ge"]).astype(np.float64).T  # type: ignore , units: Siemens, shape: [Nsamples,]
+        gi: np.ndarray = np.stack(self.timeseries["gi"]).astype(np.float64).T  # type: ignore , units: Siemens, shape: [Nsamples,]
 
-        g_tot: np.ndarray = gl + ge + gi                                    # units: Siemens, shape: [Nsamples,]
-        V_inf: np.ndarray = (gl * Er + ge * Ee + gi * Ei + Iinj) / g_tot    # units: Volts, shape: [Nclamps, Nsamples]
-        decay: np.ndarray = np.exp(-g_tot * dt / Cm)                        # shape: [Nsamples,]
+        # Passive components (do not depend on Vm)
+        g_passive: np.ndarray = gl + ge + gi                                    # units: Siemens, shape: [Nsamples,]
+        num_passive: np.ndarray = gl * Er + ge * Ee + gi * Ei + Iinj            # units: Amperes, shape: [Nclamps, Nsamples]
 
-        pred_Vm: np.ndarray = self._vm_loop(V_inf.astype(np.float32), decay.astype(np.float32), V0)
+        pred_Vm: np.ndarray = self._vm_loop_with_iact(
+            num_passive.astype(np.float32),
+            g_passive.astype(np.float32),
+            np.float32(gact),
+            np.float32(Eact),
+            np.float32(Cm),
+            np.float32(dt),
+            V0.astype(np.float32),
+        )
 
-        self.timeseries["pred Vm"] = pred_Vm.T.tolist()
+        self.timeseries["predicted Vm"] = pred_Vm.T.tolist()
 
     @staticmethod
     @njit(cache=True)
-    def _vm_loop(V_inf: np.ndarray, decay: np.ndarray, v0: np.ndarray) -> np.ndarray:
-        Vm: np.ndarray = np.empty_like(V_inf, dtype=np.float32)
+    def _vm_loop_with_iact(
+        num_passive: np.ndarray,    # gl*Er + ge*Ee + gi*Ei + Iinj, shape: [Nclamps, Nsamples]
+        g_passive: np.ndarray,      # gl + ge + gi, shape: [Nsamples,]
+        gact: np.float32,
+        Eact: np.float32,
+        Cm: np.float32,
+        dt: np.float32,
+        v0: np.ndarray,             # shape: [Nclamps,]
+    ) -> np.ndarray:
+        Nclamps, Nsamples = num_passive.shape
+        Vm = np.empty_like(num_passive, dtype=np.float32)
         Vm[:, 0] = v0
-        for i in range(1, V_inf.shape[-1]):
-            Vm[:, i] = V_inf[:, i] + (Vm[:, i - 1] - V_inf[:, i]) * decay[i]
+        for i in range(1, Nsamples):
+            for c in range(Nclamps):
+                v_prev = Vm[c, i - 1]
+                # Decide whether active current is on, based on previous Vm
+                if v_prev > Eact:
+                    g_tot = g_passive[i] + gact
+                    v_inf = (num_passive[c, i] + gact * Eact) / g_tot
+                else:
+                    g_tot = g_passive[i]
+                    v_inf = num_passive[c, i] / g_tot
+                decay = np.exp(-g_tot * dt / Cm)
+                Vm[c, i] = v_inf + (v_prev - v_inf) * decay
         return Vm
 
 
@@ -581,9 +596,6 @@ class Analyzer:
         recording: WholeCellRecording,
         filename: Path,
         filetype: str = "png",
-        cond_warn: float = 1e6,
-        cond_bad: float = 1e10,
-        resnorm_factor_warn: float = 5.0,
         display: bool = True
     ):
         """
@@ -597,7 +609,7 @@ class Analyzer:
         """
 
         ncols = len(recording.stimuli)
-        nrows = 7
+        nrows = 5
         fig, axs = plt.subplots(
             nrows=nrows,
             ncols=ncols,
@@ -616,42 +628,41 @@ class Analyzer:
 
             times: np.ndarray = stimulus.times
 
-            pred_Vm: np.ndarray = np.stack(stimulus.timeseries["pred Vm"]).astype(np.float64).T #type: ignore
-            Im: np.ndarray = np.stack(stimulus.timeseries["Im filtered"]).astype(np.float64).T #type: ignore
-
-            Eeff: np.ndarray = stimulus.timeseries["Eeff"].to_numpy(np.float64) 
-            ge: np.ndarray = stimulus.timeseries["ge"].to_numpy(np.float64)
-            gi: np.ndarray = stimulus.timeseries["gi"].to_numpy(np.float64)
+            filtered_Vm: np.ndarray = np.stack(stimulus.timeseries["Vm filtered"]).astype(np.float64).T #type: ignore
+            Eeff: np.ndarray = stimulus.timeseries["Eeff filtered"].to_numpy(np.float64) 
+            Im: np.ndarray = np.stack(stimulus.timeseries["Im filtered"]).astype(np.float64).T  # type: ignore
+            ge: np.ndarray = stimulus.timeseries["ge filtered"].to_numpy(np.float64)
+            gi: np.ndarray = stimulus.timeseries["gi filtered"].to_numpy(np.float64)
             
             axs[0, idx].set_title(paradigm)
 
-            # ---- Row 0: Vm + Vpred (same colors) ----
-            curves = axs[0, idx].plot(times, stimulus.Vm.T)  # solid Vm traces
+            # ---- Row 0: Vm, Vss, Eact ----
+            curves = axs[0, idx].plot(times, filtered_Vm.T)  # solid Vm traces
             colors = [line.get_color() for line in curves]
 
             Ess = recording.Er + recording.Rin * stimulus.Iinj
             for j in range(stimulus.Nclamps):
-                axs[0, idx].plot(times, pred_Vm[j, :], linestyle=":", color=colors[j])  # dotted Vpred
                 axs[0, idx].plot([times[0], times[-1]], [Ess[j]] * 2, color="grey", ls="--")
             axs[0, idx].plot([times[0], times[-1]], [recording.Eact] * 2, color="red", ls="--")
 
             axs[0, idx].set_ylabel("Vm (V)")
             axs[0, idx].grid(True)
 
-            # ---- Row 1: Eeff ----
+            # ---- Row 1: Eeff, Ee, Ei ----
             axs[1, idx].grid(True)
             axs[1, idx].plot(times, Eeff, c="black")
             axs[1, idx].axhline(recording.Er, linestyle="--", color="k", linewidth=1, label="Er" if idx == 0 else None)
             axs[1, idx].axhline(recording.Ee, linestyle="--", color="r", linewidth=1, label="Ee" if idx == 0 else None)
             axs[1, idx].axhline(recording.Ei, linestyle="--", color="b", linewidth=1, label="Ei" if idx == 0 else None)
-
-            # ---- Row 2: Im ---- 
-            axs[2, idx].grid(True)
-            axs[2, idx].plot(times, times * 0, "k--")
+            
+            # ---- Row 2: Im ----
             for j in range(stimulus.Nclamps):
                 axs[2, idx].plot(times, Im[j, :], color=colors[j])
+            axs[2, idx].plot([times[0], times[-1]], [0, 0], color="grey", ls="--")
+            axs[2, idx].set_ylabel("Im (A)")
+            axs[2, idx].grid(True)
 
-            # ---- Row 3: conductances ----
+            # ---- Row 3: ge, gi ----
             axs[3, idx].plot(times, ge, c="r", label="ge")
             axs[3, idx].plot(times, gi, c="b", label="gi")
 
@@ -659,7 +670,15 @@ class Analyzer:
             axs[3, idx].set_ylabel("G (S)")
             axs[3, idx].grid(True)
 
-            axs[5, idx].set_xlabel("time (s)")
+            # ---- Row 4: Iact predicted ----
+            Iact_pred: np.ndarray = np.stack(stimulus.timeseries["Iact predicted"]).astype(np.float64).T  # type: ignore
+            for j in range(stimulus.Nclamps):
+                axs[4, idx].plot(times, Iact_pred[j, :], color=colors[j])
+            axs[4, idx].plot(times, times * 0, "k--")
+            axs[4, idx].set_ylabel("Iact (A)")
+            axs[4, idx].grid(True)
+
+            axs[4, idx].set_xlabel("time (s)")
 
         out = f"{str(filename)}_dev_level1."
         if filetype == "png":
@@ -674,8 +693,10 @@ class Analyzer:
 
     def run(self, display: bool) -> None:
         filters: Dict[str, LowPassFilter] = {
-            "Im": LowPassFilter(100.0, 300.0, 30.0, 0.01),
-            "Vm": LowPassFilter(100.0, 300.0, 30.0, 0.01)
+            "Im": LowPassFilter(30.0, 80.0, 80.0, 3),
+            "Vm": LowPassFilter(30.0, 80.0, 80.0, 3),
+            "g": LowPassFilter(30.0, 80.0, 80.0, 3),
+            "Eeff": LowPassFilter(30.0, 80.0, 80.0, 3)
         }
 
         n_files: int = len(self.cfg.paths_to_spreadsheets)
@@ -699,193 +720,3 @@ class Analyzer:
                     filetype=self.cfg.image_save_type,
                     display=display,
                 )
-
-# class Analyzer:
-#     def __init__(self, filepaths: List[str], output_path: Path):
-#         self.filepaths: List[str] = filepaths
-#         self.output_path: str = output_path
-
-#     def get_paradigm_to_optimize(self, recordings):
-#         analysis_logger.info("Finding the best paradigm to optimize")
-#         maximum_depolarizations = np.zeros(len(recordings))
-#         for idx, paradigm in enumerate(recordings):
-#             index_of_minimum_injected_current, minimum_injected_current = recordings[paradigm].get_clamp_near_0()
-#             membrane_potential_at_minimum_injected_current = recordings[paradigm].data[minimum_injected_current]
-#             depols = membrane_potential_at_minimum_injected_current - recordings[paradigm].parameters["Ess"][index_of_minimum_injected_current]
-#             maximum_depolarizations[idx] = np.max(depols)
-#         max_index = np.argmax(maximum_depolarizations)
-#         return list(recordings.keys())[max_index]
-
-#     def estimation_without_optim_activation_potential(self, recordings):
-#         for idx, paradigm in enumerate(recordings):
-#             recordings[paradigm].estimate_conductances()
-#             recordings[paradigm].stats.insert(0, "paradigm", paradigm)
-#             if idx == 0:
-#                 overall_stats = recordings[paradigm].stats.copy()
-#             else:
-#                 overall_stats = pd.concat([overall_stats, recordings[paradigm].stats], axis=0)
-#             print(f"{paradigm} done")
-#         overall_stats = overall_stats.sort_values(by="paradigm", ascending=True)
-#         return recordings, overall_stats
-    
-#     def write_to_excel(self, filepath: Path, recordings, stats):
-#         if not self.sysops.check_directory(filepath):
-#             pd.DataFrame().to_excel(filepath)
-#         with pd.ExcelWriter(filepath, mode='a', engine='openpyxl', if_sheet_exists='new') as writer:
-#             for paradigm in recordings:
-#                 recordings[paradigm].data.to_excel(writer, sheet_name=paradigm, index=False)
-#                 recordings[paradigm].parameters.to_excel(writer, sheet_name="parameters_"+paradigm, index = False)
-#             stats.to_excel(writer, sheet_name="stats", index=False)
-#         pass
-
-#     def write_analysis_to_excel(self, filepath: Path, paradigm: str, paradigm_data: pd.DataFrame):
-#         if self.sysops.check_directory(filepath):
-#             with pd.ExcelWriter(filepath, mode='a', engine='openpyxl', if_sheet_exists='replace') as writer:
-#                 paradigm_data.to_excel(writer, sheet_name=paradigm, index=False)
-#         else:
-#             # File does not exist, create a new file
-#             paradigm_data.to_excel(filepath, sheet_name=paradigm, index=False)
-#         pass
-
-#     def plot_dev(self, recordings, filename: Path, filetype: str="png", current_clamps: Optional[List[float]]=None):
-#         analysis_logger.info(f"Verbose plotting of conductance estimations for {filename}")
-#         fig, axs = plt.subplots(nrows = 7, ncols = len(recordings), sharex="all", sharey="row", figsize=(15, 10), constrained_layout=True)
-#         for idx, paradigm in enumerate(recordings):
-#             paradigm_iinj: List[float] = list(recordings[paradigm].parameters["Iinj"])
-#             if current_clamps is not None and set(current_clamps) <= set(paradigm_iinj):
-#                 paradigm_iinj = list(set(paradigm_iinj).intersection(current_clamps))
-#                 assert len(paradigm_iinj) > 0, "Cannot plot. Specified current clamps have no intersection with current clamps listed in parameters."
-
-#             if "representative" in recordings[paradigm].data:
-#                 rep = recordings[paradigm].data["representative"].to_numpy()
-#             membrane_potential = recordings[paradigm].data[[f"{x:.3e}" for x in paradigm_iinj]].to_numpy()
-#             membrane_current = recordings[paradigm].data[["filtered_Imembrane_"+str(x) for x in paradigm_iinj]].to_numpy()
-#             leakage_current = recordings[paradigm].data[["Ileakage_"+str(x) for x in paradigm_iinj]].to_numpy()
-#             activation_current = recordings[paradigm].data[["filtered_Iactivation_"+str(x) for x in paradigm_iinj]].to_numpy()
-#             conductances = recordings[paradigm].data[["excitation", "inhibition"]].to_numpy()
-#             times = recordings[paradigm].data["times"].to_numpy()
-#             resting_potential = times*0 + recordings[paradigm].parameters["Er"][0]
-#             threshold_potential = times*0 + recordings[paradigm].parameters["Et"][0]
-#             activation_potential = membrane_potential*0 + recordings[paradigm].parameters["Eact"].to_numpy()
-#             if "stimulus" in recordings[paradigm].data:
-#                 stim = recordings[paradigm].data["stimulus"].to_numpy()
-#             axs[0, idx].set_title(paradigm)
-#             if "representative" in recordings[paradigm].data:
-#                 axs[0, idx].plot(times, rep)
-#                 axs[0, idx].plot(times, resting_potential, '--k')
-#             axs[0, idx].set_ylabel("Rep. Vm (V)")
-#             axs[0, idx].set_title(paradigm)
-#             axs[0, idx].grid(True)
-#             curves = axs[1, idx].plot(times, membrane_potential)
-#             colors = [x.get_color() for x in curves]
-#             axs[1, idx].plot(times, resting_potential, '--k')
-#             axs[1, idx].plot(times, threshold_potential, linestyle='--', color=(0.5, 0.5, 0.5))
-#             for i in range(activation_potential.shape[-1]):
-#                 axs[1, idx].plot(times, activation_potential[:, i], linestyle='--', color=colors[i])
-#             axs[1, idx].set_ylabel("Vm (V)")
-#             axs[1, idx].grid(True)
-#             axs[2, idx].plot(times, membrane_current)
-#             axs[2, idx].set_ylabel("Im (A)")
-#             axs[2, idx].grid(True)
-#             axs[3, idx].plot(times, leakage_current)
-#             axs[3, idx].set_ylabel("Ileak (A)")
-#             axs[3, idx].grid(True)
-#             axs[4, idx].plot(times, activation_current)
-#             axs[4, idx].set_ylabel("Iact (A)")
-#             axs[4, idx].grid(True)
-#             # axs[4, idx].set_title(", ".join([f"{val:.3f}" for val in recordings[paradigm].parameters["Eact"]]))
-#             axs[5, idx].plot(times, conductances[:, 0], c='r')
-#             axs[5, idx].plot(times, conductances[:, 1], c='b')
-#             axs[5, idx].plot(times, times*0, '--k')
-#             axs[5, idx].set_ylabel("G (S)")
-#             axs[5, idx].grid(True)
-#             if "stimulus" in recordings[paradigm].data:
-#                 axs[6, idx].plot(times, stim)
-#             axs[6, idx].set_ylabel("Stimulus")
-#             axs[6, idx].set_xlabel("times(sec)")
-#             axs[6, idx].grid(True)
-#         analysis_logger.info(f"Saving verbose plotting of conductance estimations for {filename}")
-#         filename: str = f"{str(filename)}_dev_traces."
-#         if filetype == "png":
-#             plt.savefig(f"{filename}{filetype}")
-#         elif filetype == "emf":
-#             save_fig(f"{filename}svg", dpi=300, conv_svg_to_emf=True, verbose=True)
-#         else:
-#             raise ValueError(f"The filetype requested ({filetype}) is not yet implemented :) Please consult James or Rishi.")
-#         plt.show()
-
-#     def set_stats_scale(self, ax, scale_max, margin=0.1):
-#         scale_max = scale_max + margin*scale_max
-#         try:
-#             ax.set_ylim([-1*scale_max, scale_max])
-#         except Exception as e:
-#             plotter_logger.debug(f"{e}")
-#         pass
-
-#     def plot_stats_dev(self, recordings, filename: Path):
-#         analysis_logger.info(f"Verbose plotting of stats for {filename}")
-#         fig, axs = plt.subplots(nrows = 5, ncols = 1, sharex="all", figsize=(15, 10), constrained_layout=True)
-#         mean_depolarizations = np.asarray([recordings[paradigm].stats["depolarization"][0] for paradigm in recordings])
-#         mean_hyperpolarizations = np.asarray([recordings[paradigm].stats["hyperpolarization"][0] for paradigm in recordings])
-#         mean_Im = np.asarray([recordings[paradigm].stats["Imembrane"][0] for paradigm in recordings])
-#         mean_Ileak = np.asarray([recordings[paradigm].stats["Ileakage"][0] for paradigm in recordings])
-#         mean_Iactivation = np.asarray([recordings[paradigm].stats["Iactivation"][0] for paradigm in recordings])
-#         mean_excitation = np.asarray([recordings[paradigm].stats["mean_excitation"][0] for paradigm in recordings])
-#         mean_inhibition = np.asarray([recordings[paradigm].stats["mean_inhibition"][0] for paradigm in recordings])
-#         net_excitation = np.asarray([recordings[paradigm].stats["net_excitation"][0] for paradigm in recordings])
-#         net_inhibition = np.asarray([recordings[paradigm].stats["net_inhibition"][0] for paradigm in recordings])
-#         spikes_per_stimulus_repetition = np.asarray([recordings[paradigm].stats["spikes_per_stimulus_repetition"][0] for paradigm in recordings])
-#         paradigms = [paradigm for paradigm in recordings]
-#         xlocations = np.asarray([x for x in range(len(paradigms))])
-#         axs[0].bar(xlocations, mean_depolarizations, align='center', color="red")
-#         axs[0].bar(xlocations, mean_hyperpolarizations, align='center', color="blue")
-#         axs[0].axhline(0, color='grey', linewidth=0.8)
-#         axs[0].set_ylabel("polarizations (V)")
-#         scale_max = np.amax([np.amax(mean_depolarizations), np.amax(mean_hyperpolarizations)])
-#         self.set_stats_scale(axs[0], scale_max, 0.1)
-#         axs[1].bar(xlocations, mean_Im, align='center', color="black")
-#         axs[1].axhline(0, color='grey', linewidth=0.8)
-#         axs[1].set_ylabel("Im (A)")
-#         scale_max = np.amax(mean_Im)
-#         self.set_stats_scale(axs[1], scale_max, 0.1)
-#         axs[2].bar(xlocations, mean_Iactivation, align='center', color="black")
-#         axs[2].axhline(0, color='grey', linewidth=0.8)
-#         axs[2].set_ylabel("Iact (A)")
-#         scale_max = np.amax(mean_Iactivation)
-#         self.set_stats_scale(axs[2], scale_max, 0.1)
-#         axs[3].bar(xlocations, mean_Ileak, align='center', color="black")
-#         axs[3].axhline(0, color='grey', linewidth=0.8)
-#         axs[3].set_ylabel("Ileak (A)")
-#         scale_max = np.amax(mean_Ileak)
-#         self.set_stats_scale(axs[3], scale_max, 0.1)
-#         axs[4].bar(xlocations, mean_excitation, align='center', color="red")
-#         axs[4].bar(xlocations, -1*mean_inhibition, align='center', color="blue")
-#         axs[4].axhline(0, color='grey', linewidth=0.8)
-#         scale_max = np.amax([np.amax(mean_excitation), np.amax(mean_inhibition)])
-#         self.set_stats_scale(axs[4], scale_max, 0.1)
-#         ax = axs[4].twinx()
-#         ax.plot(xlocations, spikes_per_stimulus_repetition, color='k', marker = 'o')
-#         scale_max = np.amax(spikes_per_stimulus_repetition)
-#         self.set_stats_scale(ax, scale_max, 0.1)
-#         axs[4].set_ylabel("G (S)")
-#         analysis_logger.info(f"Saving verbose plotting of stats for {filename}")
-#         plt.savefig(str(filename)+f"_dev_stats.png")
-#         pass
-
-#     def run(self, current_clamps: Optional[List[float] | List[List[float]]]=None, filetype: str="png") -> None:
-        for i in range(len(self.filepaths)):
-            ccs = (current_clamps if current_clamps is None or isinstance(current_clamps[i], float) else current_clamps[i])
-            reader = XLReader(filepath)
-            recordings = {}
-            for _, paradigm in enumerate(reader.get_paradigms()):
-                recordings[paradigm] = WholeCellRecording(
-                    reader.get_paradigm_data(paradigm), 
-                    reader.get_paradigm_parameters(paradigm),
-                    filters=lpfs,
-                    current_clamps=current_clamps
-                )
-            recordings, overall_stats = self.estimation_without_optim_activation_potential(recordings)
-            result_filename = os.path.join(self.output_path, f"{os.path.splitext(os.path.basename(filepath))[0]}_analyzed")
-            # self.write_to_excel(f"{result_filename}.xlsx", recordings, stats)
-            self.plot_dev(recordings, result_filename, filetype=filetype, current_clamps=ccs)
-            self.plot_stats_dev(recordings, result_filename)
