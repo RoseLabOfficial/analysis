@@ -1,7 +1,64 @@
 {
-    "spreadsheets_input_dir": "/home/jsteele/Documents/Local/PRR/test",
-    "image_save_dir": "/home/jsteele/Documents/Local/PRR/Figures2",
-    "image_save_type": "png",
-    "files_to_analyze": null,
-    "iinj_clamps_to_use": null
+    "paths": {
+        "spreadsheets_input_dir": "/home/jsteele/Documents/Local/PRR/test",
+        "image_save_dir": "/home/jsteele/Documents/Local/PRR/Figures2",
+        "image_save_type": "png",
+        "files_to_analyze": null,
+        "iinj_clamps_to_use": null,
+        "cache_dir": "/home/jsteele/Documents/Local/PRR/test/.cache",
+        "cache_invalidate": false
+    },
+
+    "compute": {
+        "n_workers": 31
+    },
+
+    "recording": {
+        "_comment": "Liquid junction potential in volts. V_true = V_measured - V_LJP. Computed via LJPcalc (Marino et al. 2014) using the lab's Hickman's Ringer's bath and the standard pipette solution. K-gluconate pipette: +17.21e-3. KF pipette: +10.21e-3. Set to 0 to disable.",
+        "liquid_junction_potential_volts": -11.0e-3
+    },
+
+    "filters": {
+        "Vm":    {"passband_hz": 30.0, "stopband_hz": 80.0, "attenuation_db": 80.0, "ripple_db": 3.0},
+        "Im":    {"passband_hz": 30.0, "stopband_hz": 80.0, "attenuation_db": 80.0, "ripple_db": 3.0},
+        "dg":    {"passband_hz": 30.0, "stopband_hz": 80.0, "attenuation_db": 80.0, "ripple_db": 3.0},
+        "Eeff":  {"passband_hz": 20.0, "stopband_hz": 50.0, "attenuation_db": 80.0, "ripple_db": 3.0},
+        "dgsyn": {"passband_hz": 20.0, "stopband_hz": 40.0, "attenuation_db": 80.0, "ripple_db": 3.0}
+    },
+
+    "Er_Rin_estimation": {
+        "Vss_bin_width":         0.0005,
+        "Vss_smooth_sigma":      0.001,
+        "Vss_Im_scale":          1e-10,
+        "cluster_penalty_alpha": 1.0,
+        "cluster_scale_Er":      0.005,
+        "cluster_scale_Rin":     5e7,
+        "cluster_noise_floor":   0.01
+    },
+
+    "Ee_Ei_estimation": {
+        "_comment": "Hard physiological priors for (Ee, Ei). Estimator minimizes the integrated bound-violation loss L = ∫[max(0, lower_bound - Δge)² + max(0, lower_bound - Δgi)²]dt over the box, where lower_bound = -(gl'_j - gl_min) per cluster. Tiebreak among zero-loss solutions by Euclidean distance to the prior center. All voltages POST-LJP-correction. Defaults: Ee in [-10, +10] mV, Ei in [-110, -65] mV, center (0, -75) mV. gl_min = 0.5 nS as a floor on the cell's pure leak.",
+        "Ee_min":          -10e-3,
+        "Ee_max":           10e-3,
+        "Ei_min":         -110e-3,
+        "Ei_max":          -65e-3,
+        "Ee_prior_center":   0e-3,
+        "Ei_prior_center": -75e-3,
+        "gl_min":            0.5e-9
+    },
+
+    "Et_optimization": {
+        "x_beta_max":   2.0,
+        "eps_v":        2e-3,
+        "n_epochs":     1,
+        "n_samples_per_epoch": 400,
+        "shrink":       0.4,
+        "rng_seed":     0
+    },
+
+    "numerics": {
+        "dgsyn_zero_threshold": 1e-10,
+        "box_volume_eps":       1e-12,
+        "box_volume_floor":     1e-9
+    }
 }
