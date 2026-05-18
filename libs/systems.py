@@ -13,10 +13,9 @@ from scipy.signal import butter, buttord, sosfiltfilt
 from scipy.ndimage import gaussian_filter1d
 from scipy.stats import spearmanr
 
-from sklearn.mixture import GaussianMixture
-
 # Plotting & Graphics
 import matplotlib.pyplot as plt
+from matplotlib.lines import Line2D
 from pyhelpers.store import save_fig
 
 # Local
@@ -24,11 +23,11 @@ from libs.readers import (
     XLReader,
     AnalyzerCfg,
     FilterCfg,
-    RecordingCfg,
     ErRinCfg,
     EeEiCfg,
     EtOptCfg,
     NumericsCfg,
+    ManualClusterDataCfg,
 )
 
 # OS
@@ -63,7 +62,52 @@ class LowPassFilter:
         )
 
     def propagate(self, raw_signal: np.ndarray, fs: float) -> np.ndarray:
-        return sosfiltfilt(self._design(fs), raw_signal)
+        """
+        Zero-phase low-pass filter the signal with DC-replicate boundary padding.
+
+        Standard sosfiltfilt with default ('odd') padding rings on the boundary
+        of a steady-state signal: it reflects the signal with sign flip around
+        the endpoint, creating a discontinuity in derivative that the filter
+        rings on. The ring decays over ~filter_order / passband_corner seconds
+        and can have peak deviation of ~1 mV for typical 10-order Butterworth
+        filters at 30 Hz — large enough to corrupt the cross-clamp Δg
+        regression downstream.
+
+        Fix: pad the signal with a long stretch of constant DC (the mean of
+        a window at each endpoint), filter, then crop the pad back off. With
+        ~100 ms of pad, the filter's transient ring fully decays inside the
+        artificial padding and the cropped output stays within ~50 μV of true
+        DC at the boundary -- ~20× better than the default.
+
+        The DC pad is anchored to the mean of the first/last ~100 samples
+        (10 ms at typical 10 kHz fs), which is robust to single-sample
+        outliers at the very edge.
+        """
+        sos = self._design(fs)
+        # Pad length: ~100 ms is safe for any reasonable filter we'd use here.
+        # If fs varies (it shouldn't, but be defensive), scale with fs.
+        pad_n: int = int(round(0.100 * fs))
+        # Use the mean of a small endpoint window for the pad value, to avoid
+        # anchoring the pad on a single noisy sample. 10 ms window.
+        anchor_n: int = min(int(round(0.010 * fs)), max(1, raw_signal.shape[-1] // 4))
+
+        # Operate along the last axis (matches sosfiltfilt's default).
+        # Build endpoint anchors:
+        head_anchor = np.mean(raw_signal[..., :anchor_n], axis=-1, keepdims=True)
+        tail_anchor = np.mean(raw_signal[..., -anchor_n:], axis=-1, keepdims=True)
+
+        # Broadcast pads to the leading shape of raw_signal.
+        head_shape = list(raw_signal.shape); head_shape[-1] = pad_n
+        tail_shape = list(raw_signal.shape); tail_shape[-1] = pad_n
+        head_pad = np.broadcast_to(head_anchor, head_shape).copy()
+        tail_pad = np.broadcast_to(tail_anchor, tail_shape).copy()
+
+        padded = np.concatenate([head_pad, raw_signal, tail_pad], axis=-1)
+        # padtype='constant' is reasonable here; sosfiltfilt still adds a small
+        # internal pad but with the DC value, which is harmless.
+        filtered_padded = sosfiltfilt(sos, padded, padtype='constant')
+        # Crop the explicit pads back off; output shape matches input shape.
+        return filtered_padded[..., pad_n:-pad_n]
 
 def weighted_quantile(x, q, w=None, axis=-1):
     """
@@ -163,20 +207,25 @@ def _theta_to_Et_dict(theta: np.ndarray, Iinj_sorted: np.ndarray) -> Tuple[Dict[
     return Et_by_Iinj, x_beta
 
 
-def _evaluate_active_params(args: Tuple[np.ndarray, "WholeCellRecording"]) -> Tuple[np.ndarray, float]:
+def _evaluate_active_params(args: Tuple[np.ndarray, "WholeCellRecording"]) -> Tuple[np.ndarray, float, float]:
     """
     Worker: takes (theta, recording_copy), mutates the copy, runs analysis,
     returns the SOS-negative-Δgsyn loss summed over all clamps and stimuli.
 
-    NOTE (TODO item 2): This loss penalizes any negative Δgsyn excursion.
-    Under the corrected Δg framing, negative Δg has two sources:
-      (a) model misspecification (active currents, Cm error, etc.) -- the
-          α/β correction *should* absorb these
-      (b) real disinhibition / withdrawal of tonic input -- the α/β correction
-          should NOT absorb these
-    The current loss conflates (a) and (b). Replacement options under
-    discussion: voltage-dependence prior, timescale prior, or pharmacology-
-    anchored joint fit. See TODO.md item 2.
+    Returns three values per evaluation:
+        theta:          the candidate point (echoed back for the caller)
+        loss_filtered:  SSE on negative-part of filtered Δgsyn -- this is the
+                        loss the optimizer minimizes
+        loss_raw:       SSE on negative-part of raw (unfiltered) Δgsyn -- a
+                        diagnostic comparator; not used for selection
+
+    The two are mathematically distinct quantities. Filtering smears values
+    across time, so the filtered Δgsyn has different magnitudes (and possibly
+    different signs at any given timepoint) than the raw Δgsyn. We track both
+    so we can verify they're consistent in practice; if they diverge
+    substantially, the optimizer might be tuning α/β against filter artifacts
+    rather than the underlying physical violations. See TODO.md item 2 for
+    discussion of the broader negative-Δg interpretation question.
     """
     theta, rec = args
     Iinj_sorted: np.ndarray = rec._Iinj_sorted_for_opt
@@ -186,12 +235,15 @@ def _evaluate_active_params(args: Tuple[np.ndarray, "WholeCellRecording"]) -> Tu
     rec.x_beta = x_beta
     rec.run_analysis(verbose=False, complete=False)
 
-    total: float = 0.0
+    loss_filtered: float = 0.0
+    loss_raw:      float = 0.0
     for stim in rec.stimuli.values():
-        dgsyn: np.ndarray = stim.timeseries["dgsyn filtered"].to_numpy()
-        total += float(np.sum(np.square(np.minimum(dgsyn, 0.0))))
+        dgsyn_filt: np.ndarray = stim.timeseries["dgsyn filtered"].to_numpy()
+        dgsyn_raw:  np.ndarray = stim.timeseries["dgsyn"].to_numpy()
+        loss_filtered += float(np.sum(np.square(np.minimum(dgsyn_filt, 0.0))))
+        loss_raw      += float(np.sum(np.square(np.minimum(dgsyn_raw,  0.0))))
 
-    return theta, total
+    return theta, loss_filtered, loss_raw
 
 
 class WholeCellRecording:
@@ -201,11 +253,11 @@ class WholeCellRecording:
         stimuli: Dict[str, pd.DataFrame],
         filters: Dict[str, LowPassFilter],
         n_workers: int,
-        recording_cfg: RecordingCfg,
         Er_Rin_cfg: ErRinCfg,
         Ee_Ei_cfg: EeEiCfg,
         Et_opt_cfg: EtOptCfg,
         numerics_cfg: NumericsCfg,
+        manual_cluster_data: Optional[ManualClusterDataCfg] = None,
         cached_params: Optional[Dict[str, Any]] = None,
     ) -> None:
         assert len(stimuli) > 0
@@ -214,30 +266,45 @@ class WholeCellRecording:
         self.filters: Dict[str, LowPassFilter] = filters
 
         # Cfg objects -- stored so workers and stimuli can read them after deepcopy.
-        # recording_cfg is read by WholeCellStimulus to apply the LJP correction
-        # at ingestion (the only voltage-shifting step in the pipeline).
-        self.recording_cfg: RecordingCfg = recording_cfg
         self.Er_Rin_cfg: ErRinCfg = Er_Rin_cfg
         self.Ee_Ei_cfg: EeEiCfg = Ee_Ei_cfg
         self.Et_opt_cfg: EtOptCfg = Et_opt_cfg
         self.numerics_cfg: NumericsCfg = numerics_cfg
 
+        # Optional manual cluster data (cluster_assignments.json + steady_states/
+        # in the case folder). If present, the resting-state pipeline uses this
+        # directly instead of the unsupervised weighted-mode + GMM/BIC. None
+        # means "fall back to unsupervised mode". See readers.ManualClusterDataCfg.
+        self.manual_cluster_data: Optional[ManualClusterDataCfg] = manual_cluster_data
+
+        # Validate manual data paradigm names against actual stimulus sheets.
+        if manual_cluster_data is not None:
+            for p in manual_cluster_data.cluster_for_paradigm:
+                assert p in stimuli, (
+                    f"cluster_assignments.json references paradigm '{p}' which is "
+                    f"not present in this case's xlsx. "
+                    f"Available paradigms: {sorted(stimuli.keys())}"
+                )
+
+        # Tracks whether the resting-state result came from manual data (True)
+        # or unsupervised GMM/BIC (False). Used for pretty-print labeling. In the
+        # current design, all clusters from a single run share an origin (either
+        # all manual or all fit), so this is a per-cluster flag rather than mixed.
+        self.cluster_is_manual: Dict[int, bool] = {}
+
         self.Cm: float = parameters["Cm"][0]
-        # User-supplied Et from spreadsheet is in raw (uncorrected) volts;
-        # apply LJP correction at ingestion so all internal voltages share
-        # the same reference frame as the corrected Vm traces.
-        # NOTE: Eact and Ess in the parameter sheet are NOT used downstream
-        # (only sanity-checked at read in XLReader.get_paradigm_parameters);
-        # if they ever start being used, they need the same correction.
-        V_LJP: float = recording_cfg.liquid_junction_potential_volts
-        self.Et_measured: float = parameters["Et"][0] - V_LJP
 
         example_t: pd.Series = list(stimuli.values())[0]["times"]
         self.dt: float = example_t[1] - example_t[0]
 
         self.Ee: float = np.nan
         self.Ei: float = np.nan
-        self.LI_dvdt_vs_Vm: float = np.nan
+
+        # Cm-quality diagnostic results, populated by evaluate_Cm_quality()
+        # at the end of run_analysis. See docstring on that method for details.
+        # rho_negatives is the primary diagnostic; rho_all is supportive.
+        self.Cm_rho_all:       float = np.nan
+        self.Cm_rho_negatives: float = np.nan
 
         self.stimuli: Dict[str, WholeCellStimulus] = {
             name: WholeCellStimulus(self, data, paradigm=name) for name, data in stimuli.items()
@@ -274,9 +341,13 @@ class WholeCellRecording:
         self._max_Vm_by_Iinj: Dict[float, float] = self._collect_max_Vm_by_Iinj()
 
         if cached_params is None:
-            # Step 2: resting-state pipeline (uses Vm_filtered + Im_filtered for the
-            # weighted-mode estimator; produces Vss, Er_by_cluster, Rin_by_cluster).
-            self._estimate_resting_state()
+            # Step 2: resting-state pipeline.
+            # If manual cluster data is present, use it directly. Otherwise
+            # run the unsupervised weighted-mode + GMM/BIC + cluster refit.
+            if self.manual_cluster_data is not None:
+                self._estimate_resting_state_manual()
+            else:
+                self._estimate_resting_state()
 
             # Step 3: precompute Il for every stimulus, now that Vss and gl(paradigm)
             # are known. Also stable across the optimization loop.
@@ -301,8 +372,9 @@ class WholeCellRecording:
         cluster_lines: List[str] = []
         for k in sorted(self.Er_by_cluster.keys()):
             paradigms_in_k = [p for p, c in self.cluster_assignment.items() if c == k]
+            origin = "manual" if self.cluster_is_manual.get(k, False) else "fit"
             cluster_lines.append(
-                f"\n\t  cluster {k}: Er={self.Er_by_cluster[k]*1e3:.1f} mV, "
+                f"\n\t  cluster {k} ({origin}): Er={self.Er_by_cluster[k]*1e3:.1f} mV, "
                 f"Rin={self.Rin_by_cluster[k]*1e-9:.2f} GOhm, "
                 f"gl={1.0/self.Rin_by_cluster[k]*1e9:.1f} nS, "
                 f"paradigms={paradigms_in_k}"
@@ -343,6 +415,8 @@ class WholeCellRecording:
             "Cm":                   float(self.Cm),
             "Ee":                   _nan_to_none(self.Ee),
             "Ei":                   _nan_to_none(self.Ei),
+            "Cm_rho_all":           _nan_to_none(self.Cm_rho_all),
+            "Cm_rho_negatives":     _nan_to_none(self.Cm_rho_negatives),
             "Vss_per_stimulus":     {p: {str(k): v for k, v in d.items()} for p, d in self.Vss_per_stimulus.items()},
             "Er_Rin_per_stimulus":  {p: list(t) for p, t in self.Er_Rin_per_stimulus.items()},
             "cluster_assignment":   dict(self.cluster_assignment),
@@ -362,6 +436,8 @@ class WholeCellRecording:
 
         self.Ee = _none_to_nan(d.get("Ee"))
         self.Ei = _none_to_nan(d.get("Ei"))
+        self.Cm_rho_all       = _none_to_nan(d.get("Cm_rho_all"))
+        self.Cm_rho_negatives = _none_to_nan(d.get("Cm_rho_negatives"))
         self.Vss_per_stimulus = {
             p: {float(k): float(v) for k, v in inner.items()}
             for p, inner in d["Vss_per_stimulus"].items()
@@ -429,44 +505,110 @@ class WholeCellRecording:
         Estimate (Er, Rin) and Vss for each stimulus, allowing for drift across
         stimuli (e.g. drug wash-in, dialysis). Pipeline:
 
-            1. Per stimulus: histogram-mode Vss for each (paradigm, Iinj).
+            1. Per stimulus: Vss = median of first Vss_duration_seconds of Vm
+               for each (paradigm, Iinj). Assumes the trace is in equilibrium
+               for at least that long before any stimulus arrives. STOPGAP --
+               replaces the older weighted-mode-on-full-trace estimator, which
+               was unreliable when traces had no clean steady-state period.
                -> self.Vss_per_stimulus[paradigm][Iinj]
 
             2. Per stimulus: 2-parameter OLS regression of (Iinj, Vss) within
                that stimulus.  Stimuli with <2 clamps fall back to NaN here.
                -> self.Er_Rin_per_stimulus[paradigm]
 
-            3. Cluster paradigms by (Er, Rin) using a Gaussian mixture, with K
-               selected by BIC over K in {1, ..., min(N-1, 4)}. Z-score the two
-               axes before fitting so they're commensurable.
+            3. Cluster paradigms by Vss-pooling residual: greedy agglomerative
+               merging until any further merge would induce a |pooled - observed|
+               residual exceeding max_residual_volts at some (paradigm, Iinj).
                -> self.cluster_assignment[paradigm]
 
-            4. Per cluster: re-fit (Er, Rin) by pooling raw Vm traces across all
-               stimuli in that cluster and re-running histogram-mode + OLS.
-               -> self.Er_by_cluster, self.Rin_by_cluster
-
-            5. Per paradigm: store the cluster's pooled Vss values, sampled at
-               that paradigm's Iinj levels.
-               -> self.Vss[paradigm][Iinj]
+            4. Per cluster: re-fit (Er, Rin) by pooling first-Vss_duration_seconds
+               Vm samples across all paradigms in the cluster at each Iinj,
+               taking the median, then OLS.
+               -> self.Er_by_cluster, self.Rin_by_cluster, self.Vss[...]
         """
         self._estimate_Vss_per_stimulus()
         self._fit_Er_Rin_per_stimulus()
         self._cluster_drift_states()
         self._refit_clusters_pooled()
 
+    def _estimate_resting_state_manual(self) -> None:
+        """
+        Populate Vss, cluster_assignment, Er_by_cluster, Rin_by_cluster from
+        user-provided manual cluster data, skipping the unsupervised pipeline.
+
+        Steps:
+          1. Map each cluster_name to an integer cluster_id (dense, 0..K-1).
+          2. cluster_assignment[paradigm] = id of its named cluster.
+          3. Vss[paradigm][Iinj] = manual Vss for (cluster, Iinj).
+          4. (Er, Rin) per cluster by OLS on the manual (Iinj, Vss) pairs.
+
+        The manual cluster names are preserved in self.cluster_labels for
+        printout. cluster_is_manual is set True for every cluster.
+        """
+        mc = self.manual_cluster_data
+        assert mc is not None, "_estimate_resting_state_manual called without manual data"
+
+        # Assign dense integer IDs in sorted-by-name order for stable identity.
+        cluster_names = sorted(set(mc.cluster_for_paradigm.values()))
+        name_to_id: Dict[str, int] = {n: i for i, n in enumerate(cluster_names)}
+        self.cluster_labels: Dict[int, str] = {
+            name_to_id[n]: mc.cluster_labels.get(n, n) for n in cluster_names
+        }
+
+        # Cluster assignment + Vss per (paradigm, Iinj).
+        for paradigm, stim in self.stimuli.items():
+            cluster_name = mc.cluster_for_paradigm[paradigm]
+            cid = name_to_id[cluster_name]
+            self.cluster_assignment[paradigm] = cid
+            self.cluster_is_manual[cid] = True
+
+            self.Vss[paradigm] = {}
+            for Iinj in np.squeeze(stim.Iinj, axis=-1):
+                Iinj_f = float(Iinj)
+                self.Vss[paradigm][Iinj_f] = mc.lookup_vss(paradigm, Iinj_f)
+
+        # OLS for (Er, Rin) per cluster using manual (Iinj, Vss) pairs.
+        for cname, cid in name_to_id.items():
+            Iinjs_arr = np.asarray(list(mc.Vss_by_cluster[cname].keys()),   dtype=np.float64)
+            Vsss_arr  = np.asarray(list(mc.Vss_by_cluster[cname].values()), dtype=np.float64)
+            if Iinjs_arr.size >= 2 and np.std(Iinjs_arr) > 0:
+                Er_hat, Rin_hat = self._ols_Er_Rin(Iinjs_arr, Vsss_arr)
+            else:
+                # Single Iinj level in the manual data: can't get Rin. This is a
+                # user-data issue; warn and fall back to NaN so downstream code
+                # surfaces the problem.
+                print(
+                    f"  Warning: cluster '{cname}' has only one Iinj level in "
+                    f"manual data; cannot estimate Rin. Provide steady-state "
+                    f"data at >=2 Iinj levels per cluster."
+                )
+                Er_hat = float(Vsss_arr[0]) if Vsss_arr.size > 0 else float("nan")
+                Rin_hat = float("nan")
+            self.Er_by_cluster[cid]  = Er_hat
+            self.Rin_by_cluster[cid] = Rin_hat
+
+        # Per-stimulus Er/Rin and Vss are not estimated in manual mode (we
+        # didn't run weighted-mode on the xlsx data). Leave them empty.
+        # _refit_clusters_pooled's bookkeeping is similarly unused.
+
     def _estimate_Vss_per_stimulus(self) -> None:
         """
-        Weighted-mode Vss for each (paradigm, Iinj), using the filtered Vm trace
-        and weighting samples by exp(-|Im_filtered| / Vss_Im_scale) so quiet
-        baseline samples dominate the mode.
+        Per-stimulus Vss = median of the first Vss_duration_seconds of raw Vm
+        samples at each clamp. Assumes the trace is in equilibrium for at
+        least that long before any stimulus arrives. STOPGAP -- replaces the
+        previous weighted-mode-on-full-trace estimator, which was unreliable
+        when traces lacked a clean steady-state period.
+
+        Uses RAW Vm rather than filtered Vm: the start-of-trace filter
+        transient is exactly what we're avoiding. The median is robust to
+        noise and single-sample outliers without needing filtering.
         """
+        n_vss_samples: int = max(1, int(round(self.Er_Rin_cfg.Vss_duration_seconds / self.dt)))
+
         for paradigm, stim in self.stimuli.items():
             self.Vss_per_stimulus[paradigm] = {}
             for k, Iinj in enumerate(np.squeeze(stim.Iinj, axis=-1)):
-                Vm_clamp = stim.Vm_filtered[k]
-                Im_clamp = stim.Im_filtered[k]
-                weights  = np.exp(-np.abs(Im_clamp) / self.Er_Rin_cfg.Vss_Im_scale)
-                Vss_hat = self._weighted_smoothed_mode(Vm_clamp, weights)
+                Vss_hat: float = float(np.median(stim.Vm[k, :n_vss_samples]))
                 self.Vss_per_stimulus[paradigm][float(Iinj)] = Vss_hat
 
     def _weighted_smoothed_mode(self, samples: np.ndarray, weights: np.ndarray) -> float:
@@ -527,113 +669,150 @@ class WholeCellRecording:
 
     def _cluster_drift_states(self) -> None:
         """
-        Cluster paradigms by their per-stimulus (Er, Rin) using a Gaussian
-        mixture; pick K by BIC over K in {1, ..., min(N_fittable - 1, 4)}.
-        Stimuli that couldn't be fit (NaN) are assigned to the largest cluster.
-        Sets self.cluster_assignment.
+        Greedy agglomerative clustering by Vss-pooling-residual constraint.
+
+        Per-stimulus Vss is the 5-ms-median estimate, Vss_obs[paradigm, Iinj].
+        When a cluster pools across paradigms, the cluster's pooled Vss at each
+        Iinj is the median across paradigms-at-that-Iinj, Vss_pooled[cluster,
+        Iinj]. The residual we care about is the difference these induce for
+        each (paradigm, Iinj) in the cluster:
+
+            r[paradigm, Iinj] = | Vss_pooled[cluster, Iinj] - Vss_obs[paradigm, Iinj] |
+
+        A merge is acceptable only if every such residual is within
+        max_residual_volts. This isolates the question of whether two paradigms
+        share a leak state from the question of whether an OLS line fits them
+        well (slope mismatch alone doesn't disqualify, but per-Iinj disagreement
+        does).
+
+        Algorithm:
+          - Start with K = N (every paradigm its own cluster).
+          - Repeatedly find the pair of clusters whose merge has the smallest
+            "merged max pooling residual" across (paradigm, Iinj) in the union.
+          - If the best-merge residual is <= max_residual_volts, merge and continue.
+          - Otherwise, stop.
+
+        K = N is always feasible: a singleton cluster's pooled-at-Iinj IS the
+        paradigm's own observation, so the residual is 0 everywhere.
+
+        Edge case: a (paradigm, Iinj) that is the only observation at that Iinj
+        in the merged cluster contributes a trivially-zero residual. This is
+        correct -- it has no peer to disagree with at that clamp.
+
+        Sets self.cluster_assignment and self.cluster_is_manual (all False
+        in this code path). Non-fittable paradigms (NaN Er/Rin) are placed
+        in the largest cluster after the agglomerative step.
         """
-        # Separate fittable from non-fittable stimuli
-        fittable: List[str] = []
-        feats: List[Tuple[float, float]] = []
-        for paradigm, (Er, Rin) in self.Er_Rin_per_stimulus.items():
-            if np.isfinite(Er) and np.isfinite(Rin):
-                fittable.append(paradigm)
-                feats.append((Er, Rin))
+        thresh: float = self.Er_Rin_cfg.max_residual_volts
 
-        if len(fittable) == 0:
-            # No paradigm could be fit; everyone goes in cluster 0
-            for p in self.stimuli:
-                self.cluster_assignment[p] = 0
-            return
+        # Only paradigms with a complete Vss-per-stimulus dict can participate
+        # in clustering.
+        fittable: List[str] = [
+            p for p, (Er, Rin) in self.Er_Rin_per_stimulus.items()
+            if np.isfinite(Er) and np.isfinite(Rin)
+        ]
 
-        if len(fittable) == 1:
-            # Trivially one cluster
-            for p in self.stimuli:
-                self.cluster_assignment[p] = 0
-            return
+        def pooling_max_residual(paradigms: List[str]) -> float:
+            """
+            For a candidate merged cluster:
+              - At each Iinj used in this cluster, pool the first-5ms Vm
+                samples across all paradigms that have that clamp, take the
+                median -- this is the exact Vss the cluster will receive after
+                _refit_clusters_pooled. Compare against each paradigm's own
+                per-stimulus Vss (also the median of its own first-5ms samples).
+              - Residual = |pooled - observed| for every (paradigm, Iinj) in
+                the cluster.
+              - Return the max residual across all pairs.
 
-        X = np.array(feats, dtype=np.float64)               # shape [N_fittable, 2]
+            A singleton cluster gets residual 0 (paradigm's pooled-at-Iinj IS
+            its own observation). An Iinj observed by only one paradigm in the
+            cluster also contributes residual 0 for that paradigm.
 
-        # Normalize each axis by a physical scale rather than sample SD. This is
-        # critical with small N: z-scoring inflates within-noise variation to
-        # unit scale, so even truly-identical stimuli look like they span unit
-        # variance, and GMM K=2 fits this spurious structure with high log-
-        # likelihood gain. Normalizing by a physical noise scale keeps
-        # noise-only data at ~1 unit and real drift at >> 1 unit, so BIC
-        # naturally prefers K=1 in the noise case.
-        scales = np.array([self.Er_Rin_cfg.cluster_scale_Er,
-                           self.Er_Rin_cfg.cluster_scale_Rin], dtype=np.float64)
-        Xn = (X - X.mean(axis=0, keepdims=True)) / scales
+            Uses the same first-5ms raw-Vm concatenate-then-median as
+            _refit_clusters_pooled, so the cluster acceptance criterion is
+            exactly the residual that pooling will induce -- no approximation.
+            """
+            n_vss_samples: int = max(1, int(round(self.Er_Rin_cfg.Vss_duration_seconds / self.dt)))
 
-        # Penalized BIC: BIC_alpha = -2 log L + alpha * k * log N. alpha = 1
-        # reproduces standard BIC. alpha > 1 makes adding clusters harder.
-        K_max = len(fittable) - 1
-        alpha: float = self.Er_Rin_cfg.cluster_penalty_alpha
-        N_fit: int = len(fittable)
-        log_N: float = float(np.log(N_fit))
-        best_K, best_bic, best_labels = 1, np.inf, np.zeros(N_fit, dtype=int)
+            # Group raw first-5ms Vm samples by Iinj: Iinj -> [(paradigm, samples), ...]
+            samples_by_iinj: Dict[float, List[Tuple[str, np.ndarray]]] = {}
+            for p in paradigms:
+                stim = self.stimuli[p]
+                for clamp_idx, Iinj in enumerate(np.squeeze(stim.Iinj, axis=-1)):
+                    samples_by_iinj.setdefault(float(Iinj), []).append(
+                        (p, stim.Vm[clamp_idx, :n_vss_samples])
+                    )
 
-        for K in range(1, K_max + 1):
-            # Spherical covariance: each cluster has a single shared variance.
-            # reg_covar floors cluster variance at cluster_noise_floor (in
-            # normalized units). Without a meaningful floor, GMM can drive
-            # variance to ~0 and log-likelihood to +inf, defeating BIC. The floor
-            # should correspond to the typical per-stimulus noise on (Er, Rin)
-            # estimates, expressed as a fraction of cluster_scale_*. E.g. with
-            # cluster_scale_Er = 5 mV and typical Er-estimate noise of ~0.5 mV,
-            # cluster_noise_floor = (0.5/5)^2 = 0.01.
-            gm = GaussianMixture(
-                n_components=K,
-                covariance_type="spherical",
-                n_init=5,
-                random_state=self.Et_opt_cfg.rng_seed,
-                reg_covar=self.Er_Rin_cfg.cluster_noise_floor,
-            )
-            try:
-                gm.fit(Xn)
-            except Exception:
-                continue
-            # gm.score(X) is mean log-likelihood per sample; multiply by N for total.
-            log_L: float = float(gm.score(Xn) * N_fit)
-            k_params: int = int(gm._n_parameters())
-            bic: float = -2.0 * log_L + alpha * k_params * log_N
-            if bic < best_bic:
-                best_bic = bic
-                best_K = K
-                best_labels = gm.predict(Xn).astype(int)
+            max_resid: float = 0.0
+            for Iinj, entries in samples_by_iinj.items():
+                pooled_samples = np.concatenate([s for _, s in entries])
+                pooled_vss = float(np.median(pooled_samples))
+                for paradigm, samples in entries:
+                    obs_vss = float(np.median(samples))  # same value as Vss_per_stimulus
+                    r = abs(pooled_vss - obs_vss)
+                    if r > max_resid:
+                        max_resid = r
+            return max_resid
 
-        # Re-label so cluster ids are dense 0..best_K-1 in order of first appearance.
-        # (sklearn already does this in practice but be explicit.)
-        remap: Dict[int, int] = {}
-        next_id = 0
-        clean_labels: List[int] = []
-        for lbl in best_labels:
-            if int(lbl) not in remap:
-                remap[int(lbl)] = next_id
-                next_id += 1
-            clean_labels.append(remap[int(lbl)])
+        # Agglomerative loop.
+        partition: List[List[str]] = [[p] for p in fittable]
 
-        for paradigm, lbl in zip(fittable, clean_labels):
-            self.cluster_assignment[paradigm] = int(lbl)
+        while len(partition) >= 2:
+            best_pair: Optional[Tuple[int, int]] = None
+            best_res:  float = float("inf")
+            for i in range(len(partition)):
+                for j in range(i + 1, len(partition)):
+                    merged = partition[i] + partition[j]
+                    res = pooling_max_residual(merged)
+                    if res < best_res:
+                        best_res = res
+                        best_pair = (i, j)
+            if best_pair is None or best_res > thresh:
+                break
+            i, j = best_pair
+            merged = partition[i] + partition[j]
+            partition = [c for idx, c in enumerate(partition) if idx not in (i, j)]
+            partition.append(merged)
 
-        # Non-fittable stimuli -> largest cluster
-        if len(fittable) < len(self.stimuli):
-            counts: Dict[int, int] = {}
-            for lbl in clean_labels:
-                counts[lbl] = counts.get(lbl, 0) + 1
-            majority = max(counts, key=lambda k: counts[k])
-            for p in self.stimuli:
-                if p not in self.cluster_assignment:
-                    self.cluster_assignment[p] = majority
+        # Assign cluster ids in dense order.
+        self.cluster_assignment = {}
+        self.cluster_is_manual = {}
+        for k, members in enumerate(partition):
+            self.cluster_is_manual[k] = False
+            for p in members:
+                self.cluster_assignment[p] = k
+
+        # Place non-fittable stimuli in the largest cluster (or 0 if none exist).
+        unassigned = [p for p in self.stimuli if p not in self.cluster_assignment]
+        if unassigned:
+            if partition:
+                idx_largest = int(np.argmax([len(c) for c in partition]))
+                majority = idx_largest
+            else:
+                majority = 0
+                self.cluster_is_manual[0] = False
+            for p in unassigned:
+                self.cluster_assignment[p] = majority
 
     def _refit_clusters_pooled(self) -> None:
         """
-        For each cluster, pool filtered Vm traces (with weights from filtered
-        Im) across all member paradigms grouped by Iinj, and run weighted-mode +
-        OLS on the pooled data. This gives the cluster's authoritative (Er, Rin)
-        and Vss(Iinj). Each paradigm then inherits its cluster's Vss values at
-        its own Iinj levels.
+        For each cluster, pool the first Vss_duration_seconds of raw Vm samples
+        across all cluster members at each Iinj level, then take the median to
+        get the cluster's authoritative Vss at that Iinj. OLS over (Iinj, Vss)
+        pairs gives the cluster's (Er, Rin). Each paradigm then inherits its
+        cluster's Vss values at its own Iinj levels.
+
+        This runs only in unsupervised mode. When manual cluster data is
+        provided, Vss / cluster fit comes from there directly and this
+        method is skipped.
+
+        STOPGAP version: previously this method pooled FULL filtered Vm traces
+        and ran the weighted-mode estimator. That estimator was unreliable for
+        traces without long clean baselines, so we now pool the first
+        Vss_duration_seconds of raw Vm (same equilibrium assumption as the
+        per-stimulus step) and take the median.
         """
+        n_vss_samples: int = max(1, int(round(self.Er_Rin_cfg.Vss_duration_seconds / self.dt)))
         cluster_ids = sorted(set(self.cluster_assignment.values()))
         # Per cluster: Iinj -> pooled Vss_hat
         Vss_by_cluster: Dict[int, Dict[float, float]] = {}
@@ -641,22 +820,19 @@ class WholeCellRecording:
         for k in cluster_ids:
             paradigms_in_k = [p for p, c in self.cluster_assignment.items() if c == k]
 
-            # Pool filtered Vm samples + filtered Im (for weights) by Iinj across
-            # this cluster's paradigms.
-            Vm_by_Iinj: Dict[float, List[np.ndarray]] = {}
-            Im_by_Iinj: Dict[float, List[np.ndarray]] = {}
+            # Pool the first-5ms RAW Vm samples by Iinj across this cluster's paradigms.
+            Vm_head_by_Iinj: Dict[float, List[np.ndarray]] = {}
             for p in paradigms_in_k:
                 stim = self.stimuli[p]
                 for clamp_idx, Iinj in enumerate(np.squeeze(stim.Iinj, axis=-1)):
-                    Vm_by_Iinj.setdefault(float(Iinj), []).append(stim.Vm_filtered[clamp_idx])
-                    Im_by_Iinj.setdefault(float(Iinj), []).append(stim.Im_filtered[clamp_idx])
+                    Vm_head_by_Iinj.setdefault(float(Iinj), []).append(
+                        stim.Vm[clamp_idx, :n_vss_samples]
+                    )
 
             Vss_by_cluster[k] = {}
-            for Iinj in Vm_by_Iinj:
-                pooled_Vm = np.concatenate(Vm_by_Iinj[Iinj])
-                pooled_Im = np.concatenate(Im_by_Iinj[Iinj])
-                weights = np.exp(-np.abs(pooled_Im) / self.Er_Rin_cfg.Vss_Im_scale)
-                Vss_by_cluster[k][Iinj] = self._weighted_smoothed_mode(pooled_Vm, weights)
+            for Iinj, head_segments in Vm_head_by_Iinj.items():
+                pooled_head = np.concatenate(head_segments)
+                Vss_by_cluster[k][Iinj] = float(np.median(pooled_head))
 
             # OLS on the cluster-pooled (Iinj, Vss) pairs
             Iinjs = np.array(list(Vss_by_cluster[k].keys()), dtype=np.float64)
@@ -691,128 +867,67 @@ class WholeCellRecording:
 
     def estimate_Ee_Ei(self) -> Tuple[float, float]:
         """
-        Estimate (Ee, Ei) by minimizing physical-bound violations.
+        Estimate (Ee, Ei) from quantiles of the pooled Eeff(t) distribution,
+        with a hard constraint on the physiological difference Ee - Ei.
 
-        Background. The membrane equation gives target_Isyn(t) = Δgsyn(t)·V(t)
-        - A(t), where Δgsyn(t) = Δge + Δgi and A(t) = Δge·Ee + Δgi·Ei. The
-        cross-clamp regression yields Δgsyn(t) and A(t) directly, *without*
-        needing Ee or Ei. For any (Ee, Ei) with Ee ≠ Ei:
-            Δge(t) = (A(t) - Δgsyn(t)·Ei) / (Ee - Ei)
-            Δgi(t) = (Δgsyn(t)·Ee - A(t)) / (Ee - Ei)
+        Operational assumptions (see project notes / EeEiCfg docstring):
+          - Δ notation is retained: Δge, Δgi are signed deviations from a
+            prestimulus baseline whose existence we acknowledge but do not
+            attempt to estimate from this dataset.
+          - We assume decreases from baseline are artifactual (disinhibition
+            and disexcitation contribute negligibly). This is the operational
+            stance for this paper, supported by prior duration-coder findings
+            in the same brain region (Rose et al. 2016). Negative Δg after
+            Iact correction is analyzed for correlation with active membrane
+            events as supporting evidence.
+          - Absolute reversal potentials are not recoverable per cell because
+            the recordings have multiple uncontrolled voltage offsets
+            (uncertain LJP protocol, electrode half-cell potentials, etc.).
+            We constrain only the DIFFERENCE Ee - Ei, which is offset-
+            invariant and is the only quantity that affects the downstream
+            Δg inversion.
 
-        Per-cluster physical bound on Δg. For cluster j with effective leak
-        gl'_j = 1/Rin_j, the cell's pure leak gl satisfies gl ≤ gl'_j (because
-        gl'_j absorbs tonic ge0_j + gi0_j ≥ 0). Using a global floor gl_min
-        on the pure leak as a config-supplied prior, the tightest guaranteed
-        lower bound on each component is
-            Δge_j(t) ≥ -(gl'_j - gl_min)
-            Δgi_j(t) ≥ -(gl'_j - gl_min)
-        (Same number for both components: this is the loosest bound that
-        respects ge0 + gi0 = gl'_j - gl, and ge0, gi0 ≥ 0.)
-
-        Loss. Sum of squared violations across stimuli and timepoints:
-            L(Ee, Ei) = Σ_j Σ_t [max(0, B_j - Δge_j(t))² + max(0, B_j - Δgi_j(t))²]
-        where B_j = -(gl'_j - gl_min) is the per-cluster floor.
-
-        Search. Grid-search over the box. The data fundamentally underdetermines
-        (Ee, Ei) per cell (one cell, two unknowns, infinite-dimensional data
-        but only one constraint per timepoint), so L typically has a flat
-        minimum region. Tiebreak among the zero-loss (or near-min-loss) solutions
-        by Euclidean distance to (Ee_prior_center, Ei_prior_center). The prior
-        center is an honest fallback for the underdetermination -- not a
-        statement that those values are correct, but a default when the data
-        cannot pin them down.
+        Algorithm:
+          1. Pool Eeff(t) across stimuli.
+          2. Ee_hat = high quantile, Ei_hat = low quantile (rationale: when
+             Δgi ≈ 0 and Δge dominates, Eeff ≈ Ee; converse for low quantile).
+          3. Floor Ee_hat at max(Er_by_cluster). (Ee must be above resting V.)
+          4. Enforce dE_min ≤ Ee_hat - Ei_hat ≤ dE_max by symmetric adjustment.
+             - If Ee - Ei < dE_min: expand to dE_min, splitting the deficit.
+             - If Ee - Ei > dE_max: contract to dE_max, splitting the excess.
+             - This preserves the midpoint and modifies only the spread.
 
         Returns (Ee, Ei) in volts.
         """
         cfg = self.Ee_Ei_cfg
 
-        # --- Step 1: collect per-stimulus (Δgsyn, A, lower_bound) tuples ---
-        # Each stimulus knows its paradigm and hence its cluster, so we can
-        # apply the right per-cluster lower bound per timepoint.
-        per_stim: List[Tuple[np.ndarray, np.ndarray, float]] = []
-        for paradigm, stim in self.stimuli.items():
-            dgsyn_arr = np.asarray(stim.timeseries["dgsyn filtered"], dtype=np.float64)
-            A_arr     = np.asarray(stim.timeseries["A filtered"],     dtype=np.float64)
-            valid = np.isfinite(dgsyn_arr) & np.isfinite(A_arr)
-            if not np.any(valid):
-                continue
-            dgsyn_v = dgsyn_arr[valid]
-            A_v     = A_arr[valid]
-            # Per-cluster lower bound for THIS paradigm.
-            gl_prime = self.gl(paradigm)               # = 1/Rin_by_cluster[cluster]
-            B_j      = -(gl_prime - cfg.gl_min)        # negative number; the floor on Δg
-            per_stim.append((dgsyn_v, A_v, B_j))
+        # Step 1+2: quantile-based initial estimate.
+        Eeff_pool: List[float] = []
+        for stimulus in self.stimuli.values():
+            Eeff_pool.extend(stimulus.timeseries["Eeff filtered"])
 
-        if not per_stim:
-            raise RuntimeError(
-                "estimate_Ee_Ei: no stimuli have valid (Δgsyn, A) samples; "
-                "cannot estimate (Ee, Ei)."
-            )
+        Ei_hat: float = float(np.nanquantile(Eeff_pool, cfg.low_quantile))
+        Ee_hat: float = float(np.nanquantile(Eeff_pool, cfg.high_quantile))
 
-        # --- Step 2: bound-violation loss as a function of (Ee, Ei) ---
-        # We compute on a 2D grid for clarity; the box is small and grid eval
-        # is fast. The loss is non-smooth (max(0, ·)²) but well-behaved for
-        # gradient-free search.
-        def violation_loss(Ee: float, Ei: float) -> float:
-            if abs(Ee - Ei) < 1e-9:
-                return float("inf")
-            denom = Ee - Ei
-            total = 0.0
-            for dgsyn_v, A_v, B_j in per_stim:
-                dge_v = (A_v - dgsyn_v * Ei) / denom
-                dgi_v = (dgsyn_v * Ee - A_v) / denom
-                # max(0, B_j - x) = max(0, x_below_floor) is the violation
-                vio_e = np.maximum(0.0, B_j - dge_v)
-                vio_i = np.maximum(0.0, B_j - dgi_v)
-                total += float(np.sum(vio_e * vio_e) + np.sum(vio_i * vio_i))
-            return total
+        # Step 3: Ee must be ≥ Er for every paradigm; use the most depolarized
+        # cluster Er as a floor.
+        Er_floor: float = float(np.nanmax(list(self.Er_by_cluster.values())))
+        Ee_hat = max(Ee_hat, Er_floor)
 
-        # --- Step 3: grid search over the box ---
-        # Resolution: 0.5 mV per axis -> 41 x 91 = 3731 grid points for the
-        # default box. Still fast even with ~1e6 timepoints across stimuli.
-        grid_step: float = 0.5e-3
-        Ee_grid: np.ndarray = np.arange(cfg.Ee_min, cfg.Ee_max + grid_step / 2, grid_step)
-        Ei_grid: np.ndarray = np.arange(cfg.Ei_min, cfg.Ei_max + grid_step / 2, grid_step)
+        # Step 4: enforce physiological difference constraint Ee - Ei ∈ [dE_min, dE_max].
+        # Symmetric adjustment: shift each reversal by half the deficit/excess,
+        # in opposite directions, preserving the midpoint.
+        dE: float = Ee_hat - Ei_hat
+        if dE < cfg.dE_min:
+            half_deficit: float = (cfg.dE_min - dE) / 2.0
+            Ee_hat += half_deficit
+            Ei_hat -= half_deficit
+        elif dE > cfg.dE_max:
+            half_excess: float = (dE - cfg.dE_max) / 2.0
+            Ee_hat -= half_excess
+            Ei_hat += half_excess
 
-        loss_grid: np.ndarray = np.empty((Ee_grid.size, Ei_grid.size), dtype=np.float64)
-        for i, Ee in enumerate(Ee_grid):
-            for j, Ei in enumerate(Ei_grid):
-                loss_grid[i, j] = violation_loss(float(Ee), float(Ei))
-
-        # --- Step 4: tiebreak ---
-        # Find all grid points within a small tolerance of the minimum loss;
-        # among them, pick the one closest to the prior center.
-        L_min: float = float(np.nanmin(loss_grid))
-        # Tolerance handling: when L_min is exactly 0 (data is consistent with
-        # bounds for many (Ee, Ei)) we still want to absorb floating-point
-        # roundoff at the plateau boundary. Set absolute tolerance using a
-        # data-driven scale: typical Δg² magnitude ~ var(Δgsyn). Floating-point
-        # error in the violation computation scales with that, times machine
-        # epsilon, times the number of timepoints summed.
-        all_dgsyn = np.concatenate([d[0] for d in per_stim])
-        scale = float(np.var(all_dgsyn)) if all_dgsyn.size > 0 else 1.0
-        n_total = sum(d[0].size for d in per_stim)
-        abs_tol_floor = scale * n_total * np.finfo(np.float64).eps * 100.0
-        if L_min > 0:
-            tol = max(L_min * 1e-9, abs_tol_floor)
-        else:
-            tol = abs_tol_floor
-        feasible_mask: np.ndarray = loss_grid <= L_min + tol
-
-        if not np.any(feasible_mask):
-            # Should never happen since loss_grid contains L_min, but guard.
-            return cfg.Ee_prior_center, cfg.Ei_prior_center
-
-        # Distance from prior center for each (Ee_grid, Ei_grid) pair.
-        Ee_mesh, Ei_mesh = np.meshgrid(Ee_grid, Ei_grid, indexing="ij")
-        d2: np.ndarray = (Ee_mesh - cfg.Ee_prior_center) ** 2 \
-                       + (Ei_mesh - cfg.Ei_prior_center) ** 2
-        # Mask out infeasible points by setting their distance to +inf.
-        d2_feasible: np.ndarray = np.where(feasible_mask, d2, np.inf)
-        flat_idx: int = int(np.argmin(d2_feasible))
-        i_best, j_best = np.unravel_index(flat_idx, d2_feasible.shape)
-        return float(Ee_grid[i_best]), float(Ei_grid[j_best])
+        return Ee_hat, Ei_hat
 
     def run_analysis(self, verbose: bool = True, complete: bool = True) -> None:
         if verbose:
@@ -831,6 +946,48 @@ class WholeCellRecording:
 
             for stimulus in self.stimuli.values():
                 stimulus.estimate_dge_dgi()
+                stimulus.compute_dg_stats()
+
+            if verbose:
+                # Per-stimulus stats table. All values in nS.
+                print("Per-stimulus statistics (nS):")
+                hdr = f"  {'paradigm':<12} {'mean Δge':>10} {'mean Δgi':>10} {'net Δge':>10} {'net Δgi':>10}"
+                print(hdr)
+                print("  " + "-" * (len(hdr) - 2))
+                for paradigm, stim in self.stimuli.items():
+                    s = stim.stats
+                    print(
+                        f"  {paradigm:<12} "
+                        f"{s['mean_dge']*1e9:>10.3f} "
+                        f"{s['mean_dgi']*1e9:>10.3f} "
+                        f"{s['net_dge']*1e9:>10.3f} "
+                        f"{s['net_dgi']*1e9:>10.3f}"
+                    )
+
+            # Cm quality diagnostic. Runs last so all conductance estimates are
+            # available. Cheap (one Spearman per stimulus on Δgsyn vs cross-clamp
+            # |dV/dt| sensitivity); always run, never gated, since the result
+            # is informative even when benign.
+            cm_result = self.evaluate_Cm_quality()
+            self.Cm_rho_all       = cm_result["rho_all"]
+            self.Cm_rho_negatives = cm_result["rho_negatives"]
+
+            if verbose:
+                print(
+                    f"Cm diagnostic: "
+                    f"ρ_negatives = {self.Cm_rho_negatives:+.3f}, "
+                    f"ρ_all = {self.Cm_rho_all:+.3f}"
+                )
+                # Soft warning thresholds. Calibration from synthetic ground-truth
+                # tests in the docstring: |ρ_negatives| ~ 0.04 when Cm is correct,
+                # ~0.8 when Cm is off 2x. Pick 0.3 as a midpoint that suggests
+                # something is off without crying wolf on small biases.
+                if np.isfinite(self.Cm_rho_negatives) and abs(self.Cm_rho_negatives) > 0.3:
+                    print(
+                        f"  ⚠ |ρ_negatives| > 0.3 suggests Cm may be misspecified "
+                        f"(or other PSP-timescale model error). Consider checking Cm "
+                        f"via membrane time constant from a hyperpolarizing pulse."
+                    )
 
     def evaluate_Cm_quality(self) -> Dict[str, float]:
         """
@@ -864,17 +1021,6 @@ class WholeCellRecording:
         Vm-dVm structure correlates with Δgsyn-magnitude in benign ways too.
         Use rho_negatives as the primary signal; treat rho_all as supportive.
         Thresholds are empirical -- calibrate on a recording where you trust Cm.
-
-        CAVEAT (TODO item 3): under the corrected Δg framing, negative Δgsyn has
-        two sources: (a) Cm/active-current misspecification, which is what this
-        diagnostic targets; (b) real disinhibition / withdrawal of tonic input,
-        which is biophysically valid signal. The current diagnostic cannot
-        distinguish them. Real disinhibition is slower and not |dV/dt|-correlated,
-        so it would not light up rho_all but might wash out rho_negatives. Plan
-        to add a timescale separation step (high-pass before correlation) so the
-        diagnostic is specific to PSP-timescale model misspecification. Until
-        then, treat the diagnostic as detecting "PSP-timescale misspecification"
-        rather than Cm-specific error.
 
         NOTE: This diagnostic reports magnitude only. A signed direction-of-error
         version was attempted (predicting sign(Delta_C) from sign(s_signed) at
@@ -1012,6 +1158,12 @@ class WholeCellRecording:
         best_theta: np.ndarray = theta_zero.copy()
         best_val: float = np.inf
 
+        # Diagnostic: accumulate filtered and raw losses across all evaluations.
+        # See _evaluate_active_params docstring. Reported at the end of the
+        # optimization to compare the two loss formulations.
+        all_loss_filtered: List[float] = []
+        all_loss_raw:      List[float] = []
+
         def sample_feasible(n: int) -> np.ndarray:
             """Draw n feasible thetas with 100% yield."""
             raw_Et: np.ndarray = rng.uniform(box_lo[:N], box_hi[:N], size=(n, N))
@@ -1040,10 +1192,15 @@ class WholeCellRecording:
                 tasks = [(theta, deepcopy(self)) for theta in candidates]
                 results = list(pool.map(_evaluate_active_params, tasks))
 
-                for theta, val in results:
-                    if val < best_val:
-                        best_val = val
+                for theta, val_filt, val_raw in results:
+                    # Optimizer uses the filtered loss (current behavior).
+                    if val_filt < best_val:
+                        best_val = val_filt
                         best_theta = theta
+                    # Diagnostic: track both losses at every evaluation so we
+                    # can compare them at the end of the optimization.
+                    all_loss_filtered.append(val_filt)
+                    all_loss_raw.append(val_raw)
 
                 Et_dict_now, xb_now = _theta_to_Et_dict(best_theta, Iinj_sorted)
                 Et_str = ", ".join(f"{Et_dict_now[float(I)]*1e3:.1f}" for I in Iinj_sorted)
@@ -1069,6 +1226,34 @@ class WholeCellRecording:
                 if np.any(degenerate):
                     new_hi = np.where(degenerate, new_lo + box_floor, new_hi)
                 box_lo, box_hi = new_lo, new_hi
+
+        # ---- Diagnostic: compare filtered vs raw SSE-negative-Δgsyn loss ----
+        # This is a temporary diagnostic to determine whether the choice of
+        # filtered Δgsyn (current behavior) materially affects the optimization
+        # compared to using raw Δgsyn. If the two losses are highly correlated
+        # across evaluations and their values at the chosen optimum are close,
+        # the filtering doesn't bias the optimization. If they diverge, the
+        # current loss may be tracking filter artifacts rather than physical
+        # violations.
+        if len(all_loss_filtered) >= 2:
+            lf = np.asarray(all_loss_filtered, dtype=np.float64)
+            lr = np.asarray(all_loss_raw,      dtype=np.float64)
+            finite = np.isfinite(lf) & np.isfinite(lr)
+            if finite.sum() >= 2 and lf[finite].std() > 0 and lr[finite].std() > 0:
+                pearson_r: float = float(np.corrcoef(lf[finite], lr[finite])[0, 1])
+            else:
+                pearson_r = float("nan")
+            # Loss values at the chosen optimum
+            best_filt = float(best_val)
+            best_raw_at_best = float(lr[int(np.argmin(lf))]) if finite.sum() > 0 else float("nan")
+            ratio = best_raw_at_best / best_filt if best_filt > 0 else float("nan")
+
+            print(
+                f"  loss diagnostic (n={len(all_loss_filtered)} evals): "
+                f"filtered vs raw Pearson r = {pearson_r:.3f}; "
+                f"at chosen optimum filtered={best_filt:.3e}, raw={best_raw_at_best:.3e} "
+                f"(raw/filtered = {ratio:.2f})"
+            )
 
         Et_dict, x_beta = _theta_to_Et_dict(best_theta, Iinj_sorted)
         return Et_dict, x_beta, float(best_val)
@@ -1103,19 +1288,8 @@ class WholeCellStimulus:
             if aux_key in Iinj_colnames:
                 Iinj_colnames.remove(aux_key)
 
-        # Vm ingestion. Two transformations:
-        #   1. Scale from millivolts (spreadsheet convention) to volts.
-        #   2. Subtract the liquid junction potential.
-        #
-        # LJP convention (Marino et al. 2014, LJPcalc): V_LJP is the bath
-        # potential relative to the pipette. The amplifier records V_measured =
-        # V_true + V_LJP because the amplifier was zeroed in bath. To recover
-        # the true membrane potential, subtract V_LJP from every reading.
-        # This is the ONLY place this correction is applied in the pipeline;
-        # all downstream code sees LJP-corrected voltages.
-        V_LJP: float = recording.recording_cfg.liquid_junction_potential_volts
-        self.Vm: np.ndarray = data[Iinj_colnames].to_numpy(dtype=np.float64).T * 1e-3 - V_LJP   # units: Volts, shape: [Nclamps, Nsamples]
-        print(self.Vm[0,0], V_LJP, data[Iinj_colnames].to_numpy(dtype=np.float64)[0,0], "!!!!!")
+        # (* 1e-3 is to scale Vm from millivolts to volts)
+        self.Vm: np.ndarray = data[Iinj_colnames].to_numpy(dtype=np.float64).T * 1e-3       # units: Volts, shape: [Nclamps, Nsamples]
         self.Iinj: np.ndarray = np.array(Iinj_colnames, dtype=np.float64)[:, np.newaxis]    # units: Amperes, shape: [Nclamps, 1]
                 
         self.Nclamps: int = self.Iinj.size
@@ -1132,6 +1306,12 @@ class WholeCellStimulus:
         self._Vss_clamp_arr: np.ndarray = np.empty((0,))  # [Nclamps, 1]
 
         self.timeseries: pd.DataFrame = pd.DataFrame({"times": self.times})
+
+        # Per-stimulus scalar statistics, populated by compute_dg_stats() at
+        # the end of run_analysis. Keys: "mean_dge", "mean_dgi", "net_dge",
+        # "net_dgi" (all in siemens). See compute_dg_stats docstring for
+        # definitions.
+        self.stats: Dict[str, float] = {}
 
     def precompute_filtered_traces(self) -> None:
         """Compute Vm_filtered, Im, Im_filtered. Stable across the optimization."""
@@ -1217,11 +1397,6 @@ class WholeCellStimulus:
 
         Eeff = -a / dgsyn_safe
 
-        # A(t) = Δge·Ee + Δgi·Ei = -a, used by the analytical (Ee, Ei) estimator
-        # in WholeCellRecording.estimate_Ee_Ei. Stored alongside Δgsyn so the
-        # downstream regression can run without re-deriving from target_Isyn.
-        A_data = -a
-
         I_hat = a[None, :] + b[None, :] * Vm_filtered
         resid = target_Isyn - I_hat
         sse = np.sum(resid * resid, axis=0)
@@ -1245,16 +1420,11 @@ class WholeCellStimulus:
             Eeff_filtered[nan_mask] = np.nan
 
         dgsyn_filtered = self.recording.filters["dgsyn"].propagate(dgsyn[None, :], fs)[0]
-        # A(t) shares the same low-pass filter as Δgsyn since they enter the
-        # downstream Ee/Ei estimator together.
-        A_filtered = self.recording.filters["dgsyn"].propagate(A_data[None, :], fs)[0]
 
         self.timeseries["Eeff"] = Eeff
         self.timeseries["Eeff filtered"] = Eeff_filtered
         self.timeseries["dgsyn"] = dgsyn_safe
         self.timeseries["dgsyn filtered"] = dgsyn_filtered
-        self.timeseries["A"] = A_data
-        self.timeseries["A filtered"] = A_filtered
         self.timeseries["SSE least-squares Qsyn"] = sse
         self.timeseries["r2 least-squares Qsyn"] = r2
 
@@ -1299,6 +1469,46 @@ class WholeCellStimulus:
         self.timeseries["dge filtered"] = dge_filtered.tolist()
         self.timeseries["dgi filtered"] = dgi_filtered.tolist()
 
+    def compute_dg_stats(self) -> None:
+        """
+        Compute the four scalar summary statistics for this stimulus and store
+        them in self.stats:
+
+          mean_dge = ⟨[Δge]₊⟩_t
+          mean_dgi = ⟨[Δgi]₊⟩_t
+          net_dge  = ⟨[[Δge]₊ − [Δgi]₊]₊⟩_t
+          net_dgi  = ⟨[[Δge]₊ − [Δgi]₊]₋⟩_t  (i.e. absolute value of the negative part)
+
+        Conventions:
+          - All four use the filtered Δge and Δgi.
+          - Operates over all timepoints in the trace (no separate "response
+            window" concept; the methods phrase "mean of their time courses
+            for the duration of response" is interpreted as the whole trace).
+          - Three rectifications are stacked in the net quantities: each
+            input conductance individually (the inner [·]₊), then the
+            positive/negative parts of their difference (the outer [·]₊
+            and [·]₋). This matches the existing lab implementation. The
+            current paper assumes decreases from baseline are artifactual,
+            so rectifying inputs at zero is consistent with that assumption.
+          - Units: siemens.
+        """
+        dge: np.ndarray = np.asarray(self.timeseries["dge filtered"], dtype=np.float64)
+        dgi: np.ndarray = np.asarray(self.timeseries["dgi filtered"], dtype=np.float64)
+
+        # Inner rectification: [·]₊ on each input.
+        dge_pos: np.ndarray = np.maximum(dge, 0.0)
+        dgi_pos: np.ndarray = np.maximum(dgi, 0.0)
+
+        # Outer rectification: positive and negative parts of (dge_pos - dgi_pos).
+        diff: np.ndarray = dge_pos - dgi_pos
+        net_e: np.ndarray = np.maximum(diff, 0.0)         # positive part
+        net_i: np.ndarray = np.maximum(-diff, 0.0)        # |negative part|
+
+        self.stats["mean_dge"] = float(np.nanmean(dge_pos))
+        self.stats["mean_dgi"] = float(np.nanmean(dgi_pos))
+        self.stats["net_dge"]  = float(np.nanmean(net_e))
+        self.stats["net_dgi"]  = float(np.nanmean(net_i))
+
 
 class Analyzer:
     def __init__(self, cfg: AnalyzerCfg):
@@ -1326,6 +1536,20 @@ class Analyzer:
         if ncols == 1:
             axs = np.expand_dims(axs, axis=1)
 
+        # Build a recording-level color map indexed by Iinj. This way, the same
+        # current clamp value gets the same color across all paradigm subplots,
+        # making it easier to track a single clamp's behavior across stimuli.
+        # Default matplotlib qualitative cycle (tab10) gives 10 distinct colors;
+        # we cycle if there are more unique Iinj values than that.
+        all_Iinj = recording._Iinj_sorted_for_opt
+        default_cycle = plt.rcParams["axes.prop_cycle"].by_key().get("color", [])
+        if not default_cycle:
+            default_cycle = [f"C{i}" for i in range(10)]
+        Iinj_color_map: Dict[float, str] = {
+            float(I): default_cycle[i % len(default_cycle)]
+            for i, I in enumerate(all_Iinj)
+        }
+
         for idx, paradigm in enumerate(recording.stimuli):
             stimulus = recording.stimuli[paradigm]
 
@@ -1340,14 +1564,16 @@ class Analyzer:
 
             axs[0, idx].set_title(paradigm)
 
-            curves = axs[0, idx].plot(times, filtered_Vm.T)
-            colors = [line.get_color() for line in curves]
+            # Per-clamp colors keyed by this paradigm's Iinj values.
+            colors = [Iinj_color_map[float(I)] for I in stimulus.Iinj.flatten()]
+
+            for j in range(stimulus.Nclamps):
+                axs[0, idx].plot(times, filtered_Vm[j, :], color=colors[j])
 
             Vss = [recording.Vss[paradigm][float(i)] for i in stimulus.Iinj.flatten()]
             for j in range(stimulus.Nclamps):
                 axs[0, idx].plot([times[0], times[-1]], [Vss[j]] * 2, color="grey", ls="--")
 
-            axs[0, idx].set_ylabel("Vm (V)")
             axs[0, idx].grid(True)
 
             axs[1, idx].grid(True)
@@ -1360,24 +1586,49 @@ class Analyzer:
             for j in range(stimulus.Nclamps):
                 axs[2, idx].plot(times, Im[j, :], color=colors[j])
             axs[2, idx].plot([times[0], times[-1]], [0, 0], color="grey", ls="--")
-            axs[2, idx].set_ylabel("Im (A)")
             axs[2, idx].grid(True)
 
             axs[3, idx].plot(times, dge, c="r", label="Δge")
             axs[3, idx].plot(times, dgi, c="b", label="Δgi")
-            axs[3, idx].plot(times, dgsyn, c="k", label="Δgsyn", linestyle="--")
+            # Δgsyn: fill between 0 and the trace, semitransparent black.
+            # Reads as a "shadow" of the total synaptic drive against the
+            # red/blue components -- shaded area = total Δgsyn magnitude.
+            axs[3, idx].fill_between(times, 0, dgsyn, color="k", alpha=0.2, label="Δgsyn")
             axs[3, idx].plot(times, times * 0, "--k", linewidth=1)
-            axs[3, idx].set_ylabel("ΔG (S)")
             axs[3, idx].grid(True)
 
             Iact_pred: np.ndarray = np.stack(stimulus.timeseries["Iact"]).astype(np.float64).T  # type: ignore
             for j in range(stimulus.Nclamps):
                 axs[4, idx].plot(times, Iact_pred[j, :], color=colors[j])
             axs[4, idx].plot(times, times * 0, "k--")
-            axs[4, idx].set_ylabel("Iact (A)")
             axs[4, idx].grid(True)
 
             axs[4, idx].set_xlabel("time (s)")
+
+        # Y-axis labels only on the leftmost column (rows share the y axis via
+        # sharey="row", so this is purely cosmetic -- avoids redundant labels).
+        axs[0, 0].set_ylabel("Vm (V)")
+        axs[1, 0].set_ylabel("Eeff (V)")
+        axs[2, 0].set_ylabel("Im (A)")
+        axs[3, 0].set_ylabel("ΔG (S)")
+        axs[4, 0].set_ylabel("Iact (A)")
+
+        # Figure-level legend showing which color corresponds to which Iinj
+        # (in nA, the most readable unit for typical patch-clamp injections).
+        # Drawn as a horizontal strip below the suptitle so it doesn't crowd
+        # any subplot. Each entry is a short colored line + Iinj value.
+        legend_handles = [
+            Line2D([0], [0], color=Iinj_color_map[float(I)], lw=2, label=f"{float(I)*1e9:.3f} nA")
+            for I in all_Iinj
+        ]
+        fig.legend(
+            handles=legend_handles,
+            loc="upper center",
+            bbox_to_anchor=(0.5, 0.97),
+            ncol=min(len(legend_handles), 8),
+            frameon=False,
+            fontsize=9,
+        )
 
         out = f"{str(filename)}_dev_level1."
         if filetype == "png":
@@ -1405,30 +1656,75 @@ class Analyzer:
 
         for path_to_spreadsheet in paths:
             print(f"Collecting data from {path_to_spreadsheet}")
+            case_dir: Path = path_to_spreadsheet.parent
 
-            # Cache lookup
+            # Read the xlsx first so we have the paradigm/Iinj structure needed
+            # to validate optional manual cluster data.
+            rdr: XLReader = XLReader(path_to_spreadsheet)
+            stimuli: Dict[str, pd.DataFrame] = {}
+            for paradigm in rdr.get_paradigms():
+                df = rdr.get_paradigm_data(paradigm)
+                aux = {"times", "stimulus", "representative"}
+                n_iinj_cols = sum(1 for c in df.columns if c not in aux)
+                if n_iinj_cols == 0:
+                    print(
+                        f"  Warning: paradigm '{paradigm}' in "
+                        f"{path_to_spreadsheet.name} has no enabled Iinj columns "
+                        f"(all 'use data' flags False); skipping."
+                    )
+                    continue
+                stimuli[paradigm] = df
+            assert len(stimuli) > 0, (
+                f"No usable paradigms in {path_to_spreadsheet.name} -- every "
+                f"paradigm has all 'use data' flags set to False."
+            )
+
+            # Build paradigm -> Iinj-list for validation.
+            paradigm_iinjs: Dict[str, List[float]] = {}
+            aux = {"times", "stimulus", "representative"}
+            for paradigm, df in stimuli.items():
+                paradigm_iinjs[paradigm] = [
+                    float(c) for c in df.columns if c not in aux
+                ]
+
+            # Load optional per-case manual cluster data (cluster_assignments.json
+            # + steady_states/ in the case folder). If present, the pipeline
+            # uses it directly. If absent, falls back to unsupervised. If only
+            # one of the two is present, raises (error message in from_case_dir).
+            manual_cluster_data: Optional[ManualClusterDataCfg] = (
+                ManualClusterDataCfg.from_case_dir(case_dir, paradigm_iinjs)
+            )
+            if manual_cluster_data is not None:
+                n_clusters = len(set(manual_cluster_data.cluster_for_paradigm.values()))
+                print(
+                    f"  Loaded manual cluster data: {n_clusters} cluster(s) "
+                    f"covering {len(manual_cluster_data.cluster_for_paradigm)} paradigm(s)."
+                )
+            manual_hash: str = (
+                manual_cluster_data.hash_for_cache() if manual_cluster_data is not None
+                else "no-manual-data"
+            )
+
+            # Cache lookup -- AFTER manual data is loaded, since the manual
+            # data hash is part of cache invalidation.
             cached_params: Optional[Dict[str, Any]] = None
             cache_path: Optional[Path] = None
             if cache_dir is not None:
                 cache_path = cache_dir / f"{path_to_spreadsheet.stem}.json"
                 cached_params = self._try_load_cache(
-                    cache_path, path_to_spreadsheet, cfg_hash
+                    cache_path, path_to_spreadsheet, cfg_hash, manual_hash
                 )
 
-            rdr: XLReader = XLReader(path_to_spreadsheet)
-            stimuli: Dict[str, pd.DataFrame] = {
-                paradigm: rdr.get_paradigm_data(paradigm) for paradigm in rdr.get_paradigms()
-            }
             recording: WholeCellRecording = WholeCellRecording(
-                parameters=rdr.get_paradigm_parameters(rdr.get_paradigms()[0]),
+                parameters=rdr.get_paradigm_parameters(),
                 stimuli=stimuli,
                 filters=filters,
                 n_workers=self.cfg.compute.n_workers,
-                recording_cfg=self.cfg.recording,
                 Er_Rin_cfg=self.cfg.Er_Rin_estimation,
                 Ee_Ei_cfg=self.cfg.Ee_Ei_estimation,
                 Et_opt_cfg=self.cfg.Et_optimization,
                 numerics_cfg=self.cfg.numerics,
+                manual_cluster_data=manual_cluster_data,
                 cached_params=cached_params,
             )
             del rdr
@@ -1437,7 +1733,7 @@ class Analyzer:
 
             # Save cache after a successful run (only when we just computed it).
             if cache_dir is not None and cached_params is None and cache_path is not None:
-                self._save_cache(cache_path, recording, path_to_spreadsheet, cfg_hash)
+                self._save_cache(cache_path, recording, path_to_spreadsheet, cfg_hash, manual_hash)
 
             if display:
                 self.plot_timeseries(
@@ -1452,11 +1748,12 @@ class Analyzer:
         cache_path: Path,
         spreadsheet_path: Path,
         cfg_hash: str,
+        manual_hash: str,
     ) -> Optional[Dict[str, Any]]:
         """
         Returns the cached params dict if the cache is valid (file exists, cfg
-        hash matches, spreadsheet mtime matches, and cache_invalidate is False).
-        Otherwise returns None.
+        hash matches, spreadsheet mtime matches, manual_cluster_data hash
+        matches, and cache_invalidate is False). Otherwise returns None.
         """
         if self.cfg.paths.cache_invalidate:
             return None
@@ -1469,15 +1766,24 @@ class Analyzer:
             print(f"  cache: failed to read {cache_path}: {e}; will recompute.")
             return None
 
-        cached_hash = payload.get("cfg_hash")
-        cached_mtime = payload.get("spreadsheet_mtime")
+        cached_cfg_hash = payload.get("cfg_hash")
+        cached_mtime    = payload.get("spreadsheet_mtime")
+        # Old cache files (predating the manual cluster data system) may not
+        # have this key. Treat as mismatch -- they should be regenerated.
+        cached_manual_hash = payload.get("manual_hash")
         actual_mtime = spreadsheet_path.stat().st_mtime
 
-        if cached_hash != cfg_hash:
-            print(f"  cache: cfg_hash mismatch (cached={cached_hash}, current={cfg_hash}); will recompute.")
+        if cached_cfg_hash != cfg_hash:
+            print(f"  cache: cfg_hash mismatch (cached={cached_cfg_hash}, current={cfg_hash}); will recompute.")
             return None
         if cached_mtime is None or abs(float(cached_mtime) - actual_mtime) > 1e-6:
             print(f"  cache: spreadsheet mtime changed; will recompute.")
+            return None
+        if cached_manual_hash != manual_hash:
+            print(
+                f"  cache: manual cluster data changed "
+                f"(cached={cached_manual_hash}, current={manual_hash}); will recompute."
+            )
             return None
 
         print(f"  cache: HIT -> {cache_path}")
@@ -1489,10 +1795,12 @@ class Analyzer:
         recording: WholeCellRecording,
         spreadsheet_path: Path,
         cfg_hash: str,
+        manual_hash: str,
     ) -> None:
         """Write recording params + cache metadata to disk."""
         payload = {
             "cfg_hash":          cfg_hash,
+            "manual_hash":       manual_hash,
             "spreadsheet_mtime": spreadsheet_path.stat().st_mtime,
             "spreadsheet_name":  spreadsheet_path.name,
             "params":            recording.to_cache_dict(),

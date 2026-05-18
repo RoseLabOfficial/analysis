@@ -1,7 +1,9 @@
 import pandas as pd
+import numpy as np
 import os
 import json
 import hashlib
+import re
 from pathlib import Path
 from dataclasses import dataclass, field, fields
 from typing import List, Optional, Dict, Any
@@ -13,6 +15,33 @@ from typing import List, Optional, Dict, Any
 
 @dataclass(frozen=True)
 class PathsCfg:
+    """
+    Input directory structure (one .xlsx per "case", one case per subfolder):
+
+        spreadsheets_input_dir/
+            2005-11-01_1_baseline_prr_baseline_pulse_number/
+                2005-11-01_1_baseline_prr_baseline_pulse_number.xlsx
+                <raw .smr/.smrx files, .json spike times, .txt notes, etc.>
+            2005-11-02_3_baseline_prr_baseline_pulse_number/
+                2005-11-02_3_baseline_prr_baseline_pulse_number.xlsx
+                ...
+            ...
+
+    Each case lives in its own subfolder. Each subfolder must contain exactly
+    one .xlsx file (plus whatever auxiliary files are convenient to keep
+    alongside it). The xlsx filename does not need to match the subfolder
+    name -- discovery is by .xlsx extension within each subfolder.
+
+    files_to_analyze, if set, restricts analysis to specific cases. Entries
+    are SUBFOLDER NAMES (not filenames), so a case is identified by its
+    directory rather than its xlsx file. Example:
+        "files_to_analyze": ["2005-11-01_1_baseline_prr_baseline_pulse_number"]
+
+    Subfolders with zero .xlsx files are skipped with a warning. Subfolders
+    with more than one .xlsx file are an error -- the convention is one
+    case per subfolder, and ambiguity should be resolved upstream rather
+    than guessed at here.
+    """
     spreadsheets_input_dir: Path
     image_save_dir: Path
     image_save_type: str
@@ -47,8 +76,13 @@ class PathsCfg:
             assert isinstance(files_to_analyze, list)
             assert all(isinstance(x, str) for x in files_to_analyze)
             assert len(files_to_analyze) > 0
-            assert all(os.path.splitext(x)[1] == ".xlsx" for x in files_to_analyze)
-            assert all((spreadsheets_input_dir / x).is_file() for x in files_to_analyze)
+            # Now subfolder names rather than xlsx filenames.
+            for case_name in files_to_analyze:
+                case_dir = spreadsheets_input_dir / case_name
+                assert case_dir.is_dir(), (
+                    f"files_to_analyze entry '{case_name}' is not a "
+                    f"subdirectory of {spreadsheets_input_dir}."
+                )
 
         iinj_clamps_to_use = d["iinj_clamps_to_use"]
         if iinj_clamps_to_use is not None:
@@ -83,14 +117,49 @@ class PathsCfg:
 
     @property
     def paths_to_spreadsheets(self) -> List[Path]:
+        """
+        Discover the .xlsx file for each case subfolder.
+
+        For each subdirectory of spreadsheets_input_dir:
+          - 0 xlsx files: skip with warning (subfolder has no analyzable
+            spreadsheet -- maybe raw data only, or work in progress).
+          - 1 xlsx file: include it.
+          - 2+ xlsx files: raise (ambiguous; one case per subfolder).
+
+        If files_to_analyze is set, only the listed subfolders are visited.
+        """
+        # Pick which subfolders to scan.
         if self.files_to_analyze is None:
-            paths_to_spreadsheets = [x for x in self.spreadsheets_input_dir.iterdir() if x.suffix == ".xlsx"]
+            case_dirs: List[Path] = sorted(
+                p for p in self.spreadsheets_input_dir.iterdir() if p.is_dir()
+            )
         else:
-            paths_to_spreadsheets = [self.spreadsheets_input_dir / x for x in self.files_to_analyze]
+            case_dirs = [self.spreadsheets_input_dir / name for name in self.files_to_analyze]
 
-        assert all(os.path.exists(i) for i in paths_to_spreadsheets)
-        assert len(paths_to_spreadsheets) > 0
+        paths_to_spreadsheets: List[Path] = []
+        for case_dir in case_dirs:
+            xlsx_files: List[Path] = [
+                p for p in case_dir.iterdir() if p.suffix.lower() == ".xlsx"
+            ]
+            if len(xlsx_files) == 0:
+                print(
+                    f"  Warning: case subfolder '{case_dir.name}' contains no .xlsx file; "
+                    f"skipping."
+                )
+                continue
+            if len(xlsx_files) > 1:
+                names = sorted(p.name for p in xlsx_files)
+                raise AssertionError(
+                    f"Case subfolder '{case_dir.name}' contains {len(xlsx_files)} "
+                    f"xlsx files: {names}. Each case subfolder must contain "
+                    f"exactly one xlsx."
+                )
+            paths_to_spreadsheets.append(xlsx_files[0])
 
+        assert len(paths_to_spreadsheets) > 0, (
+            f"No analyzable .xlsx files found under {self.spreadsheets_input_dir} "
+            f"(either no subfolders, or every subfolder is empty of xlsx files)."
+        )
         return paths_to_spreadsheets
 
 
@@ -155,35 +224,32 @@ class FiltersCfg:
 
 @dataclass(frozen=True)
 class ErRinCfg:
-    # Vss histogram-mode estimation parameters.
-    # Bin width and smoothing sigma are in volts (rather than counts of bins).
-    # Volts-based makes the estimator behaviour independent of each clamp's
-    # actual Vm range -- a depolarizing clamp with a narrow distribution and a
-    # hyperpolarizing clamp with a wide one will get the same effective resolution.
-    Vss_bin_width:    float        # volts; e.g. 5e-4 = 0.5 mV
-    Vss_smooth_sigma: float        # volts; e.g. 1e-3 = 1.0 mV
-    # Weighting of the histogram by exp(-|Im_filtered| / Vss_Im_scale) so quiet
-    # baseline samples (where |Im| ~ 0) contribute fully and PSP-transient
-    # samples (where |Im| is large) contribute less. At |Im| = Vss_Im_scale,
-    # the weight is exp(-1) ~ 0.37; at |Im| = 3*Vss_Im_scale, weight ~ 0.05.
-    # Choose Vss_Im_scale around the |Im| magnitude of a typical PSP transient
-    # in your recordings (e.g. 50-100 pA). Set to +inf to disable weighting.
-    Vss_Im_scale: float            # amperes
+    # Vss is currently estimated as the median of the first 5 ms of raw Vm
+    # samples per (paradigm, Iinj). The fields below are vestigial from the
+    # earlier weighted-mode-on-full-trace estimator; they are unused by the
+    # current pipeline but kept around so old config files still load (and in
+    # case we ever revert to weighted-mode for some traces). Pass any positive
+    # values.
+    Vss_bin_width:    float        # volts
+    Vss_smooth_sigma: float        # volts
+    Vss_Im_scale:     float        # amperes
 
-    # BIC penalty multiplier for drift-cluster selection. Standard BIC has alpha=1;
-    # alpha>1 makes adding clusters harder, biasing toward fewer drift states.
-    cluster_penalty_alpha: float
-    # Physical scales for Er (volts) and Rin (ohms). Per-stimulus (Er, Rin)
-    # estimates are normalized by these before clustering. Pick to roughly match
-    # the smallest drift you'd want to detect (e.g. 5 mV in Er, 50 MOhm in Rin).
-    cluster_scale_Er:  float        # volts
-    cluster_scale_Rin: float        # ohms
-    # Cluster variance floor in normalized units (square of per-stim-noise /
-    # cluster_scale). Without this, GMM drives variance to zero and log-
-    # likelihood to +inf, which lets it create spurious clusters indistinguishable
-    # from noise. E.g., if your typical Er-estimate noise is ~0.5 mV and
-    # cluster_scale_Er is 5 mV, set this to (0.5/5)^2 = 0.01.
-    cluster_noise_floor: float
+    # Drift-cluster selection: pick the smallest K such that, for every cluster
+    # at K, every (paradigm, clamp)'s Vss observation lies within
+    # max_residual_volts of the cluster's OLS-fit line Vss_hat(Iinj) = Er + Rin
+    # * Iinj. K=N (every paradigm its own cluster) is always feasible since a
+    # 2-clamp paradigm's OLS line passes exactly through its two points, so the
+    # search always terminates. This replaces the prior GMM/BIC-with-Er/Rin-
+    # scaling clustering -- residuals are the directly meaningful quantity for
+    # whether two paradigms share a leak state.
+    max_residual_volts: float       # e.g. 2e-3 = 2 mV
+
+    # Window at the start of each trace used to estimate Vss. Currently Vss =
+    # median of raw Vm over the first Vss_duration_seconds. Set this to as long
+    # as you're confident the cell is at equilibrium before the first stimulus
+    # arrives. Longer windows give more samples to median over (lower noise);
+    # too long and you start including stimulus-evoked deflections.
+    Vss_duration_seconds: float     # e.g. 5e-3 = 5 ms
 
     @classmethod
     def from_dict(cls, d: Dict[str, Any]) -> "ErRinCfg":
@@ -191,81 +257,73 @@ class ErRinCfg:
         assert d["Vss_bin_width"] > 0
         assert d["Vss_smooth_sigma"] > 0
         assert d["Vss_Im_scale"] > 0
-        assert d["cluster_penalty_alpha"] > 0
-        assert d["cluster_scale_Er"]  > 0
-        assert d["cluster_scale_Rin"] > 0
-        assert d["cluster_noise_floor"] > 0
+        assert d["max_residual_volts"] > 0
+        assert d["Vss_duration_seconds"] > 0
         return cls(
             Vss_bin_width=float(d["Vss_bin_width"]),
             Vss_smooth_sigma=float(d["Vss_smooth_sigma"]),
             Vss_Im_scale=float(d["Vss_Im_scale"]),
-            cluster_penalty_alpha=float(d["cluster_penalty_alpha"]),
-            cluster_scale_Er=float(d["cluster_scale_Er"]),
-            cluster_scale_Rin=float(d["cluster_scale_Rin"]),
-            cluster_noise_floor=float(d["cluster_noise_floor"]),
+            max_residual_volts=float(d["max_residual_volts"]),
+            Vss_duration_seconds=float(d["Vss_duration_seconds"]),
         )
 
 
 @dataclass(frozen=True)
 class EeEiCfg:
     """
-    Hard physiological priors for the (Ee, Ei) estimator.
+    Configuration for the (Ee, Ei) estimator (quantile-of-Eeff method with
+    physiological difference constraint).
 
-    The estimator solves for (Ee, Ei) in [Ee_min, Ee_max] x [Ei_min, Ei_max]
-    that minimizes the integrated bound-violation loss
-        L = ∫ [max(0, lower_bound - Δge(t))² + max(0, lower_bound - Δgi(t))²] dt
-    where lower_bound = -(g_l'_j - g_l_min) for cluster j. This penalizes
-    inferred Δge or Δgi that fall below the physically allowed floor (set by
-    the cluster's effective leak gl' minus a global pure-leak floor gl_min).
+    The estimator takes a low and high quantile of the pooled Eeff(t)
+    distribution as initial estimates of Ei and Ee respectively. It then
+    enforces a hard physiological constraint on the difference (Ee - Ei):
 
-    When the loss has a flat minimum region (data underdetermines the choice
-    -- e.g., the box's interior contains many (Ee, Ei) that produce no
-    bound violations), tiebreak by Euclidean distance to (Ee_prior_center,
-    Ei_prior_center). The data fundamentally cannot identify (Ee, Ei) per
-    cell from a single recording; the prior center is an honest fallback.
+        dE_min ≤ Ee - Ei ≤ dE_max
 
-    Physiological priors (post-LJP):
-      Ee:  AMPA/NMDA-driven, true reversal in [-10, +10] mV.
-      Ei:  Lumped Cl- (around -75 mV) and K+ (around -100 mV) reversals;
-           "effective" Ei drifts toward whichever inhibitory conductance
-           dominates. Box [-110, -65] mV captures both extremes.
-      Center (0, -75) mV is a sensible mid-physiological default.
-      gl_min: a global lower bound on the cell's pure (non-synaptic) leak
-           conductance. Used to set the per-cluster Δg lower bound:
-           Δg ≥ -(gl'_j - gl_min). Smaller gl_min → looser Δg bound (more
-           generous to disinhibition); larger gl_min → tighter bound. For
-           IC neurons in Rana pipiens with typical Rin ~400 MΩ (gl' ~ 2.5 nS),
-           gl_min = 0.5 nS is a defensible floor based on K+ leak
-           contributions in central neurons.
+    Rather than constraining Ee and Ei in absolute terms. Our recordings have
+    multiple uncontrolled sources of voltage offset (most importantly an
+    uncertain liquid junction potential; see project notes), so absolute
+    reversal potentials are not recoverable per cell. The *difference*
+    Ee - Ei is invariant under offset shifts and is the only well-determined
+    quantity for the downstream conductance inversion.
+
+    If the quantile estimate gives Ee - Ei outside [dE_min, dE_max], project
+    to the nearest in-bound pair by adjusting both reversals symmetrically
+    (preserving the midpoint, modifying only the spread).
+
+    Defaults:
+      low/high quantile: 0.001 / 0.999 (small percentage clipping for noise robustness)
+      dE_min = 55 mV  (Ee = -10, Ei = -65 -- the tightest physiological separation)
+      dE_max = 120 mV (Ee = +10, Ei = -110 -- the widest physiological separation)
+
+    The Δ notation is retained throughout the pipeline. This is consistent
+    with the assumption that decreases from baseline are artifactual (the
+    operational stance for this paper, supported by prior duration-coder
+    findings in the same brain region; see Rose et al. 2016) -- i.e., we
+    believe baselines exist but assume disinhibition / disexcitation does not
+    contribute meaningfully to the observed signals. Residual negative Δg
+    after Iact correction is treated as model misspecification and analyzed
+    for correlation with active membrane events.
     """
-    Ee_min:            float
-    Ee_max:            float
-    Ei_min:            float
-    Ei_max:            float
-    Ee_prior_center:   float
-    Ei_prior_center:   float
-    gl_min:            float
+    low_quantile:  float
+    high_quantile: float
+    dE_min:        float
+    dE_max:        float
 
     @classmethod
     def from_dict(cls, d: Dict[str, Any]) -> "EeEiCfg":
         _expect_keys(cls, d, "Ee_Ei_estimation")
-        assert d["Ee_min"] < d["Ee_max"], "Ee_min must be < Ee_max"
-        assert d["Ei_min"] < d["Ei_max"], "Ei_min must be < Ei_max"
-        assert d["Ee_min"] <= d["Ee_prior_center"] <= d["Ee_max"], (
-            "Ee_prior_center must lie within [Ee_min, Ee_max]"
+        assert 0.0 <= d["low_quantile"] < d["high_quantile"] <= 1.0, (
+            "must have 0 ≤ low_quantile < high_quantile ≤ 1"
         )
-        assert d["Ei_min"] <= d["Ei_prior_center"] <= d["Ei_max"], (
-            "Ei_prior_center must lie within [Ei_min, Ei_max]"
+        assert 0.0 < d["dE_min"] < d["dE_max"], (
+            "must have 0 < dE_min < dE_max"
         )
-        assert d["gl_min"] > 0, "gl_min must be positive (units: Siemens)"
         return cls(
-            Ee_min=float(d["Ee_min"]),
-            Ee_max=float(d["Ee_max"]),
-            Ei_min=float(d["Ei_min"]),
-            Ei_max=float(d["Ei_max"]),
-            Ee_prior_center=float(d["Ee_prior_center"]),
-            Ei_prior_center=float(d["Ei_prior_center"]),
-            gl_min=float(d["gl_min"]),
+            low_quantile=float(d["low_quantile"]),
+            high_quantile=float(d["high_quantile"]),
+            dE_min=float(d["dE_min"]),
+            dE_max=float(d["dE_max"]),
         )
 
 
@@ -318,37 +376,6 @@ class NumericsCfg:
         )
 
 
-@dataclass(frozen=True)
-class RecordingCfg:
-    """
-    Recording-prep parameters that adjust raw measurements.
-
-    Currently a single global field for the liquid junction potential. This is
-    a temporary simplification: in practice LJP differs per pipette solution
-    (e.g., K-gluconate vs. KF), and ideally would be specified per-cell in
-    spreadsheet metadata. For now we apply the same value to all cells; the
-    user is responsible for using a cfg with the matching LJP for the pipette
-    solution used in the recordings being analyzed.
-
-    LJP convention (from LJPcalc / Marino et al. 2014, Barry & Lynch):
-    LJP is reported as the bath potential relative to the pipette. The
-    correction subtracts this value from amplifier readings:
-        V_true = V_measured - V_LJP
-    A cell measured at -70 mV with V_LJP = +17 mV is actually at -87 mV.
-    """
-    # Liquid junction potential in volts (e.g., +17.21e-3 = +17.21 mV).
-    # Applied to all measured Vm and to the user-supplied Et_measured at ingestion.
-    # Set to 0.0 to disable correction.
-    liquid_junction_potential_volts: float
-
-    @classmethod
-    def from_dict(cls, d: Dict[str, Any]) -> "RecordingCfg":
-        _expect_keys(cls, d, "recording")
-        return cls(
-            liquid_junction_potential_volts=float(d["liquid_junction_potential_volts"]),
-        )
-
-
 # ---------------------------------------------------------------------------
 # Top-level config
 # ---------------------------------------------------------------------------
@@ -357,7 +384,6 @@ class RecordingCfg:
 class AnalyzerCfg:
     paths: PathsCfg
     compute: ComputeCfg
-    recording: RecordingCfg
     filters: FiltersCfg
     Er_Rin_estimation: ErRinCfg
     Ee_Ei_estimation: EeEiCfg
@@ -374,7 +400,6 @@ class AnalyzerCfg:
         return cls(
             paths=PathsCfg.from_dict(kwargs["paths"]),
             compute=ComputeCfg.from_dict(kwargs["compute"]),
-            recording=RecordingCfg.from_dict(kwargs["recording"]),
             filters=FiltersCfg.from_dict(kwargs["filters"]),
             Er_Rin_estimation=ErRinCfg.from_dict(kwargs["Er_Rin_estimation"]),
             Ee_Ei_estimation=EeEiCfg.from_dict(kwargs["Ee_Ei_estimation"]),
@@ -396,7 +421,6 @@ class AnalyzerCfg:
         """
         from dataclasses import asdict
         relevant = {
-            "recording":         asdict(self.recording),
             "filters":           asdict(self.filters),
             "Er_Rin_estimation": asdict(self.Er_Rin_estimation),
             "Ee_Ei_estimation":  asdict(self.Ee_Ei_estimation),
@@ -430,6 +454,31 @@ def _expect_keys(cls, d: Dict[str, Any], section_name: str) -> None:
 # ---------------------------------------------------------------------------
 
 class XLReader:
+    """
+    Reads .xlsx files in the lab's per-case format.
+
+    File structure (one .xlsx per recording / "case"):
+
+      - One sheet per stimulus paradigm (e.g. "40pps", "60pps", "1pulse").
+        Layout within each paradigm sheet:
+          Row 0:           "use data" label in column A; per-Iinj-column flags
+                           in columns B onward. A flag is True (include this
+                           clamp), False (exclude), or blank/NaN (include --
+                           treated as missing = default True, which also covers
+                           the case where the cell holds a =TRUE() formula whose
+                           cached value isn't present yet).
+          Row 1:           column headers. Column A is "times" (sample times in
+                           seconds); columns B onward are Iinj values in
+                           amperes, one per current-clamp condition.
+          Row 2 onward:    data rows. Vm values in millivolts.
+
+      - One "parameters" sheet with cell-level metadata. Currently:
+          Cm (column header) and Cm value (single row in farads).
+        Other parameters (Et, Eact, Ess) are no longer required -- they are
+        either estimated by the pipeline or unused.
+    """
+    PARAMETERS_SHEET_NAME: str = "parameters"
+
     def __init__(self, filepath: Path):
         self.filepath: Path = filepath
         self.data_pointer = pd.ExcelFile(self.filepath, engine="openpyxl")
@@ -441,22 +490,411 @@ class XLReader:
         return self.data_pointer.sheet_names  # type: ignore
 
     def get_paradigms(self) -> List[str]:
-        paradigms: List[str] = list(filter(lambda x: not any(y in x.lower() for y in ["parameters", "stats", "results"]), self.sheet_names))
-        assert len(paradigms) > 0
+        # Exclude metadata sheets. The "parameters" sheet name is reserved;
+        # legacy files may also have "stats" / "results" sheets which we ignore.
+        excluded = {"parameters", "stats", "results"}
+        paradigms: List[str] = [s for s in self.sheet_names if s.lower() not in excluded]
+        assert len(paradigms) > 0, f"No stimulus paradigm sheets found in {self.filepath}"
         return paradigms
 
     def get_paradigm_data(self, paradigm: str) -> pd.DataFrame:
-        data: pd.DataFrame = pd.read_excel(self.filepath, sheet_name=paradigm, header=0)
-        assert "times" in data, f"No 'times' column present in {paradigm} sheet."
-        for key in data.keys():
+        """
+        Read a paradigm sheet and return a DataFrame with columns: "times" plus
+        one column per included Iinj (named as the Iinj value as a float-string
+        like "-3.000e-11"). Iinj columns flagged False in the "use data" row
+        are dropped.
+
+        Layout:
+          - Row 0: "use data" label in col A; per-Iinj flags in cols B onward.
+            Blank/NaN flag is treated as True (default include). The "use data"
+            row only governs the Iinj columns; the "times" column is always kept.
+          - Row 1: headers. Col A = "times", col B+ = Iinj values.
+          - Row 2+: data.
+        """
+        # Read row 0 alone to get the flags. The label in A1 ("use data") is
+        # ignored; flags start at B1 and correspond 1:1 to Iinj columns.
+        flags_df = pd.read_excel(
+            self.filepath, sheet_name=paradigm, header=None, nrows=1
+        )
+        # Interpret each flag cell: blank/NaN -> True (include by default);
+        # otherwise cast to bool. This handles =TRUE()/=FALSE() formula cells
+        # whose cached values aren't present (openpyxl returns NaN) by
+        # defaulting to include, which is the safer of the two.
+        flags_for_iinjs: List[bool] = []
+        for v in flags_df.iloc[0, 1:].tolist():
+            if v is None or (isinstance(v, float) and np.isnan(v)):
+                flags_for_iinjs.append(True)
+            else:
+                flags_for_iinjs.append(bool(v))
+
+        # Read the data with header=1 (row 1 as headers). Row 0 leaks in as
+        # the first data row, but it's a row of NaNs under the now-numeric Iinj
+        # columns, so dropna(how='all') clears it.
+        data: pd.DataFrame = pd.read_excel(
+            self.filepath, sheet_name=paradigm, header=1
+        )
+        data = data.dropna(how='all').reset_index(drop=True)
+
+        assert "times" in data.columns, (
+            f"No 'times' column found in sheet '{paradigm}' of {self.filepath.name}. "
+            f"Columns: {list(data.columns)}"
+        )
+
+        # The Iinj columns are everything after "times".
+        iinj_columns: List[str] = [c for c in data.columns if c != "times"]
+        assert len(flags_for_iinjs) == len(iinj_columns), (
+            f"'use data' row in sheet '{paradigm}' of {self.filepath.name} has "
+            f"{len(flags_for_iinjs)} flag cells but the data has {len(iinj_columns)} "
+            f"Iinj column(s). Check the spreadsheet layout."
+        )
+        cols_to_drop = [c for c, flag in zip(iinj_columns, flags_for_iinjs) if not flag]
+        if cols_to_drop:
+            data = data.drop(columns=cols_to_drop)
+
+        # Rename Iinj columns to canonical float-string form for downstream code.
+        for key in list(data.columns):
             if key not in {"times", "stimulus", "representative"}:
                 data.rename(columns={key: f"{float(key):.3e}"}, inplace=True)
         return data
 
-    def get_paradigm_parameters(self, paradigm: str):
-        paradigm = f"parameters_{paradigm}"
-        df = pd.read_excel(self.filepath, sheet_name=paradigm, header=0)
-        df = df.dropna(how='all').dropna(axis=1, how='all')
-        df = df.dropna(how='any')
-        assert all(df["Eact"] > df["Ess"]), f"Fix spreadsheet {self.filepath} {paradigm}: Eact must be greater than Ess"
+    def get_paradigm_parameters(self) -> pd.DataFrame:
+        """
+        Read the per-case parameters sheet. Currently expected to contain just
+        one column ("Cm") and one row of values. Returns a DataFrame so the
+        downstream code can keep its `parameters["Cm"][0]` access pattern.
+        """
+        df = pd.read_excel(
+            self.filepath, sheet_name=self.PARAMETERS_SHEET_NAME, header=0
+        )
+        df = df.dropna(how='all').dropna(axis=1, how='all').reset_index(drop=True)
+        assert "Cm" in df.columns, (
+            f"No 'Cm' column in parameters sheet of {self.filepath.name}; "
+            f"got columns: {list(df.columns)}"
+        )
+        assert len(df) >= 1, f"parameters sheet of {self.filepath.name} is empty"
         return df
+
+
+
+# ---------------------------------------------------------------------------
+# Per-case manual cluster + steady-state Vss system
+# ---------------------------------------------------------------------------
+
+# Iinj filename grammar:
+#   "(<value><unit>)_<index>.txt"
+#   <value>: signed decimal float (e.g. "-0.01", "0", "+1.5")
+#   <unit>:  SI prefix from {f, p, n, u, m, ''} immediately followed by "A"
+#            (empty prefix is bare amperes)
+#   <index>: any nonnegative integer; not used semantically (just for uniqueness)
+#
+# Examples that match:
+#   (-0.01nA)_1.txt    -> -0.01e-9 A = -10 pA
+#   (0nA)_3.txt        ->  0 A
+#   (-30pA)_2.txt      -> -30e-12 A
+#   (1.5uA)_0.txt      ->  1.5e-6 A
+_IINJ_FILENAME_RE = re.compile(
+    r"^\(\s*"
+    r"(?P<value>[+-]?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?)"
+    r"\s*(?P<unit>[fpnum]?)A\s*\)"
+    r"_(?P<index>\d+)"
+    r"\.txt$"
+)
+
+_SI_PREFIX_FACTORS: Dict[str, float] = {
+    "":  1.0,
+    "m": 1e-3,
+    "u": 1e-6,
+    "n": 1e-9,
+    "p": 1e-12,
+    "f": 1e-15,
+}
+
+
+def _parse_iinj_from_filename(filename: str) -> Optional[float]:
+    """
+    Parse an Iinj value (in amperes) from a steady-state .txt filename.
+    Returns None if the name doesn't match the expected grammar.
+    """
+    m = _IINJ_FILENAME_RE.match(filename)
+    if m is None:
+        return None
+    value: float = float(m.group("value"))
+    unit:  str   = m.group("unit")
+    return value * _SI_PREFIX_FACTORS[unit]
+
+
+def _read_spike2_txt(path: Path) -> np.ndarray:
+    """
+    Read a Spike2 default-export .txt file. Format:
+        "Time"   "Vm"
+        0.00000000  -422.66846
+        0.00010000  -420.37964
+        ...
+    Returns a 1D float array of Vm samples in VOLTS (input is mV, scaled by 1e-3).
+    Time column is discarded; only the Vm values are used for steady-state mean.
+    """
+    # Use pandas: tolerant of whitespace, comments, header line.
+    df = pd.read_csv(
+        path,
+        sep=r"\s+",
+        engine="python",
+        comment="#",
+        skiprows=1,           # skip the "Time" "Vm" header
+        header=None,
+        names=["time", "vm_mV"],
+    )
+    vm_mV = df["vm_mV"].to_numpy(dtype=np.float64)
+    return vm_mV * 1e-3       # mV -> V
+
+
+@dataclass(frozen=True)
+class ManualClusterDataCfg:
+    """
+    Per-case manual cluster definitions plus their steady-state Vss values,
+    computed from user-provided Spike2 excerpts.
+
+    Two pieces of input data, both in the case folder:
+
+    1. `cluster_assignments.json`:
+       {
+         "stimulus_clusters": {
+           "5pps":  "baseline",
+           "10pps": "baseline",
+           "40pps": "post-NBQX"
+         },
+         "cluster_labels": {                    // optional, decorative
+           "baseline":  "Baseline (pre-drug)",
+           "post-NBQX": "Post-NBQX wash"
+         }
+       }
+
+    2. `steady_states/<cluster_name>/(<Iinj><unit>)_<idx>.txt`:
+       Each .txt is a Spike2 default-export file (header line + columns of
+       time, Vm in mV) for a stretch of confirmed steady-state recording at
+       a known Iinj level. Multiple files per (cluster, Iinj) are pooled
+       (samples concatenated) and reduced by mean to give Vss.
+
+    The pipeline uses these directly to obtain (cluster_assignment, Vss),
+    skipping the unsupervised weighted-mode + GMM/BIC. (Er, Rin) is then
+    computed by OLS on (Iinj, Vss) pairs per cluster as usual.
+
+    Both files (the JSON and the steady_states/ folder) must be present
+    together; if only one exists, treat it as a user error and raise.
+    If neither exists, the pipeline falls back to fully unsupervised mode.
+
+    Validation (all enforced at load time):
+      - cluster_assignments.json is well-formed; stimulus_clusters maps every
+        xlsx paradigm to a cluster name; cluster names referenced in
+        stimulus_clusters all exist as subfolders of steady_states/.
+      - Each (cluster, Iinj) pair used by stimuli is covered by at least one
+        .txt file.
+      - Each .txt file's name parses as an Iinj value.
+      - Each .txt file's content parses as a Spike2 export.
+      - Warn if any .txt file's Iinj value isn't used by any stimulus in
+        its cluster (extra data; may indicate mislabeling).
+    """
+    # cluster_name -> Iinj_amperes -> Vss_volts (mean across all .txt files)
+    Vss_by_cluster:    Dict[str, Dict[float, float]]
+    # paradigm_name -> cluster_name
+    cluster_for_paradigm: Dict[str, str]
+    # cluster_name -> human-readable label (or the cluster_name itself if no label)
+    cluster_labels:    Dict[str, str]
+    # Content hash for cache invalidation
+    _content_hash:     str
+
+    @classmethod
+    def from_case_dir(
+        cls,
+        case_dir: Path,
+        paradigm_iinjs: Dict[str, List[float]],
+    ) -> Optional["ManualClusterDataCfg"]:
+        """
+        Attempt to load manual cluster data from `case_dir`.
+
+        `paradigm_iinjs` is {paradigm_name: [Iinj amperes per clamp]} from the
+        xlsx; used to validate that every (cluster, Iinj) pair the analysis
+        actually needs is covered by the steady-state files.
+
+        Returns None if neither the JSON nor the steady_states/ folder exists
+        (i.e., the case is configured for fully-unsupervised analysis).
+        Raises AssertionError on validation failures or if exactly one of the
+        two inputs is present.
+        """
+        json_path:    Path = case_dir / "cluster_assignments.json"
+        ss_dir:       Path = case_dir / "steady_states"
+
+        json_exists = json_path.is_file()
+        ss_exists   = ss_dir.is_dir()
+
+        if not json_exists and not ss_exists:
+            return None
+
+        assert json_exists and ss_exists, (
+            f"Inconsistent manual cluster data in {case_dir.name}: "
+            f"found {'cluster_assignments.json' if json_exists else 'steady_states/'} "
+            f"but not the other. Both must be present together, or neither."
+        )
+
+        # ---- Load JSON ----
+        with open(json_path, "r") as f:
+            jd = json.load(f)
+        assert isinstance(jd, dict), f"{json_path}: top level must be an object"
+        keys = {k for k in jd.keys() if not k.startswith("_")}
+        assert keys.issubset({"stimulus_clusters", "cluster_labels"}), (
+            f"{json_path}: unexpected keys {keys - {'stimulus_clusters', 'cluster_labels'}}. "
+            f"Allowed: 'stimulus_clusters', 'cluster_labels'."
+        )
+        assert "stimulus_clusters" in keys, f"{json_path}: missing required 'stimulus_clusters'"
+        stim_to_cluster_raw = jd["stimulus_clusters"]
+        assert isinstance(stim_to_cluster_raw, dict), (
+            f"{json_path}: 'stimulus_clusters' must be an object mapping paradigm -> cluster name"
+        )
+        for k, v in stim_to_cluster_raw.items():
+            assert isinstance(k, str) and isinstance(v, str), (
+                f"{json_path}: stimulus_clusters keys/values must be strings; got ({k!r}: {v!r})"
+            )
+        cluster_for_paradigm: Dict[str, str] = dict(stim_to_cluster_raw)
+
+        labels_raw = jd.get("cluster_labels", {})
+        assert isinstance(labels_raw, dict), f"{json_path}: 'cluster_labels' must be an object"
+        for k, v in labels_raw.items():
+            assert isinstance(k, str) and isinstance(v, str), (
+                f"{json_path}: cluster_labels keys/values must be strings"
+            )
+
+        # Every paradigm from the xlsx must be assigned.
+        missing = [p for p in paradigm_iinjs if p not in cluster_for_paradigm]
+        assert not missing, (
+            f"{json_path}: paradigms present in xlsx but missing from stimulus_clusters: {missing}"
+        )
+        # No extra paradigms in the JSON that aren't in the xlsx.
+        extra = [p for p in cluster_for_paradigm if p not in paradigm_iinjs]
+        assert not extra, (
+            f"{json_path}: stimulus_clusters references paradigms not present in xlsx: {extra}"
+        )
+
+        cluster_names: set = set(cluster_for_paradigm.values())
+
+        # cluster_labels keys must be a subset of actually-used cluster names.
+        for cname in labels_raw:
+            assert cname in cluster_names, (
+                f"{json_path}: cluster_labels has '{cname}' which isn't used in stimulus_clusters"
+            )
+        cluster_labels: Dict[str, str] = {c: labels_raw.get(c, c) for c in cluster_names}
+
+        # ---- Scan steady_states/ ----
+        # Each cluster name must be a subfolder; each subfolder contains .txt files.
+        Vss_by_cluster: Dict[str, Dict[float, float]] = {}
+        # Track files actually used vs files seen, for the "extra data" warning.
+        files_seen: List[Path] = []
+        files_used: set = set()
+
+        for cluster_name in sorted(cluster_names):
+            cluster_dir = ss_dir / cluster_name
+            assert cluster_dir.is_dir(), (
+                f"steady_states/{cluster_name} not found in {case_dir.name}. "
+                f"Every cluster named in stimulus_clusters must have a subfolder."
+            )
+
+            # Group all .txt files by parsed Iinj.
+            samples_by_iinj: Dict[float, List[np.ndarray]] = {}
+            for p in sorted(cluster_dir.iterdir()):
+                if p.suffix.lower() != ".txt":
+                    continue
+                files_seen.append(p)
+                iinj = _parse_iinj_from_filename(p.name)
+                assert iinj is not None, (
+                    f"{p}: filename does not parse as '(<value><unit>A)_<index>.txt'. "
+                    f"Expected forms like '(-0.01nA)_1.txt', '(0pA)_3.txt'."
+                )
+                # Read and store; we'll average later.
+                vm = _read_spike2_txt(p)
+                samples_by_iinj.setdefault(iinj, []).append(vm)
+
+            # Compute Vss = mean across all pooled samples per Iinj.
+            Vss_by_cluster[cluster_name] = {}
+            for iinj, arrays in samples_by_iinj.items():
+                pooled = np.concatenate(arrays)
+                Vss_by_cluster[cluster_name][iinj] = float(np.mean(pooled))
+
+        # ---- Cross-validate: every (cluster, Iinj) used by stimuli is covered ----
+        # And warn if any .txt file's Iinj isn't used by any stimulus in its cluster.
+        IINJ_MATCH_TOL: float = 1e-15
+        def _find_iinj_match(target: float, available: List[float]) -> Optional[float]:
+            for a in available:
+                if abs(a - target) <= IINJ_MATCH_TOL:
+                    return a
+            return None
+
+        for paradigm, iinjs in paradigm_iinjs.items():
+            cluster_name = cluster_for_paradigm[paradigm]
+            available = list(Vss_by_cluster[cluster_name].keys())
+            for iinj in iinjs:
+                match = _find_iinj_match(iinj, available)
+                assert match is not None, (
+                    f"steady_states/{cluster_name}: no .txt file covers Iinj = "
+                    f"{iinj*1e12:.1f} pA (needed by paradigm '{paradigm}'). "
+                    f"Available Iinj in this cluster: "
+                    f"{[f'{a*1e12:.1f} pA' for a in sorted(available)]}."
+                )
+
+        # Identify Iinj values present in .txt files but not used by any stimulus.
+        for cluster_name, vss_dict in Vss_by_cluster.items():
+            stims_in_cluster = [p for p, c in cluster_for_paradigm.items() if c == cluster_name]
+            needed_iinjs: set = set()
+            for p in stims_in_cluster:
+                for iinj in paradigm_iinjs[p]:
+                    needed_iinjs.add(round(iinj, 18))   # canonical key for set membership
+            for iinj_avail in vss_dict:
+                if round(iinj_avail, 18) not in needed_iinjs:
+                    # Approximate match check, since floating point.
+                    found = any(abs(iinj_avail - n) <= IINJ_MATCH_TOL for n in needed_iinjs)
+                    if not found:
+                        print(
+                            f"  Warning: steady_states/{cluster_name}/ has data for "
+                            f"Iinj = {iinj_avail*1e12:.1f} pA which isn't used by any "
+                            f"stimulus in cluster '{cluster_name}'. Check for mislabeling."
+                        )
+
+        # ---- Content hash for cache invalidation ----
+        # Hash the canonical JSON content AND each .txt file's mtime + first few bytes
+        # (full file mtime + size is enough to detect changes without reading everything).
+        hasher = hashlib.sha256()
+        canonical = json.dumps({
+            "stimulus_clusters": cluster_for_paradigm,
+            "cluster_labels":    {c: cluster_labels[c] for c in sorted(cluster_labels)},
+        }, sort_keys=True).encode("utf-8")
+        hasher.update(canonical)
+        for f in sorted(files_seen):
+            stat = f.stat()
+            hasher.update(f.relative_to(case_dir).as_posix().encode("utf-8"))
+            hasher.update(str(stat.st_size).encode("utf-8"))
+            hasher.update(str(stat.st_mtime).encode("utf-8"))
+        content_hash = hasher.hexdigest()[:16]
+
+        return cls(
+            Vss_by_cluster=Vss_by_cluster,
+            cluster_for_paradigm=cluster_for_paradigm,
+            cluster_labels=cluster_labels,
+            _content_hash=content_hash,
+        )
+
+    def hash_for_cache(self) -> str:
+        return self._content_hash
+
+    # Convenience for the pipeline:
+    def lookup_vss(self, paradigm: str, iinj: float) -> float:
+        """
+        Return the manually-defined Vss for (paradigm, iinj) in volts.
+        Tolerates small floating-point mismatch in the Iinj value.
+        """
+        cluster_name = self.cluster_for_paradigm[paradigm]
+        vss_dict = self.Vss_by_cluster[cluster_name]
+        for avail_iinj, vss in vss_dict.items():
+            if abs(avail_iinj - iinj) <= 1e-15:
+                return vss
+        raise KeyError(
+            f"Manual Vss not available for paradigm '{paradigm}' (cluster "
+            f"'{cluster_name}') at Iinj = {iinj*1e12:.1f} pA. "
+            f"Available: {sorted(vss_dict.keys())}"
+        )

@@ -1,21 +1,16 @@
 {
-    "paths": {
-        "spreadsheets_input_dir": "/home/jsteele/Documents/Local/PRR/test",
-        "image_save_dir": "/home/jsteele/Documents/Local/PRR/Figures2",
-        "image_save_type": "png",
-        "files_to_analyze": null,
-        "iinj_clamps_to_use": null,
-        "cache_dir": "/home/jsteele/Documents/Local/PRR/test/.cache",
-        "cache_invalidate": false
-    },
+   "paths": {
+       "spreadsheets_input_dir": "/home/jsteele/Documents/Local/PRR/CombinedReformattedWholeCellAverages_copy_20260513_140140_copy",
+       "image_save_dir": "/home/jsteele/Documents/Local/PRR/Dev Figures",
+       "image_save_type": "png",
+       "files_to_analyze": null,
+       "iinj_clamps_to_use": null,
+       "cache_dir": "/home/jsteele/Documents/Local/PRR/CombinedReformattedWholeCellAverages_copy_20260513_140140_copy/.cache",
+       "cache_invalidate": false
+   },
 
     "compute": {
         "n_workers": 31
-    },
-
-    "recording": {
-        "_comment": "Liquid junction potential in volts. V_true = V_measured - V_LJP. Computed via LJPcalc (Marino et al. 2014) using the lab's Hickman's Ringer's bath and the standard pipette solution. K-gluconate pipette: +17.21e-3. KF pipette: +10.21e-3. Set to 0 to disable.",
-        "liquid_junction_potential_volts": -11.0e-3
     },
 
     "filters": {
@@ -27,30 +22,26 @@
     },
 
     "Er_Rin_estimation": {
-        "Vss_bin_width":         0.0005,
-        "Vss_smooth_sigma":      0.001,
-        "Vss_Im_scale":          1e-10,
-        "cluster_penalty_alpha": 1.0,
-        "cluster_scale_Er":      0.005,
-        "cluster_scale_Rin":     5e7,
-        "cluster_noise_floor":   0.01
+        "_comment": "Vss is estimated as median of raw Vm over the first Vss_duration_seconds; Vss_* fields (bin_width, smooth_sigma, Im_scale) are vestigial from the older weighted-mode estimator but still required by the schema. max_residual_volts is the residual threshold for the Vss-based drift clustering: a candidate K is accepted iff every (paradigm, clamp) in every cluster has |Vss_observed - Vss_hat_OLS(Iinj)| <= max_residual_volts. Smaller K is preferred; K=N is always feasible.",
+        "Vss_bin_width":        0.0005,
+        "Vss_smooth_sigma":     0.001,
+        "Vss_Im_scale":         1e-10,
+        "max_residual_volts":   2e-3,
+        "Vss_duration_seconds": 5e-3
     },
 
     "Ee_Ei_estimation": {
-        "_comment": "Hard physiological priors for (Ee, Ei). Estimator minimizes the integrated bound-violation loss L = ∫[max(0, lower_bound - Δge)² + max(0, lower_bound - Δgi)²]dt over the box, where lower_bound = -(gl'_j - gl_min) per cluster. Tiebreak among zero-loss solutions by Euclidean distance to the prior center. All voltages POST-LJP-correction. Defaults: Ee in [-10, +10] mV, Ei in [-110, -65] mV, center (0, -75) mV. gl_min = 0.5 nS as a floor on the cell's pure leak.",
-        "Ee_min":          -10e-3,
-        "Ee_max":           10e-3,
-        "Ei_min":         -110e-3,
-        "Ei_max":          -65e-3,
-        "Ee_prior_center":   0e-3,
-        "Ei_prior_center": -75e-3,
-        "gl_min":            0.5e-9
+        "_comment": "Quantile-based (Ee, Ei) estimator with physiological difference constraint. low/high_quantile pick Ei/Ee from pooled Eeff(t). The difference Ee-Ei is then clipped to [dE_min, dE_max] by symmetric adjustment (preserving midpoint). Rationale: recordings have uncontrolled voltage offsets, so absolute reversals are not recoverable; only the offset-invariant difference is well determined. Defaults: dE_min = 55 mV (typical Ee=-10, Ei=-65 limit) and dE_max = 120 mV (Ee=+10, Ei=-110 limit).",
+        "low_quantile":  0.001,
+        "high_quantile": 0.999,
+        "dE_min":        30e-3,
+        "dE_max":        120e-3
     },
 
     "Et_optimization": {
         "x_beta_max":   2.0,
         "eps_v":        2e-3,
-        "n_epochs":     1,
+        "n_epochs":     3,
         "n_samples_per_epoch": 400,
         "shrink":       0.4,
         "rng_seed":     0
